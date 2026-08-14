@@ -1,0 +1,102 @@
+site_name: TeXGuard · Documentación
+site_description: Editor LaTeX colaborativo seguro — documentación de planificación del proyecto
+site_author: Equipo TeXGuard
+copyright: Universidad Técnica de Ambato · Seguridad de Software
+
+docs_dir: docs
+
+theme:
+  name: material
+  language: es
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Cambiar a modo oscuro
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Cambiar a modo claro
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+plugins:
+  - search:
+      lang: es
+  - mermaid2
+
+nav:
+  - Inicio: index.md
+  - Fundamentos:
+      - Publicación de la documentación: 00-Publicacion-de-la-Documentacion.md
+      - Análisis funcional de Overleaf: 01-Analisis-Funcional-Overleaf.md
+      - Especificación de requisitos: 02-Requisitos.md
+  - Diseño:
+      - Arquitectura: 03-Arquitectura.md
+      - Stack tecnológico: 04-Stack-Tecnologico.md
+      - Seguridad: 05-Seguridad.md
+      - Modelo de datos: 06-Modelo-de-Datos.md
+      - Casos de uso y de abuso: 07-Casos-de-Uso.md
+      - Diagramas UML: 08-Diagramas-UML.md
+  - Repositorios:
+      - Interfaces y mockups: 09-Interfaces-y-Mockups.md
+      - API y endpoints: 10-API-y-Endpoints.md
+  - Ejecución:
+      - Plan de proyecto: 11-Plan-de-Proyecto.md
+      - DevSecOps y testing: 12-DevSecOps-y-Testing.md
+      - Infraestructura y despliegue: 13-Infraestructura-y-Despliegue.md
+  - Referencia:
+      - Glosario: 14-Glosario.md
+      - Decisiones (ADR):
+          - ADR-0001 · Microservicios por frontera de confianza: adr/ADR-0001-microservicios-por-frontera-de-confianza.md
+          - ADR-0002 · Sandbox con gVisor: adr/ADR-0002-sandbox-de-compilacion-con-gvisor.md
+          - ADR-0003 · Keycloak como IdP: adr/ADR-0003-keycloak-como-proveedor-de-identidad.md
+          - ADR-0004 · CRDT Yjs frente a OT: adr/ADR-0004-crdt-yjs-frente-a-ot.md
+          - ADR-0005 · Envelope encryption con Vault: adr/ADR-0005-cifrado-sobre-envolvente-con-vault.md
+          - ADR-0006 · Rust en entrada hostil: adr/ADR-0006-rust-para-el-orquestador-de-compilacion.md
+          - ADR-0007 · Row Level Security: adr/ADR-0007-postgresql-con-row-level-security.md
+          - ADR-0008 · Documentación de API code-first: adr/ADR-0008-documentacion-de-api-code-first.md
+          - ADR-0009 · Tres repositorios: adr/ADR-0009-tres-repositorios-y-documentacion-central.md
+
+strict: true
+</content>
+</invoke>
