@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeXGuard · 4 · Cuenta y seguridad</title>
+<link rel="stylesheet" href="assets/mockup.css">
+</head>
+<body>
+<div class="wrap">
+<h1 style="font-size:22px;margin:0 0 4px">4 · Cuenta y seguridad</h1>
+<p class="mut mb">Pantallas P-27 a P-34 · Requisitos RF-006 … RF-013, RF-045 · Casos de uso CU-03 … CU-09</p>
+
+<div class="alert info mb"><span class="ic">🧭</span><div><strong>Navegación común</strong>Todas las pantallas de esta sección comparten la misma barra lateral de ajustes, que se muestra completa en P-27.</div></div>
+
+<!-- ============ P-27 ============ -->
+<section class="screen" id="p27">
+  <header>
+    <h2><span class="id">P-27</span> Perfil</h2>
+    <p class="desc">Datos personales y afiliación institucional. Cada correo secundario requiere su propia verificación.</p>
+    <div class="meta"><span class="tag">RF-012</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://texguard.app/ajustes/perfil</div></div>
+    <div class="appbar"><span class="brand">Tex<b>Guard</b></span><span class="sm">Ajustes de la cuenta</span><span class="spacer"></span><span class="avatar">AT</span></div>
+    <div class="layout side">
+      <div class="pane sidebar">
+        <div class="group">Cuenta</div>
+        <div class="item active">👤 Perfil</div>
+        <div class="item">🛡️ Seguridad y sesiones</div>
+        <div class="item">🔑 Segundo factor</div>
+        <div class="item">🔗 Cuentas vinculadas</div>
+        <div class="item">🎫 Tokens de aplicación</div>
+        <div class="group">Preferencias</div>
+        <div class="item">⌨️ Editor</div>
+        <div class="item">🔔 Notificaciones</div>
+        <div class="group">Plan y datos</div>
+        <div class="item">💳 Suscripción</div>
+        <div class="item">📥 Mis datos</div>
+      </div>
+      <div class="pane">
+        <div class="pane-body" style="max-width:540px">
+          <div class="row mb"><span class="avatar" style="width:52px;height:52px;font-size:18px">AT</span><div><b>Ana Torres</b><p class="xs mut">Cuenta creada el 3 de marzo de 2026</p></div></div>
+          <div class="grid c2">
+            <div class="field"><label for="pf-n">Nombre</label><input class="input" id="pf-n" value="Ana"></div>
+            <div class="field"><label for="pf-a">Apellidos</label><input class="input" id="pf-a" value="Torres Villacís"></div>
+          </div>
+          <div class="field"><label for="pf-i">Institución</label><input class="input" id="pf-i" value="Universidad Técnica de Ambato"></div>
+          <div class="grid c2">
+            <div class="field"><label for="pf-r">Rol</label><div class="select"><input class="input" id="pf-r" value="Estudiante de posgrado"></div></div>
+            <div class="field"><label for="pf-p">País</label><div class="select"><input class="input" id="pf-p" value="Ecuador"></div></div>
+          </div>
+          <div class="grid c2">
+            <div class="field"><label for="pf-l">Idioma de la interfaz</label><div class="select"><input class="input" id="pf-l" value="Español"></div></div>
+            <div class="field"><label for="pf-z">Zona horaria</label><div class="select"><input class="input" id="pf-z" value="America/Guayaquil"></div></div>
+          </div>
+          <div class="divider"></div>
+          <b class="sm">Correos electrónicos</b>
+          <table class="tbl mt">
+            <tbody>
+              <tr><td>ana.torres@uta.edu.ec</td><td><span class="tag brand">Principal</span> <span class="tag ok">Verificado</span></td><td class="muted">—</td></tr>
+              <tr><td>ana.torres.v@gmail.com</td><td><span class="tag warn">Sin verificar</span></td><td><button class="btn sm ghost">Reenviar</button> <button class="btn sm ghost" style="color:var(--danger)">Quitar</button></td></tr>
+            </tbody>
+          </table>
+          <button class="btn sm mt">＋ Añadir correo</button>
+          <div class="divider"></div>
+          <button class="btn primary">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — cambiar el correo principal exige <b>reautenticación reciente</b> (≤ 5 min) y notifica a la dirección anterior (RS-006). Un correo sin verificar no permite recuperar la cuenta ni vincular un proveedor de identidad.</div>
+</section>
+
+<!-- ============ P-28 ============ -->
+<section class="screen" id="p28">
+  <header>
+    <h2><span class="id">P-28</span> Seguridad y sesiones activas</h2>
+    <p class="desc">Panel de transparencia: el usuario ve dónde está conectado y qué ha ocurrido en su cuenta, y puede cortar cualquier sesión.</p>
+    <div class="meta"><span class="tag">RF-008</span><span class="tag sec">F-266</span><span class="tag">CU-05</span></div>
+  </header>
+  <div class="frame">
+    <div class="appbar"><span class="brand">Tex<b>Guard</b></span><span class="sm">Seguridad</span><span class="spacer"></span><span class="avatar">AT</span></div>
+    <div class="pane-body" style="max-width:700px">
+      <div class="card mb">
+        <div class="row between"><div><b>Contraseña</b><p class="xs mut">Actualizada hace 42 días</p></div><button class="btn sm">Cambiar</button></div>
+      </div>
+
+      <b class="sm">Sesiones activas</b>
+      <table class="tbl mt mb">
+        <thead><tr><th>Dispositivo</th><th>Ubicación aproximada</th><th>Última actividad</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>💻 Chrome · Windows <span class="tag ok">Esta sesión</span></td><td class="muted">Ambato, Ecuador</td><td class="muted">ahora</td><td class="muted">—</td></tr>
+          <tr><td>📱 Safari · iPhone</td><td class="muted">Ambato, Ecuador</td><td class="muted">hace 3 h</td><td><button class="btn sm ghost" style="color:var(--danger)">Cerrar</button></td></tr>
+          <tr><td>💻 Firefox · Linux</td><td class="muted">Quito, Ecuador</td><td class="muted">ayer</td><td><button class="btn sm ghost" style="color:var(--danger)">Cerrar</button></td></tr>
+        </tbody>
+      </table>
+      <button class="btn danger sm mb">Cerrar todas las demás sesiones</button>
+
+      <div class="divider"></div>
+      <b class="sm">Actividad reciente de la cuenta</b>
+      <div class="col mt" style="gap:6px">
+        <div class="logline"><span class="badge i">acceso</span><span>Hoy 08:12 · Inicio de sesión con Google · Ambato, Ecuador</span></div>
+        <div class="logline"><span class="badge w">aviso</span><span>Ayer 22:41 · Intento fallido de inicio de sesión · IP 203.0.113.0/24</span></div>
+        <div class="logline"><span class="badge i">permiso</span><span>Ayer 18:03 · Te añadieron como Editor en «Artículo IEEE»</span></div>
+        <div class="logline"><span class="badge i">acceso</span><span>12 ago · Passkey registrada desde Chrome en Windows</span></div>
+      </div>
+      <p class="xs mut3 mt">Las direcciones IP se guardan anonimizadas por red /24 y se eliminan a los 90 días.</p>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>«Cerrar todas las demás sesiones» invalida los <i>refresh tokens</i> correspondientes en menos de 5 segundos (RF-008).</li>
+      <li>El registro de actividad procede del servicio de auditoría <b>encadenado por hash</b>: el usuario ve exactamente lo mismo que quedaría en una investigación (RS-051).</li>
+      <li>La detección de reutilización de un <i>refresh token</i> invalida toda la familia y aparece aquí como aviso (RS-003).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ P-29 ============ -->
+<section class="screen" id="p29">
+  <header>
+    <h2><span class="id">P-29</span> Segundo factor y passkeys</h2>
+    <p class="desc">Gestión de los métodos de verificación en dos pasos. Las passkeys se presentan como opción preferente por ser resistentes al phishing.</p>
+    <div class="meta"><span class="tag">RF-006</span><span class="tag sec">F-260</span><span class="tag">CU-03</span></div>
+  </header>
+  <div class="frame">
+    <div class="pane-body" style="max-width:640px">
+      <div class="alert ok mb"><span class="ic">🔐</span><div><strong>Tu cuenta está protegida con verificación en dos pasos</strong>Tienes 2 métodos activos y 8 códigos de respaldo sin usar.</div></div>
+
+      <div class="card mb">
+        <div class="row between">
+          <div><b>🔑 Passkeys</b> <span class="tag ok">Recomendado</span><p class="xs mut">Huella, rostro o llave física. No se puede robar por phishing.</p></div>
+          <button class="btn sm primary">＋ Añadir</button>
+        </div>
+        <div class="divider" style="margin:11px 0"></div>
+        <div class="row between sm"><span>💻 Windows Hello · Chrome</span><span class="row"><span class="xs mut3">Usada hoy</span><button class="btn sm ghost" style="color:var(--danger)">Quitar</button></span></div>
+        <div class="row between sm mt"><span>🔐 YubiKey 5C</span><span class="row"><span class="xs mut3">Usada el 2 ago</span><button class="btn sm ghost" style="color:var(--danger)">Quitar</button></span></div>
+      </div>
+
+      <div class="card mb">
+        <div class="row between"><div><b>📱 Aplicación autenticadora (TOTP)</b><p class="xs mut">Google Authenticator, Aegis, 1Password…</p></div><span class="tag ok">Activa</span></div>
+        <div class="divider" style="margin:11px 0"></div>
+        <div class="row"><button class="btn sm">Reconfigurar</button><button class="btn sm ghost" style="color:var(--danger)">Desactivar</button></div>
+      </div>
+
+      <div class="card mb">
+        <div class="row between"><div><b>🎟️ Códigos de respaldo</b><p class="xs mut">Úsalos si pierdes el acceso a tus otros métodos</p></div><span class="tag warn">8 de 10 disponibles</span></div>
+        <div class="divider" style="margin:11px 0"></div>
+        <div class="row"><button class="btn sm">Ver códigos</button><button class="btn sm">Generar nuevos</button></div>
+      </div>
+
+      <div class="alert warn"><span class="ic">⚠</span><div><strong>No podrás desactivar el último método si perteneces a un grupo con MFA obligatoria</strong>Tu institución exige verificación en dos pasos.</div></div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el secreto TOTP se almacena cifrado con la clave del usuario. Los códigos de respaldo se guardan hasheados con Argon2id y son de un solo uso. Generar nuevos invalida todos los anteriores. Añadir o quitar un método exige reautenticación reciente (RS-006).</div>
+</section>
+
+<!-- ============ P-30 ============ -->
+<section class="screen" id="p30">
+  <header>
+    <h2><span class="id">P-30</span> Cuentas vinculadas</h2>
+    <p class="desc">Proveedores de identidad asociados. El sistema impide quedarse sin ningún método de acceso.</p>
+    <div class="meta"><span class="tag">RF-005</span><span class="tag">CU-06</span></div>
+  </header>
+  <div class="frame">
+    <div class="pane-body" style="max-width:600px">
+      <table class="tbl">
+        <tbody>
+          <tr><td><span class="row">🔵 <b>Google</b></span><div class="xs mut">ana.torres.v@gmail.com</div></td><td class="muted">Vinculada el 3 mar 2026</td><td><button class="btn sm">Desvincular</button></td></tr>
+          <tr><td><span class="row">🟦 <b>Microsoft</b></span><div class="xs mut">ana.torres@uta.edu.ec</div></td><td class="muted">Vinculada el 14 may 2026</td><td><button class="btn sm">Desvincular</button></td></tr>
+          <tr><td><span class="row">🟩 <b>ORCID</b></span><div class="xs mut">No vinculada</div></td><td class="muted">—</td><td><button class="btn sm primary">Vincular</button></td></tr>
+          <tr><td><span class="row">🏛️ <b>SSO institucional</b></span><div class="xs mut">Universidad Técnica de Ambato</div></td><td class="muted">Gestionada por tu institución</td><td class="muted">—</td></tr>
+        </tbody>
+      </table>
+      <div class="alert info mt"><span class="ic">ℹ</span><div><strong>Siempre debe quedarte una forma de entrar</strong>No puedes desvincular tu último proveedor si no tienes contraseña establecida.</div></div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — la vinculación automática por coincidencia de correo solo ocurre si el correo <b>ya estaba verificado</b> en TeXGuard; en caso contrario se pide confirmación explícita. Esto evita la toma de control de cuentas por preregistro (CU-02, flujo 9a).</div>
+</section>
+
+<!-- ============ P-31 ============ -->
+<section class="screen" id="p31">
+  <header>
+    <h2><span class="id">P-31</span> Tokens de aplicación</h2>
+    <p class="desc">Credenciales para el puente Git y la API pública, con alcances mínimos y caducidad.</p>
+    <div class="meta"><span class="tag">RF-013</span><span class="tag">CU-09</span></div>
+  </header>
+  <div class="frame">
+    <div class="pane-body" style="max-width:660px">
+      <div class="alert ok mb"><span class="ic">🎫</span><div><strong>Token creado: «Portátil · git clone»</strong><code style="font-family:var(--mono);font-size:12px;display:block;margin-top:5px;background:var(--surface-2);padding:7px;border-radius:4px">tgd_a7Kx…9Qv2LmP4RtY8wZ</code><span class="xs">Cópialo ahora: no volverá a mostrarse.</span></div></div>
+      <table class="tbl mb">
+        <thead><tr><th>Nombre</th><th>Prefijo</th><th>Alcances</th><th>Último uso</th><th>Caduca</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Portátil · git clone</td><td class="muted"><code>tgd_a7Kx</code></td><td><span class="tag">git:read</span> <span class="tag">git:write</span></td><td class="muted">nunca</td><td class="muted">14 nov 2026</td><td><button class="btn sm ghost" style="color:var(--danger)">Revocar</button></td></tr>
+          <tr><td>Script de respaldo</td><td class="muted"><code>tgd_m2Pq</code></td><td><span class="tag">api:read</span></td><td class="muted">hace 2 días</td><td class="muted">30 sep 2026</td><td><button class="btn sm ghost" style="color:var(--danger)">Revocar</button></td></tr>
+        </tbody>
+      </table>
+      <button class="btn primary sm">＋ Crear token</button>
+      <p class="xs mut3 mt">Los tokens se almacenan hasheados. Si pierdes uno, revócalo y crea otro: no es posible recuperarlo.</p>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — token de 256 bits mostrado <b>una sola vez</b>; se guarda con Argon2id junto a un prefijo de 8 caracteres que sirve solo para identificarlo en la lista. Alcances de mínimo privilegio y caducidad obligatoria. Crear o revocar exige reautenticación reciente.</div>
+</section>
+
+<!-- ============ P-32 ============ -->
+<section class="screen" id="p32">
+  <header>
+    <h2><span class="id">P-32</span> Preferencias del editor</h2>
+    <p class="desc">Ajustes personales que se aplican a todos los proyectos del usuario.</p>
+    <div class="meta"><span class="tag">RF-043</span><span class="tag">RF-045</span></div>
+  </header>
+  <div class="frame">
+    <div class="layout side" style="grid-template-columns:1fr 1fr">
+      <div class="pane">
+        <div class="pane-body">
+          <div class="field"><label for="pe-t">Tema</label><div class="seg"><span>Claro</span><span class="on">Oscuro</span><span>Sistema</span></div></div>
+          <div class="field"><label for="pe-f">Tipografía</label><div class="select"><input class="input" id="pe-f" value="JetBrains Mono"></div></div>
+          <div class="grid c2">
+            <div class="field"><label for="pe-s">Tamaño</label><input class="input" id="pe-s" value="14 px"></div>
+            <div class="field"><label for="pe-h">Altura de línea</label><input class="input" id="pe-h" value="1,6"></div>
+          </div>
+          <div class="field"><label for="pe-k">Atajos de teclado</label><div class="seg"><span class="on">Estándar</span><span>Vim</span><span>Emacs</span></div></div>
+          <div class="field"><label for="pe-l">Idioma del corrector</label><div class="select"><input class="input" id="pe-l" value="Español (Ecuador)"></div></div>
+          <div class="row between mb"><span class="sm">Ajuste de línea</span><span class="toggle on"></span></div>
+          <div class="row between mb"><span class="sm">Autocompletado</span><span class="toggle on"></span></div>
+          <div class="row between mb"><span class="sm">Autocierre de llaves y entornos</span><span class="toggle on"></span></div>
+          <div class="row between mb"><span class="sm">Avisos de chktex</span><span class="toggle on"></span></div>
+          <div class="row between"><span class="sm">Mostrar números de línea</span><span class="toggle on"></span></div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head">Vista previa</div>
+        <div class="code">
+          <div class="l"><span class="k">\documentclass</span>{article}</div>
+          <div class="l"><span class="k">\begin</span>{document}</div>
+          <div class="l">  Hola, <span class="k">\textbf</span>{mundo}.</div>
+          <div class="l">  <span class="c">% comentario de ejemplo</span></div>
+          <div class="l"><span class="k">\end</span>{document}</div>
+        </div>
+        <div class="pane-body">
+          <b class="sm">Mi diccionario</b>
+          <div class="row wrap mt" style="gap:5px"><span class="tag">sandboxing</span><span class="tag">CRDT</span><span class="tag">Ambato</span><span class="tag">Yjs</span><span class="tag">gVisor</span></div>
+          <p class="xs mut3 mt">Tu diccionario personal es privado y no se comparte con terceros.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P-33 ============ -->
+<section class="screen" id="p33">
+  <header>
+    <h2><span class="id">P-33</span> Suscripción y plan</h2>
+    <p class="desc">Límites del plan actual y comparación. En el proyecto académico la facturación se simula en modo de pruebas.</p>
+    <div class="meta"><span class="tag">RF-130</span></div>
+  </header>
+  <div class="frame">
+    <div class="pane-body" style="max-width:760px">
+      <div class="card mb">
+        <div class="row between"><div><b>Plan Gratuito</b><p class="xs mut">Sin coste · sin tarjeta</p></div><button class="btn primary sm">Mejorar plan</button></div>
+        <div class="divider" style="margin:11px 0"></div>
+        <div class="grid c4 sm">
+          <div><b>Colaboradores</b><p class="xs mut">3 por proyecto</p></div>
+          <div><b>Compilación</b><p class="xs mut">60 s por documento</p></div>
+          <div><b>Historial</b><p class="xs mut">Últimas 24 h</p></div>
+          <div><b>Almacenamiento</b><p class="xs mut">184 MB de 1 GB</p></div>
+        </div>
+      </div>
+      <div class="grid c3">
+        <div class="card"><h4>Gratuito</h4><p class="mt"><b style="font-size:20px">0 $</b></p><ul class="sm mut" style="padding-left:17px"><li>3 colaboradores</li><li>60 s de compilación</li><li>Historial de 24 h</li><li>1 GB</li></ul><span class="tag ok mt">Tu plan actual</span></div>
+        <div class="card" style="border-color:var(--brand)"><h4>Individual</h4><p class="mt"><b style="font-size:20px">9 $</b><span class="xs mut">/mes</span></p><ul class="sm mut" style="padding-left:17px"><li>10 colaboradores</li><li>240 s de compilación</li><li>Historial completo</li><li>10 GB</li><li>GitHub y Dropbox</li></ul><button class="btn primary sm block mt">Elegir</button></div>
+        <div class="card"><h4>Grupo</h4><p class="mt"><b style="font-size:20px">6 $</b><span class="xs mut">/usuario/mes</span></p><ul class="sm mut" style="padding-left:17px"><li>Colaboradores ilimitados</li><li>SSO institucional</li><li>Plantillas privadas</li><li>Panel de administración</li></ul><button class="btn sm block mt">Contactar</button></div>
+      </div>
+      <div class="alert info mt"><span class="ic">🧪</span><div><strong>Entorno académico</strong>La pasarela de pago funciona en modo de pruebas: no se procesan cobros reales ni se almacenan datos de tarjeta.</div></div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — TeXGuard <b>no almacena datos de tarjeta</b>: el flujo se delega íntegramente en la pasarela y solo se guarda un identificador de cliente. Esto reduce drásticamente el alcance de cumplimiento.</div>
+</section>
+
+<!-- ============ P-34 ============ -->
+<section class="screen" id="p34">
+  <header>
+    <h2><span class="id">P-34</span> Mis datos y eliminación de cuenta</h2>
+    <p class="desc">Ejercicio de los derechos de acceso, portabilidad y supresión.</p>
+    <div class="meta"><span class="tag">RF-011</span><span class="tag">RNF-040</span><span class="tag">CU-07</span><span class="tag">CU-08</span></div>
+  </header>
+  <div class="frame">
+    <div class="pane-body" style="max-width:640px">
+      <div class="card mb">
+        <b>📥 Exportar mis datos</b>
+        <p class="xs mut">Incluye tus proyectos, archivos originales, comentarios, historial y datos de perfil, en formatos abiertos.</p>
+        <div class="row mt"><button class="btn sm primary">Solicitar exportación</button><span class="xs mut3">Última: 2 ago 2026</span></div>
+      </div>
+
+      <div class="card mb">
+        <b>📋 Qué datos guardamos sobre ti</b>
+        <table class="tbl mt">
+          <thead><tr><th>Dato</th><th>Finalidad</th><th>Retención</th></tr></thead>
+          <tbody>
+            <tr><td>Correo y nombre</td><td class="muted">Identificación</td><td class="muted">Hasta el borrado</td></tr>
+            <tr><td>Contenido de proyectos</td><td class="muted">Prestación del servicio</td><td class="muted">Hasta el borrado + 30 días</td></tr>
+            <tr><td>Dirección IP</td><td class="muted">Seguridad</td><td class="muted">90 días (anonimizada)</td></tr>
+            <tr><td>Registro de auditoría</td><td class="muted">Seguridad y obligación legal</td><td class="muted">2 años</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card" style="border-color:var(--danger)">
+        <b style="color:var(--danger)">🗑️ Eliminar mi cuenta</b>
+        <p class="xs mut">Se eliminarán tu perfil, tus proyectos y tus archivos. Se destruirán las claves con las que estaban cifrados, por lo que la recuperación será <b>imposible</b>, también desde copias de seguridad.</p>
+        <div class="alert warn mt"><span class="ic">⚠</span><div class="xs"><strong>Eres propietaria de 7 proyectos con colaboradores</strong>Transfiere su propiedad antes de continuar o se eliminarán para todos.</div></div>
+        <div class="field mt"><label for="del-c">Escribe <b>ELIMINAR MI CUENTA</b> para confirmar</label><input class="input" id="del-c" value=""></div>
+        <div class="field"><label for="del-p">Confirma con tu contraseña</label><input class="input" id="del-p" type="password" value=""></div>
+        <button class="btn danger">Eliminar definitivamente</button>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>La eliminación exige <b>reautenticación</b> y confirmación escrita (RS-006).</li>
+      <li>Purga en cascada más <i>crypto-shredding</i>: se destruyen las KEK de todos los proyectos propios (RS-045).</li>
+      <li>El registro de auditoría se conserva <b>anonimizado</b> por obligación legal: se sustituye el identificador de usuario, no se borra la cadena de hashes.</li>
+      <li>La exportación se entrega mediante un enlace firmado de un solo uso con caducidad de 1 hora (RF-011).</li>
+    </ul>
+  </div>
+</section>
+
+</div>
+<script src="assets/mockup.js"></script>
+</body>
+</html>
+</content>
+</invoke>

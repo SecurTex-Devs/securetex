@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeXGuard · 2 · Panel de proyectos</title>
+<link rel="stylesheet" href="assets/mockup.css">
+</head>
+<body>
+<div class="wrap">
+<h1 style="font-size:22px;margin:0 0 4px">2 · Panel de proyectos</h1>
+<p class="mut mb">Pantallas P-08 a P-13 · Requisitos RF-020 … RF-028 · Casos de uso CU-10 … CU-19</p>
+
+<!-- ============ P-08 ============ -->
+<section class="screen" id="p08">
+  <header>
+    <h2><span class="id">P-08</span> Lista de proyectos</h2>
+    <p class="desc">Pantalla principal tras iniciar sesión. Listado ordenable y buscable, con filtros por estado y etiqueta en la barra lateral. El rol del usuario en cada proyecto es visible sin abrirlo.</p>
+    <div class="meta"><span class="tag">RF-021</span><span class="tag">RF-022</span><span class="tag">CU-10</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://texguard.app/proyectos</div></div>
+    <div class="appbar">
+      <span class="brand">Tex<b>Guard</b></span>
+      <input class="input" style="max-width:280px" value="Buscar proyectos…">
+      <span class="spacer"></span>
+      <button class="btn sm primary">＋ Nuevo proyecto</button>
+      <span class="sm mut">🔔 3</span>
+      <span class="avatar">AT</span>
+    </div>
+    <div class="layout side">
+      <div class="pane sidebar">
+        <div class="group">Proyectos</div>
+        <div class="item active">📁 Todos <span class="count">12</span></div>
+        <div class="item">👤 Tuyos <span class="count">7</span></div>
+        <div class="item">👥 Compartidos contigo <span class="count">5</span></div>
+        <div class="item">📦 Archivados <span class="count">3</span></div>
+        <div class="item">🗑️ Papelera <span class="count">1</span></div>
+        <div class="group">Etiquetas</div>
+        <div class="item">🔵 Tesis <span class="count">3</span></div>
+        <div class="item">🟢 Artículos <span class="count">4</span></div>
+        <div class="item">🟡 Docencia <span class="count">2</span></div>
+        <div class="item mut3">＋ Nueva etiqueta</div>
+      </div>
+      <div class="pane">
+        <div class="pane-head">
+          <span class="check"><i></i></span>
+          <span>12 proyectos</span>
+          <span class="spacer"></span>
+          <span class="seg"><span class="on">Lista</span><span>Cuadrícula</span></span>
+        </div>
+        <table class="tbl">
+          <thead><tr><th style="width:22px"></th><th>Título ▲</th><th>Propietario</th><th>Colaboradores</th><th>Tu rol</th><th>Modificado</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="check"><i class="on"></i></span></td>
+              <td><b>Tesis · Detección de intrusiones</b><br><span class="tag brand">Tesis</span></td>
+              <td class="muted">Tú</td>
+              <td><span class="avatars"><span class="avatar sm">AT</span><span class="avatar sm u2">MR</span><span class="avatar sm u3">JC</span></span></td>
+              <td><span class="tag ok">Propietario</span></td>
+              <td class="muted">hace 4 min</td>
+              <td class="muted">⋯</td>
+            </tr>
+            <tr>
+              <td><span class="check"><i></i></span></td>
+              <td><b>Artículo IEEE · Sandboxing de compiladores</b><br><span class="tag">Artículos</span></td>
+              <td class="muted">M. Rodríguez</td>
+              <td><span class="avatars"><span class="avatar sm u2">MR</span><span class="avatar sm">AT</span></span></td>
+              <td><span class="tag brand">Editor</span></td>
+              <td class="muted">ayer</td>
+              <td class="muted">⋯</td>
+            </tr>
+            <tr>
+              <td><span class="check"><i></i></span></td>
+              <td><b>Revisión · Paper de criptografía post-cuántica</b></td>
+              <td class="muted">J. Cárdenas</td>
+              <td><span class="avatars"><span class="avatar sm u3">JC</span><span class="avatar sm">AT</span><span class="avatar sm u4">LP</span></span></td>
+              <td><span class="tag warn">Revisor</span></td>
+              <td class="muted">hace 3 días</td>
+              <td class="muted">⋯</td>
+            </tr>
+            <tr>
+              <td><span class="check"><i></i></span></td>
+              <td><b>Guía de laboratorio · Seguridad de Software</b><br><span class="tag">Docencia</span> <span class="tag sec">🔒 Confidencial</span></td>
+              <td class="muted">Tú</td>
+              <td><span class="avatars"><span class="avatar sm">AT</span></span></td>
+              <td><span class="tag ok">Propietario</span></td>
+              <td class="muted">hace 1 semana</td>
+              <td class="muted">⋯</td>
+            </tr>
+            <tr>
+              <td><span class="check"><i></i></span></td>
+              <td><b>Presentación · Defensa de tesis</b></td>
+              <td class="muted">Tú</td>
+              <td><span class="avatars"><span class="avatar sm">AT</span></span></td>
+              <td><span class="tag">Solo lectura</span></td>
+              <td class="muted">hace 2 semanas</td>
+              <td class="muted">⋯</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pane-body row between" style="border-top:1px solid var(--border)">
+          <span class="sm mut">1 seleccionado</span>
+          <span class="row"><button class="btn sm">Etiquetar</button><button class="btn sm">Archivar</button><button class="btn sm">Descargar .zip</button><button class="btn sm danger">Papelera</button></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>El listado se obtiene ya filtrado por el servidor. La <b>Row Level Security</b> de PostgreSQL garantiza que un fallo de la capa de aplicación no exponga proyectos ajenos (T-P01, RS-012).</li>
+      <li>Los identificadores en la URL son UUIDv7: no se pueden enumerar.</li>
+      <li>El rol mostrado es informativo; los permisos reales se comprueban en cada petición, no en el cliente (T-P03).</li>
+      <li>La insignia «Confidencial» indica un proyecto con enlaces públicos desactivados y MFA obligatoria (F-268).</li>
+    </ul>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — tabla con <code>&lt;th scope="col"&gt;</code> y ordenación anunciada con <code>aria-sort</code>; las acciones en lote se anuncian con <code>aria-live</code>; el rol es texto, no solo color.</div>
+</section>
+
+<!-- ============ P-09 ============ -->
+<section class="screen" id="p09">
+  <header>
+    <h2><span class="id">P-09</span> Panel vacío</h2>
+    <p class="desc">Primer acceso de un usuario recién verificado. El estado vacío guía hacia la primera acción útil en lugar de mostrar una tabla en blanco.</p>
+    <div class="meta"><span class="tag">RNF-030</span></div>
+  </header>
+  <div class="frame">
+    <div class="appbar"><span class="brand">Tex<b>Guard</b></span><span class="spacer"></span><button class="btn sm primary">＋ Nuevo proyecto</button><span class="avatar">AT</span></div>
+    <div style="padding:48px 30px;text-align:center">
+      <div style="font-size:40px">📄</div>
+      <h2 style="margin:10px 0 6px;font-size:19px">Aún no tienes proyectos</h2>
+      <p class="mut sm" style="max-width:48ch;margin:0 auto 20px">Crea uno en blanco, empieza desde una plantilla o sube un <code>.zip</code> que ya tengas.</p>
+      <div class="grid c3" style="max-width:660px;margin:0 auto;text-align:left">
+        <div class="card"><h4>📝 En blanco</h4><p>Un documento mínimo listo para compilar.</p><button class="btn sm primary mt">Crear</button></div>
+        <div class="card"><h4>📚 Desde plantilla</h4><p>Artículos, tesis, CV, pósteres y presentaciones.</p><button class="btn sm mt">Ver galería</button></div>
+        <div class="card"><h4>📦 Subir .zip</h4><p>Importa un proyecto existente con sus archivos.</p><button class="btn sm mt">Subir</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P-10 ============ -->
+<section class="screen" id="p10">
+  <header>
+    <h2><span class="id">P-10</span> Nuevo proyecto</h2>
+    <p class="desc">Menú de creación con las cuatro vías: en blanco, desde plantilla, desde <code>.zip</code> y desde un repositorio de GitHub.</p>
+    <div class="meta"><span class="tag">RF-020</span><span class="tag">CU-10</span><span class="tag">CU-11</span></div>
+  </header>
+  <div class="frame">
+    <div class="modal-bg">
+      <div class="modal">
+        <div class="modal-head"><h3>Nuevo proyecto</h3><span class="x">✕</span></div>
+        <div class="modal-body">
+          <div class="field"><label for="np-name">Nombre del proyecto</label><input class="input" id="np-name" value="Tesis · Detección de intrusiones"></div>
+          <label class="sm b mut" style="display:block;margin-bottom:6px">Punto de partida</label>
+          <div class="col" style="gap:8px">
+            <div class="card row" style="padding:11px;gap:11px;border-color:var(--brand)"><span style="font-size:18px">📝</span><div><h4>Documento en blanco</h4><p>Un <code>main.tex</code> mínimo</p></div><span class="spacer"></span><span class="tag brand">✓</span></div>
+            <div class="card row" style="padding:11px;gap:11px"><span style="font-size:18px">📚</span><div><h4>Desde plantilla</h4><p>Elegir en la galería</p></div></div>
+            <div class="card row" style="padding:11px;gap:11px"><span style="font-size:18px">📦</span><div><h4>Subir un .zip</h4><p>Máximo 100 MB y 500 archivos</p></div></div>
+            <div class="card row" style="padding:11px;gap:11px"><span style="font-size:18px">🐙</span><div><h4>Importar de GitHub</h4><p>Requiere vincular la cuenta</p></div></div>
+          </div>
+          <div class="grid c2 mt">
+            <div class="field" style="margin:0"><label for="np-comp">Compilador</label><div class="select"><input class="input" id="np-comp" value="pdfLaTeX"></div></div>
+            <div class="field" style="margin:0"><label for="np-tl">TeX Live</label><div class="select"><input class="input" id="np-tl" value="2025"></div></div>
+          </div>
+        </div>
+        <div class="modal-foot"><button class="btn">Cancelar</button><button class="btn primary">Crear proyecto</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — diálogo con <code>role="dialog"</code>, <code>aria-modal="true"</code> y foco atrapado; <kbd>Esc</kbd> cierra; al cerrarse, el foco vuelve al botón que lo abrió.</div>
+</section>
+
+<!-- ============ P-11 ============ -->
+<section class="screen" id="p11">
+  <header>
+    <h2><span class="id">P-11</span> Importar proyecto</h2>
+    <p class="desc">Subida de un archivo comprimido con validación previa. Se muestra el resultado del análisis antes de crear el proyecto.</p>
+    <div class="meta"><span class="tag">RF-020</span><span class="tag sec">T-F02</span><span class="tag sec">T-F05</span></div>
+  </header>
+  <div class="frame">
+    <div class="modal-bg">
+      <div class="modal" style="max-width:520px">
+        <div class="modal-head"><h3>Importar desde .zip</h3><span class="x">✕</span></div>
+        <div class="modal-body">
+          <div style="border:2px dashed var(--border-strong);border-radius:var(--radius);padding:26px;text-align:center">
+            <div style="font-size:26px">📦</div>
+            <p class="sm mut" style="margin:6px 0 0">Arrastra tu archivo aquí o <u>selecciónalo</u></p>
+            <p class="xs mut3" style="margin:4px 0 0">Máximo 100 MB · 500 archivos · solo .zip</p>
+          </div>
+          <div class="card mt">
+            <div class="row between"><b class="sm">tesis-antigua.zip</b><span class="sm mut">18,4 MB</span></div>
+            <div class="bar mt"><i style="width:100%"></i></div>
+            <div class="col mt" style="gap:5px">
+              <span class="sm"><span class="tag ok">✓</span> 47 archivos · sin rutas fuera del directorio</span>
+              <span class="sm"><span class="tag ok">✓</span> Ratio de compresión dentro de lo normal</span>
+              <span class="sm"><span class="tag ok">✓</span> Análisis antimalware superado</span>
+              <span class="sm"><span class="tag warn">!</span> 2 archivos omitidos: enlaces simbólicos no permitidos</span>
+            </div>
+          </div>
+          <div class="alert info mt"><span class="ic">ℹ</span><div>Documento principal detectado: <code>main.tex</code>. Podrás cambiarlo después.</div></div>
+        </div>
+        <div class="modal-foot"><button class="btn">Cancelar</button><button class="btn primary">Importar 45 archivos</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li><b>Zip-slip:</b> cada entrada se normaliza y se rechaza si contiene rutas absolutas, <code>..</code> o enlaces simbólicos (T-F02).</li>
+      <li><b>Zip-bomb:</b> se limitan el tamaño descomprimido, el ratio de compresión y el número de entradas (T-C05).</li>
+      <li>Cada archivo se analiza con ClamAV antes de estar disponible; hasta entonces no es descargable ni compilable (T-F05, <i>fail closed</i>).</li>
+      <li>El tipo real se detecta por <i>magic bytes</i>, nunca por la extensión.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ P-12 ============ -->
+<section class="screen" id="p12">
+  <header>
+    <h2><span class="id">P-12</span> Gestión de etiquetas</h2>
+    <p class="desc">Las etiquetas son privadas de cada usuario: dos colaboradores del mismo proyecto pueden organizarlo de forma distinta sin afectarse.</p>
+    <div class="meta"><span class="tag">RF-022</span></div>
+  </header>
+  <div class="frame">
+    <div class="modal-bg">
+      <div class="modal">
+        <div class="modal-head"><h3>Tus etiquetas</h3><span class="x">✕</span></div>
+        <div class="modal-body">
+          <div class="col" style="gap:8px">
+            <div class="row between"><span class="row"><span style="color:var(--u1)">●</span> Tesis <span class="tag">3</span></span><span class="row"><button class="btn sm ghost">Renombrar</button><button class="btn sm ghost">Eliminar</button></span></div>
+            <div class="row between"><span class="row"><span style="color:var(--u2)">●</span> Artículos <span class="tag">4</span></span><span class="row"><button class="btn sm ghost">Renombrar</button><button class="btn sm ghost">Eliminar</button></span></div>
+            <div class="row between"><span class="row"><span style="color:var(--u4)">●</span> Docencia <span class="tag">2</span></span><span class="row"><button class="btn sm ghost">Renombrar</button><button class="btn sm ghost">Eliminar</button></span></div>
+          </div>
+          <div class="divider"></div>
+          <div class="row"><input class="input" value="Nueva etiqueta…"><button class="btn primary">Añadir</button></div>
+          <p class="xs mut3 mt">Las etiquetas solo las ves tú. Eliminar una etiqueta no elimina los proyectos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P-13 ============ -->
+<section class="screen" id="p13">
+  <header>
+    <h2><span class="id">P-13</span> Papelera y archivados</h2>
+    <p class="desc">Los proyectos en papelera se purgan a los 30 días. El borrado definitivo destruye la clave de cifrado del proyecto: es irreversible por diseño.</p>
+    <div class="meta"><span class="tag">RF-023</span><span class="tag sec">RS-045</span></div>
+  </header>
+  <div class="frame">
+    <div class="appbar"><span class="brand">Tex<b>Guard</b></span><span class="spacer"></span><span class="avatar">AT</span></div>
+    <div class="layout side">
+      <div class="pane sidebar">
+        <div class="group">Proyectos</div>
+        <div class="item">📁 Todos <span class="count">12</span></div>
+        <div class="item">📦 Archivados <span class="count">3</span></div>
+        <div class="item active">🗑️ Papelera <span class="count">1</span></div>
+      </div>
+      <div class="pane">
+        <div class="pane-body">
+          <div class="alert warn mb"><span class="ic">🗑️</span><div><strong>Los proyectos en la papelera se eliminan automáticamente a los 30 días</strong>Después no se pueden recuperar: al borrarlos se destruye la clave con la que estaban cifrados.</div></div>
+          <table class="tbl">
+            <thead><tr><th>Título</th><th>Enviado a la papelera</th><th>Se elimina en</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><b>Borrador · Propuesta 2025</b></td>
+                <td class="muted">hace 4 días</td>
+                <td><span class="tag warn">26 días</span></td>
+                <td class="row"><button class="btn sm">Restaurar</button><button class="btn sm danger">Eliminar ya</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el borrado definitivo aplica <i>crypto-shredding</i>: se destruye la KEK del proyecto, lo que hace irrecuperables también las copias de seguridad ya escritas (RS-045). La acción exige confirmación escribiendo el nombre del proyecto.</div>
+</section>
+
+</div>
+<script src="assets/mockup.js"></script>
+</body>
+</html>
+</content>
+</invoke>

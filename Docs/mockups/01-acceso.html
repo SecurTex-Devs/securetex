@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeXGuard · 1 · Acceso e identidad</title>
+<link rel="stylesheet" href="assets/mockup.css">
+</head>
+<body>
+<div class="wrap">
+<h1 style="font-size:22px;margin:0 0 4px">1 · Acceso e identidad</h1>
+<p class="mut mb">Pantallas P-01 a P-07 · Requisitos RF-001 … RF-013 · Casos de uso CU-01, CU-02, CU-03</p>
+
+<!-- ============ P-01 ============ -->
+<section class="screen" id="p01">
+  <header>
+    <h2><span class="id">P-01</span> Portada pública</h2>
+    <p class="desc">Primera pantalla para un visitante sin sesión. Presenta el producto y ofrece las dos vías de entrada. Accesible sin autenticación, igual que la galería de plantillas.</p>
+    <div class="meta"><span class="tag">RF-110</span><span class="tag">Visitante</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://texguard.app</div></div>
+    <div class="appbar">
+      <span class="brand">Tex<b>Guard</b></span>
+      <span class="spacer"></span>
+      <span class="sm mut">Plantillas</span><span class="sm mut">Documentación</span>
+      <button class="btn sm">Iniciar sesión</button>
+      <button class="btn sm primary">Crear cuenta</button>
+    </div>
+    <div style="padding:44px 30px;text-align:center">
+      <h1 style="font-size:30px;letter-spacing:-.03em;margin:0 0 10px">Escribe LaTeX en equipo.<br>Sin ceder el control de tu trabajo.</h1>
+      <p class="mut" style="max-width:56ch;margin:0 auto 22px">Editor colaborativo en tiempo real con compilación aislada, cifrado por proyecto y autenticación resistente al phishing.</p>
+      <div class="row" style="justify-content:center">
+        <button class="btn primary">Empezar gratis</button>
+        <button class="btn">Ver plantillas</button>
+      </div>
+      <div class="grid c3 mt2" style="text-align:left;max-width:820px;margin:32px auto 0">
+        <div class="card"><h4>🔐 Compilación aislada</h4><p>Cada compilación se ejecuta en un contenedor efímero, sin red y con kernel independiente.</p></div>
+        <div class="card"><h4>👥 Colaboración real</h4><p>Edición simultánea sin pérdida de cambios, cursores en vivo y control de cambios.</p></div>
+        <div class="card"><h4>🗝️ Cifrado por proyecto</h4><p>Tus documentos se cifran con una clave propia. Al borrarlos, se destruye la clave.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — sin sesión, esta página no realiza ninguna petición autenticada. La cabecera <code>Content-Security-Policy</code> con <i>nonce</i> ya está activa aquí (RS-023).</div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — enlace «Saltar al contenido» como primer elemento enfocable; jerarquía de encabezados <code>h1 → h2</code>; contraste mínimo 4.5:1 en todo el texto.</div>
+</section>
+
+<!-- ============ P-02 ============ -->
+<section class="screen" id="p02">
+  <header>
+    <h2><span class="id">P-02</span> Registro</h2>
+    <p class="desc">Alta con correo y contraseña, o con un proveedor de identidad. La fortaleza de la contraseña se evalúa en vivo y se contrasta contra corpus de filtraciones mediante k-anonimato.</p>
+    <div class="meta"><span class="tag">RF-001</span><span class="tag">RF-010</span><span class="tag sec">RS-001</span><span class="tag">CU-01</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://texguard.app/registro</div></div>
+    <div class="center">
+      <h2 style="text-align:center;margin:0 0 4px;font-size:20px">Crear cuenta</h2>
+      <p class="mut sm" style="text-align:center;margin:0 0 20px">Gratis para siempre. Sin tarjeta.</p>
+
+      <button class="btn oauth"><span>🔵</span> Continuar con Google</button>
+      <button class="btn oauth mt"><span>🟦</span> Continuar con Microsoft</button>
+      <button class="btn oauth mt"><span>🟩</span> Continuar con ORCID</button>
+      <div class="or">o con tu correo</div>
+
+      <div class="field">
+        <label for="r-mail">Correo electrónico</label>
+        <input class="input" id="r-mail" value="ana.torres@uta.edu.ec">
+      </div>
+      <div class="field">
+        <label for="r-pass">Contraseña</label>
+        <input class="input" id="r-pass" type="password" value="••••••••••••••••">
+        <div class="bar mt" style="margin-top:6px"><i style="width:82%;background:var(--ok)"></i></div>
+        <div class="hint ok">Fortaleza: buena · 16 caracteres</div>
+        <div class="hint">Mínimo 12 caracteres. Se comprueba contra contraseñas filtradas sin enviar la tuya.</div>
+      </div>
+      <div class="check mb"><i class="on"></i><span>Acepto los <u>términos</u> y la <u>política de privacidad</u></span></div>
+      <button class="btn primary block">Crear cuenta</button>
+      <p class="sm mut mt" style="text-align:center">¿Ya tienes cuenta? <u>Inicia sesión</u></p>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>La contraseña nunca sale del servidor: a HIBP solo viaja el prefijo SHA-1 de 5 caracteres (RF-010).</li>
+      <li>Respuesta y tiempo <b>idénticos</b> exista o no el correo, para impedir enumeración de usuarios (T-A09).</li>
+      <li>CAPTCHA adaptativo tras varios intentos; límite de 5 registros por hora e IP.</li>
+      <li>Hash Argon2id con m=64 MiB, t=3, p=4 (RS-001). El <i>rate limit</i> se aplica <b>antes</b> del hashing (T-A10).</li>
+    </ul>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — cada campo con <code>&lt;label for&gt;</code>; la fortaleza se anuncia con <code>aria-live="polite"</code>; los errores se asocian con <code>aria-describedby</code>; los botones de proveedor dicen su nombre, no solo el icono.</div>
+</section>
+
+<!-- ============ P-03 ============ -->
+<section class="screen" id="p03">
+  <header>
+    <h2><span class="id">P-03</span> Verificación de correo</h2>
+    <p class="desc">Estado intermedio tras el registro. La cuenta existe pero no puede crear proyectos hasta verificar. El enlace caduca a las 24 horas y es de un solo uso.</p>
+    <div class="meta"><span class="tag">RF-001</span><span class="tag">CU-01</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://texguard.app/verificar</div></div>
+    <div class="center" style="text-align:center">
+      <div style="font-size:38px">📧</div>
+      <h2 style="margin:8px 0 6px;font-size:19px">Revisa tu correo</h2>
+      <p class="mut sm">Si <b>ana.torres@uta.edu.ec</b> corresponde a una cuenta nueva, te hemos enviado un enlace de verificación. Caduca en 24 horas.</p>
+      <div class="alert warn mt" style="text-align:left">
+        <span class="ic">⏳</span>
+        <div><strong>Aún no puedes crear proyectos</strong>Verifica tu correo para desbloquear la cuenta.</div>
+      </div>
+      <button class="btn mt block">Reenviar enlace</button>
+      <p class="xs mut3 mt">Podrás reenviarlo de nuevo en 04:52</p>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el mensaje es deliberadamente ambiguo («si corresponde a una cuenta nueva»). Si el correo ya estaba registrado, se envía en su lugar un aviso al titular real: «alguien intentó registrarse con tu correo». El token se guarda <b>hasheado</b>; reenviar invalida el anterior.</div>
+</section>
+
+<!-- ============ P-04 ============ -->
+<section class="screen" id="p04">
+  <header>
+    <h2><span class="id">P-04</span> Inicio de sesión</h2>
+    <p class="desc">Acceso con contraseña o con proveedor federado. Incluye la vía de SSO institucional para universidades con acuerdo.</p>
+    <div class="meta"><span class="tag">RF-002</span><span class="tag">RF-003</span><span class="tag">RF-004</span><span class="tag sec">RS-002</span><span class="tag">CU-02</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://texguard.app/entrar</div></div>
+    <div class="center">
+      <h2 style="text-align:center;margin:0 0 20px;font-size:20px">Iniciar sesión</h2>
+      <button class="btn oauth"><span>🔵</span> Continuar con Google</button>
+      <button class="btn oauth mt"><span>🟦</span> Continuar con Microsoft</button>
+      <button class="btn oauth mt"><span>🏛️</span> Acceso institucional (SSO)</button>
+      <div class="or">o</div>
+      <div class="field"><label for="l-mail">Correo</label><input class="input" id="l-mail" value="ana.torres@uta.edu.ec"></div>
+      <div class="field"><label for="l-pass">Contraseña</label><input class="input" id="l-pass" type="password" value="••••••••••••"></div>
+      <div class="row between mb">
+        <span class="check"><i></i><span class="sm">No cerrar sesión</span></span>
+        <span class="sm"><u>¿Olvidaste tu contraseña?</u></span>
+      </div>
+      <button class="btn primary block">Entrar</button>
+      <div class="alert danger mt">
+        <span class="ic">⚠</span>
+        <div><strong>Credenciales incorrectas</strong>Te quedan 3 intentos antes de un bloqueo temporal de 15 minutos.</div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>El mensaje de error nunca distingue entre «correo inexistente» y «contraseña incorrecta».</li>
+      <li>Límite de 10 intentos por cuenta cada 15 minutos y detección de rociado de contraseñas por IP (T-A01).</li>
+      <li>Tras autenticar se <b>regenera el identificador de sesión</b> para evitar fijación (T-A04).</li>
+      <li>Cookie <code>__Host-sid</code>: <code>HttpOnly</code>, <code>Secure</code>, <code>SameSite=Lax</code>. Nunca hay tokens en <code>localStorage</code> (T-A03).</li>
+    </ul>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — el error recibe el foco y se anuncia con <code>role="alert"</code>; el contador de intentos restantes es texto real, no solo color.</div>
+</section>
+
+<!-- ============ P-05 ============ -->
+<section class="screen" id="p05">
+  <header>
+    <h2><span class="id">P-05</span> Segundo factor</h2>
+    <p class="desc">Se solicita si el usuario tiene MFA activa o si el motor de riesgo detecta una circunstancia inusual (nueva ubicación, dispositivo desconocido, geovelocidad imposible).</p>
+    <div class="meta"><span class="tag">RF-006</span><span class="tag sec">RS-005</span><span class="tag">CU-02</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://texguard.app/mfa</div></div>
+    <div class="center">
+      <h2 style="text-align:center;margin:0 0 4px;font-size:19px">Verificación en dos pasos</h2>
+      <p class="mut sm" style="text-align:center;margin:0 0 18px">Inicio de sesión desde una ubicación nueva</p>
+      <button class="btn oauth primary" style="justify-content:center"><span>🔑</span> Usar mi passkey</button>
+      <div class="or">o introduce un código</div>
+      <div class="field">
+        <label for="mfa-code">Código de tu aplicación autenticadora</label>
+        <input class="input" id="mfa-code" style="letter-spacing:.5em;text-align:center;font-family:var(--mono)" value="· · · · · ·">
+      </div>
+      <button class="btn primary block">Verificar</button>
+      <p class="sm mut mt" style="text-align:center"><u>Usar un código de respaldo</u></p>
+      <div class="alert info mt">
+        <span class="ic">📍</span>
+        <div><strong>Intento desde Quito, Ecuador</strong>Chrome en Windows · hoy a las 10:32. Si no eres tú, cambia tu contraseña.</div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — la <b>passkey (WebAuthn)</b> se ofrece en primer lugar porque está vinculada al origen y es resistente al phishing (T-A02). Máximo 3 intentos de TOTP en 10 minutos. Los códigos de respaldo son de un solo uso. Se notifica al usuario todo acceso desde una ubicación nueva.</div>
+</section>
+
+<!-- ============ P-06 ============ -->
+<section class="screen" id="p06">
+  <header>
+    <h2><span class="id">P-06</span> Recuperar contraseña</h2>
+    <p class="desc">Solicitud del enlace de restablecimiento. La respuesta es siempre la misma exista o no la cuenta.</p>
+    <div class="meta"><span class="tag">RF-007</span><span class="tag">CU-01</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://texguard.app/recuperar</div></div>
+    <div class="center">
+      <h2 style="text-align:center;margin:0 0 4px;font-size:19px">Recuperar el acceso</h2>
+      <p class="mut sm" style="text-align:center;margin:0 0 18px">Te enviaremos un enlace válido durante 30 minutos.</p>
+      <div class="field"><label for="rec-mail">Correo de la cuenta</label><input class="input" id="rec-mail" value="ana.torres@uta.edu.ec"></div>
+      <button class="btn primary block">Enviar enlace</button>
+      <div class="alert ok mt">
+        <span class="ic">✓</span>
+        <div><strong>Solicitud recibida</strong>Si existe una cuenta con ese correo, recibirás un enlace en unos minutos. Revisa también la carpeta de correo no deseado.</div>
+      </div>
+      <p class="sm mut mt" style="text-align:center"><u>Volver al inicio de sesión</u></p>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — respuesta y tiempo constantes (T-A09). El token dura 30 minutos, es de un solo uso y se guarda hasheado. Solicitar uno nuevo invalida el anterior. Límite: 3 solicitudes por hora y correo.</div>
+</section>
+
+<!-- ============ P-07 ============ -->
+<section class="screen" id="p07">
+  <header>
+    <h2><span class="id">P-07</span> Establecer nueva contraseña</h2>
+    <p class="desc">Pantalla a la que lleva el enlace del correo. Al completarse se cierran todas las demás sesiones del usuario.</p>
+    <div class="meta"><span class="tag">RF-007</span><span class="tag sec">RS-001</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://texguard.app/nueva-contrasena?token=•••</div></div>
+    <div class="center">
+      <h2 style="text-align:center;margin:0 0 18px;font-size:19px">Nueva contraseña</h2>
+      <div class="field">
+        <label for="np1">Contraseña</label>
+        <input class="input" id="np1" type="password" value="••••••••••••••">
+        <div class="bar" style="margin-top:6px"><i style="width:45%;background:var(--warn)"></i></div>
+        <div class="hint error">Esta contraseña aparece en filtraciones conocidas. Elige otra.</div>
+      </div>
+      <div class="field"><label for="np2">Repetir contraseña</label><input class="input" id="np2" type="password" value="••••••••••••••"></div>
+      <div class="alert warn mb">
+        <span class="ic">🔓</span>
+        <div><strong>Se cerrarán tus otras sesiones</strong>Por seguridad, todos los dispositivos deberán iniciar sesión de nuevo.</div>
+      </div>
+      <button class="btn primary block">Guardar contraseña</button>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el cambio de contraseña <b>revoca todas las sesiones y refresh tokens</b> del usuario (RS-002). El token del enlace se consume de forma atómica: un segundo uso devuelve error genérico y genera un evento de auditoría.</div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — el requisito incumplido se anuncia con <code>aria-live</code>; el botón permanece habilitado y explica el motivo al pulsarlo, en lugar de deshabilitarse sin explicación.</div>
+</section>
+
+</div>
+<script src="assets/mockup.js"></script>
+</body>
+</html>
+</content>
+</invoke>
