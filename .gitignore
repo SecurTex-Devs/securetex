@@ -1,0 +1,54 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+build/
+.next/
+target/
+*.tsbuildinfo
+
+# Entorno y secretos — NUNCA se versionan
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+vault-keys.json
+
+# Pruebas y cobertura
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+
+# Registros y temporales
+*.log
+npm-debug.log*
+tmp/
+.cache/
+
+# Datos locales de desarrollo
+docker/data/
+postgres-data/
+minio-data/
+
+# Editores y sistema operativo
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Artefactos de compilación LaTeX de las pruebas
+*.aux
+*.bbl
+*.blg
+*.synctex.gz
+*.out
