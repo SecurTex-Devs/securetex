@@ -1,6 +1,6 @@
 # 07 — Estrategia de Pruebas del Frontend
 
-> **Repositorio:** `texguard-frontend`
+> **Repositorio:** `securtex-frontend`
 > **Herramientas:** Vitest · Testing Library · Playwright · axe-core · Lighthouse CI · MSW
 > **Versión:** 1.0
 
@@ -173,7 +173,7 @@ test('ningún token queda accesible desde JavaScript', async ({ page }) => {
 
   for (const contenido of Object.values(almacenamiento)) {
     expect(contenido).not.toMatch(/eyJ[A-Za-z0-9_-]{10,}/);  // JWT
-    expect(contenido).not.toMatch(/tgd_[A-Za-z0-9]{16,}/);   // token de aplicación
+    expect(contenido).not.toMatch(/stx_[A-Za-z0-9]{16,}/);   // token de aplicación
   }
   expect(page.url()).not.toContain('token');
 });
@@ -214,4 +214,4 @@ test('ningún token queda accesible desde JavaScript', async ({ page }) => {
 - [01-Arquitectura-Frontend.md](01-Arquitectura-Frontend.md)
 - [02-Seguridad-en-el-Cliente.md](02-Seguridad-en-el-Cliente.md)
 - [06-Accesibilidad-e-i18n.md](06-Accesibilidad-e-i18n.md)
-- [`texguard-docs` · 12-DevSecOps-y-Testing](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/12-DevSecOps-y-Testing.md)
+- [`securtex-docs` · 12-DevSecOps-y-Testing](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/12-DevSecOps-y-Testing.md)

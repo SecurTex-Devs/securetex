@@ -1,6 +1,6 @@
 # 04 — Interfaces y Mockups
 
-> **Repositorio:** `texguard-frontend`
+> **Repositorio:** `securtex-frontend`
 > **Prototipo navegable:** [`mockups/index.html`](mockups/index.html) — ábrelo con doble clic, no necesita servidor ni dependencias
 > **Versión:** 1.0
 
@@ -203,5 +203,5 @@ El objetivo en móvil no es escribir una tesis: es **revisar, comentar y compila
 - [03-Sistema-de-Diseno.md](03-Sistema-de-Diseno.md) — tokens, componentes y estados
 - [08-Criptografia-en-el-Cliente.md](08-Criptografia-en-el-Cliente.md) — lo que implementan las pantallas P-48 a P-50
 - [06-Accesibilidad-e-i18n.md](06-Accesibilidad-e-i18n.md) — criterios WCAG y traducción
-- [`texguard-docs` · 02-Requisitos](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/02-Requisitos.md)
-- [`texguard-docs` · 07-Casos-de-Uso](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/07-Casos-de-Uso.md)
+- [`securtex-docs` · 02-Requisitos](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/02-Requisitos.md)
+- [`securtex-docs` · 07-Casos-de-Uso](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/07-Casos-de-Uso.md)

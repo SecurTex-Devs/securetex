@@ -1,4 +1,4 @@
-/* TeXGuard · prototipo de mockups
+/* SecurTex · prototipo de mockups
    Inyecta la barra de navegación común, el conmutador de tema y el de anotaciones. */
 
 const PAGINAS = [

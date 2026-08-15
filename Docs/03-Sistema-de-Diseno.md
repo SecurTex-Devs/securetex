@@ -1,6 +1,6 @@
 # 03 — Sistema de Diseño
 
-> **Repositorio:** `texguard-frontend`
+> **Repositorio:** `securtex-frontend`
 > **Base:** Tailwind CSS 4 + Radix UI primitives + tokens propios
 > **Versión:** 1.0
 

@@ -1,4 +1,4 @@
-# Cómo contribuir · texguard-frontend
+# Cómo contribuir · securtex-frontend
 
 ## 1. Antes de escribir código
 

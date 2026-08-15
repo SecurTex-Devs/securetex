@@ -1,6 +1,6 @@
-# texguard-frontend
+# securtex-frontend
 
-Frontend de **TeXGuard**, editor LaTeX colaborativo seguro: aplicación web, editor de código, visor PDF, colaboración en tiempo real y sistema de diseño.
+Frontend de **SecurTex**, editor LaTeX colaborativo seguro: aplicación web, editor de código, visor PDF, colaboración en tiempo real y sistema de diseño.
 
 > Proyecto final de la asignatura *Seguridad de Software* · Universidad Técnica de Ambato
 > **Estado: planificación aprobada, implementación pendiente (Sprint 0).**
@@ -39,7 +39,7 @@ Incluye las 50 pantallas del producto en 8 grupos, con sus estados, sus anotacio
 | [Docs/07-Testing-Frontend.md](Docs/07-Testing-Frontend.md) | Estrategia de pruebas |
 | [Docs/08-Criptografia-en-el-Cliente.md](Docs/08-Criptografia-en-el-Cliente.md) | **Capas C1, C2 y C5**: cifrado al guardar, sobre de envío y descifrado |
 | [AGENTS.md](AGENTS.md) | **Instrucciones obligatorias para agentes de IA** |
-| [`texguard-docs`](https://github.com/SecurTex-Devs/securtex-docs) | Requisitos, arquitectura general, modelo de amenazas, plan |
+| [`securtex-docs`](https://github.com/SecurTex-Devs/securtex-docs) | Requisitos, arquitectura general, modelo de amenazas, plan |
 
 ---
 
@@ -64,7 +64,7 @@ Incluye las 50 pantallas del producto en 8 grupos, con sus estados, sus anotacio
 
 ```bash
 git clone https://github.com/SecurTex-Devs/securtex-frontend.git
-cd texguard-frontend
+cd securtex-frontend
 cp .env.example .env.local
 pnpm install
 pnpm api:sync      # genera los tipos desde el contrato del backend

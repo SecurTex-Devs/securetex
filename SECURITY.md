@@ -6,7 +6,7 @@ Si encuentras una vulnerabilidad, comunícala **de forma privada**. No abras un 
 
 | | |
 |---|---|
-| **Contacto** | `security@texguard.app` o el asesor privado de GitHub de este repositorio |
+| **Contacto** | `security@securtex.app` o el asesor privado de GitHub de este repositorio |
 | **Acuse de recibo** | 72 horas |
 | **Evaluación inicial** | 7 días |
 | **Divulgación coordinada** | 90 días, o antes si el arreglo ya está publicado |
@@ -45,4 +45,4 @@ No emprenderemos acciones legales contra investigación de buena fe que no acced
 
 ## Modelo de amenazas
 
-El modelo completo (61 amenazas STRIDE con sus controles y riesgo residual) está en [`texguard-docs` · 05-Seguridad](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/05-Seguridad.md).
+El modelo completo (61 amenazas STRIDE con sus controles y riesgo residual) está en [`securtex-docs` · 05-Seguridad](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/05-Seguridad.md).

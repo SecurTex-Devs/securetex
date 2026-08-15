@@ -1,6 +1,6 @@
 # 06 — Accesibilidad e Internacionalización
 
-> **Repositorio:** `texguard-frontend`
+> **Repositorio:** `securtex-frontend`
 > **Objetivo:** WCAG 2.2 nivel AA verificado, no declarado
 > **Versión:** 1.0
 
@@ -8,7 +8,7 @@
 
 ## 1. Por qué es un requisito y no una mejora
 
-TeXGuard es una herramienta académica: si un estudiante con discapacidad visual no puede escribir su tesis con ella, el producto ha fallado en su función. Además, `RF-142` lo exige y el CI lo verifica: **una violación crítica de accesibilidad bloquea el merge**, igual que un fallo de seguridad.
+SecurTex es una herramienta académica: si un estudiante con discapacidad visual no puede escribir su tesis con ella, el producto ha fallado en su función. Además, `RF-142` lo exige y el CI lo verifica: **una violación crítica de accesibilidad bloquea el merge**, igual que un fallo de seguridad.
 
 ---
 
@@ -16,7 +16,7 @@ TeXGuard es una herramienta académica: si un estudiante con discapacidad visual
 
 ### 2.1 Perceptible
 
-| Criterio | Aplicación en TeXGuard |
+| Criterio | Aplicación en SecurTex |
 |---|---|
 | 1.1.1 Contenido no textual | Todo icono funcional lleva `aria-label`; los decorativos, `aria-hidden`. Las vistas previas de plantilla llevan descripción |
 | 1.3.1 Información y relaciones | Encabezados jerárquicos reales; tablas con `<th scope>`; formularios con `<label for>` |

@@ -221,7 +221,7 @@ Antes de dar por terminado un cambio: `pnpm lint && pnpm typecheck && pnpm test 
 | No sabes si algo compromete la seguridad | **Asume que sí.** Pregunta antes de implementarlo |
 | Necesitas una dependencia nueva | Justifícala en el PR: alternativas, mantenimiento, tamaño, dependencias transitivas |
 | El diseño de una pantalla no está definido | Añádela primero a los mockups y acuérdala; no improvises en el código |
-| Falta un endpoint en el backend | Ábrelo como *issue* en `texguard-backend`; no simules la respuesta en producción |
+| Falta un endpoint en el backend | Ábrelo como *issue* en `securtex-backend`; no simules la respuesta en producción |
 | El contrato de la API te bloquea | Coordina el PR con el del backend; nunca escribas el tipo a mano |
 | Falta información (una medida, un texto) | Márcalo como `⚠️ POR DEFINIR`. **No inventes valores** |
 

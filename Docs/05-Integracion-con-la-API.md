@@ -1,7 +1,7 @@
 # 05 — Integración con la API
 
-> **Repositorio:** `texguard-frontend`
-> **Contrato:** generado por `texguard-backend`; este repositorio lo **consume**, nunca lo define
+> **Repositorio:** `securtex-frontend`
+> **Contrato:** generado por `securtex-backend`; este repositorio lo **consume**, nunca lo define
 > **Versión:** 1.0
 
 ---
@@ -10,8 +10,8 @@
 
 ```mermaid
 graph LR
-    A["texguard-backend<br/>DTO + decoradores NestJS"] -->|genera| B["contracts/openapi.json<br/>versionado en git"]
-    B -->|openapi-typescript| C["texguard-frontend<br/>src/shared/api/generated.ts"]
+    A["securtex-backend<br/>DTO + decoradores NestJS"] -->|genera| B["contracts/openapi.json<br/>versionado en git"]
+    B -->|openapi-typescript| C["securtex-frontend<br/>src/shared/api/generated.ts"]
     C --> D["Hooks de TanStack Query<br/>tipados de extremo a extremo"]
     B -->|asyncapi| E["Tipos del canal WebSocket"]
     D --> F["Componentes"]
@@ -151,7 +151,7 @@ sequenceDiagram
 Todas las descargas usan **URL prefirmadas de vida corta (≤ 5 min)** servidas desde el origen de contenido, no desde el origen de la aplicación:
 
 ```
-https://contenido.texguard.app/o/{objeto}?X-Amz-Signature=...
+https://contenido.securtex.app/o/{objeto}?X-Amz-Signature=...
 ```
 
 El cliente pide la URL al backend en el momento de la descarga; **nunca** guarda ni cachea la URL firmada.
@@ -175,4 +175,4 @@ El cliente pide la URL al backend en el momento de la descarga; **nunca** guarda
 
 - [01-Arquitectura-Frontend.md](01-Arquitectura-Frontend.md)
 - [02-Seguridad-en-el-Cliente.md](02-Seguridad-en-el-Cliente.md)
-- [`texguard-backend` · API y endpoints](https://github.com/SecurTex-Devs/securtex-backend/blob/main/Docs/01-API-y-Documentacion-de-Endpoints.md)
+- [`securtex-backend` · API y endpoints](https://github.com/SecurTex-Devs/securtex-backend/blob/main/Docs/01-API-y-Documentacion-de-Endpoints.md)

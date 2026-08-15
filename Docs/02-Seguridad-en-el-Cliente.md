@@ -1,6 +1,6 @@
 # 02 — Seguridad en el Cliente
 
-> **Repositorio:** `texguard-frontend`
+> **Repositorio:** `securtex-frontend`
 > **Premisa:** el navegador está bajo control del usuario. El frontend **no puede** proteger datos frente a su propio usuario; su trabajo es no crear vulnerabilidades y no filtrar lo que el servidor confía.
 
 ---
@@ -70,9 +70,9 @@ Generada por el middleware de Next.js con un **nonce por petición**:
 default-src 'none';
 script-src 'nonce-{ALEATORIO}' 'strict-dynamic';
 style-src 'self';
-img-src 'self' https://contenido.texguard.app data: blob:;
+img-src 'self' https://contenido.securtex.app data: blob:;
 font-src 'self';
-connect-src 'self' https://api.texguard.app wss://collab.texguard.app;
+connect-src 'self' https://api.securtex.app wss://collab.securtex.app;
 worker-src 'self' blob:;
 frame-ancestors 'none';
 base-uri 'none';
@@ -141,7 +141,7 @@ const documento = await pdfjs.getDocument({
 Además:
 
 - El renderizado ocurre en un **Web Worker**, aislado del hilo principal.
-- El PDF se sirve desde un **origen distinto** (`contenido.texguard.app`) con `Content-Disposition: attachment` y `nosniff` (RS-025).
+- El PDF se sirve desde un **origen distinto** (`contenido.securtex.app`) con `Content-Disposition: attachment` y `nosniff` (RS-025).
 - Los enlaces del PDF pasan por `safeUrl()` antes de activarse.
 - Los adjuntos incrustados no se ofrecen para descarga.
 
@@ -197,4 +197,4 @@ e2e/security/
 
 - [01-Arquitectura-Frontend.md](01-Arquitectura-Frontend.md)
 - [`../AGENTS.md`](../AGENTS.md) — reglas obligatorias para quien escriba código aquí
-- [`texguard-docs` · 05-Seguridad](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/05-Seguridad.md)
+- [`securtex-docs` · 05-Seguridad](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/05-Seguridad.md)

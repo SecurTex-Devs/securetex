@@ -1,6 +1,6 @@
 # 01 — Arquitectura del Frontend
 
-> **Repositorio:** `texguard-frontend`
+> **Repositorio:** `securtex-frontend`
 > **Stack:** Next.js 15 · React 19 · TypeScript strict · CodeMirror 6 · Yjs · PDF.js · Tailwind 4 · Radix UI
 > **Versión:** 1.0
 
@@ -22,7 +22,7 @@
 ## 2. Estructura del repositorio
 
 ```
-texguard-frontend/
+securtex-frontend/
 ├── app/                          Rutas de Next.js (App Router)
 │   ├── (public)/                 Portada, plantillas, enlaces públicos
 │   ├── (auth)/                   Registro, login, MFA, recuperación
@@ -198,4 +198,4 @@ Nunca se escriben tipos de la API a mano. Si el backend cambia el contrato y el 
 - [02-Seguridad-en-el-Cliente.md](02-Seguridad-en-el-Cliente.md)
 - [03-Sistema-de-Diseno.md](03-Sistema-de-Diseno.md)
 - [04-Interfaces-y-Mockups.md](04-Interfaces-y-Mockups.md)
-- [`texguard-docs` · 03-Arquitectura](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/03-Arquitectura.md)
+- [`securtex-docs` · 03-Arquitectura](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/03-Arquitectura.md)
