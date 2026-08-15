@@ -175,4 +175,4 @@ El cliente pide la URL al backend en el momento de la descarga; **nunca** guarda
 
 - [01-Arquitectura-Frontend.md](01-Arquitectura-Frontend.md)
 - [02-Seguridad-en-el-Cliente.md](02-Seguridad-en-el-Cliente.md)
-- [`texguard-backend` · API y endpoints](https://github.com/texguard/texguard-backend/blob/main/Docs/01-API-y-Documentacion-de-Endpoints.md)
+- [`texguard-backend` · API y endpoints](https://github.com/SecurTex-Devs/securtex-backend/blob/main/Docs/01-API-y-Documentacion-de-Endpoints.md)

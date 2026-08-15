@@ -198,4 +198,4 @@ Nunca se escriben tipos de la API a mano. Si el backend cambia el contrato y el 
 - [02-Seguridad-en-el-Cliente.md](02-Seguridad-en-el-Cliente.md)
 - [03-Sistema-de-Diseno.md](03-Sistema-de-Diseno.md)
 - [04-Interfaces-y-Mockups.md](04-Interfaces-y-Mockups.md)
-- [`texguard-docs` · 03-Arquitectura](https://github.com/texguard/texguard-docs/blob/main/docs/03-Arquitectura.md)
+- [`texguard-docs` · 03-Arquitectura](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/03-Arquitectura.md)

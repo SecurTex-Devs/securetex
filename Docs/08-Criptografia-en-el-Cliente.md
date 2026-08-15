@@ -1,7 +1,7 @@
 # 08 — Criptografía en el Cliente
 
 > **Repositorio:** `texguard-frontend`
-> **Diseño completo de las cinco capas:** [`texguard-docs` · 14-Criptografia-Multicapa](https://github.com/texguard/texguard-docs/blob/main/docs/14-Criptografia-Multicapa.md)
+> **Diseño completo de las cinco capas:** [`texguard-docs` · 14-Criptografia-Multicapa](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/14-Criptografia-Multicapa.md)
 > Este documento describe **lo que implementa el navegador**: las capas C1, C2 y C5.
 > **Versión:** 1.0
 
@@ -358,4 +358,4 @@ El coste es despreciable frente a los segundos que tarda una compilación. **Nin
 - [02-Seguridad-en-el-Cliente.md](02-Seguridad-en-el-Cliente.md) — XSS, CSP, tokens y almacenamiento
 - [05-Integracion-con-la-API.md](05-Integracion-con-la-API.md) — dónde encaja el sobre C2 en las peticiones
 - [04-Interfaces-y-Mockups.md](04-Interfaces-y-Mockups.md) — pantallas P-48 a P-50
-- [`texguard-docs` · 14-Criptografia-Multicapa](https://github.com/texguard/texguard-docs/blob/main/docs/14-Criptografia-Multicapa.md) — diseño completo de las cinco capas
+- [`texguard-docs` · 14-Criptografia-Multicapa](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/14-Criptografia-Multicapa.md) — diseño completo de las cinco capas
