@@ -131,10 +131,10 @@ El repositorio especial `.github` con un `profile/README.md` muestra una portada
 
 | Equipo | `docs` | `backend` | `frontend` | `infra` |
 |---|---|---|---|---|
-| `@texguard/core` | Admin | Admin | Admin | Admin |
-| `@texguard/backend` | Escritura | Escritura | Lectura | Lectura |
-| `@texguard/frontend` | Escritura | Lectura | Escritura | Lectura |
-| `@texguard/docente` | Lectura | Lectura | Lectura | Lectura |
+| `@SecurTex-Devs/core` | Admin | Admin | Admin | Admin |
+| `@SecurTex-Devs/backend` | Escritura | Escritura | Lectura | Lectura |
+| `@SecurTex-Devs/frontend` | Escritura | Lectura | Escritura | Lectura |
+| `@SecurTex-Devs/docente` | Lectura | Lectura | Lectura | Lectura |
 
 ### 5.3 Protección de ramas (en los tres repositorios)
 

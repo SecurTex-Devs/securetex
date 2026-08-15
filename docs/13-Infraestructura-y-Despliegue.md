@@ -69,7 +69,7 @@ graph TB
 ### 2.1 Entorno local — un solo comando
 
 ```bash
-git clone https://github.com/texguard/texguard-backend.git
+git clone https://github.com/SecurTex-Devs/securtex-backend.git
 cd texguard-backend
 cp .env.example .env        # sin secretos reales; se generan al arrancar
 pnpm install

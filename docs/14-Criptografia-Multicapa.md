@@ -457,4 +457,4 @@ Por cada capa existe una prueba que **altera un bit** del criptograma, del nonce
 - [06-Modelo-de-Datos.md](06-Modelo-de-Datos.md) — columnas cifradas y jerarquía de claves
 - [ADR-0005](adr/ADR-0005-cifrado-sobre-envolvente-con-vault.md) — decisión original de envelope encryption
 - [ADR-0010](adr/ADR-0010-criptografia-multicapa-y-modo-e2ee.md) — decisión que amplía la anterior a cinco capas
-- [`texguard-frontend` · 08-Criptografia-en-el-Cliente](https://github.com/texguard/texguard-frontend/blob/main/Docs/08-Criptografia-en-el-Cliente.md)
+- [`texguard-frontend` · 08-Criptografia-en-el-Cliente](https://github.com/SecurTex-Devs/securtex-frontend/blob/main/Docs/08-Criptografia-en-el-Cliente.md)

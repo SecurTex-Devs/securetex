@@ -8,7 +8,7 @@
 
 | Documento | Ubicación |
 |---|---|
-| Estrategia de documentación de la API, comparación de herramientas y catálogo completo de endpoints | [`texguard-backend/Docs/01-API-y-Documentacion-de-Endpoints.md`](https://github.com/texguard/texguard-backend/blob/main/Docs/01-API-y-Documentacion-de-Endpoints.md) |
+| Estrategia de documentación de la API, comparación de herramientas y catálogo completo de endpoints | [`texguard-backend/Docs/01-API-y-Documentacion-de-Endpoints.md`](https://github.com/SecurTex-Devs/securtex-backend/blob/main/Docs/01-API-y-Documentacion-de-Endpoints.md) |
 | Contrato OpenAPI 3.1 generado | `texguard-backend/contracts/openapi.json` |
 | Contrato AsyncAPI 3.0 (WebSockets y eventos) | `texguard-backend/contracts/asyncapi.yaml` |
 | Contratos gRPC internos | `texguard-backend/contracts/proto/` |

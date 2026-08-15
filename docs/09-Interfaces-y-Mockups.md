@@ -8,11 +8,11 @@
 
 | Documento | Ubicación |
 |---|---|
-| Diseño de interfaces, inventario de pantallas y mockups | [`texguard-frontend/Docs/04-Interfaces-y-Mockups.md`](https://github.com/texguard/texguard-frontend/blob/main/Docs/04-Interfaces-y-Mockups.md) |
-| Prototipo HTML navegable de todas las pantallas | [`texguard-frontend/Docs/mockups/index.html`](https://github.com/texguard/texguard-frontend/blob/main/Docs/mockups/index.html) |
-| Sistema de diseño (colores, tipografía, componentes, estados) | [`texguard-frontend/Docs/03-Sistema-de-Diseno.md`](https://github.com/texguard/texguard-frontend/blob/main/Docs/03-Sistema-de-Diseno.md) |
-| Accesibilidad e internacionalización | [`texguard-frontend/Docs/06-Accesibilidad-e-i18n.md`](https://github.com/texguard/texguard-frontend/blob/main/Docs/06-Accesibilidad-e-i18n.md) |
-| Criptografía en el cliente (capas C1, C2 y C5) | [`texguard-frontend/Docs/08-Criptografia-en-el-Cliente.md`](https://github.com/texguard/texguard-frontend/blob/main/Docs/08-Criptografia-en-el-Cliente.md) |
+| Diseño de interfaces, inventario de pantallas y mockups | [`texguard-frontend/Docs/04-Interfaces-y-Mockups.md`](https://github.com/SecurTex-Devs/securtex-frontend/blob/main/Docs/04-Interfaces-y-Mockups.md) |
+| Prototipo HTML navegable de todas las pantallas | [`texguard-frontend/Docs/mockups/index.html`](https://github.com/SecurTex-Devs/securtex-frontend/blob/main/Docs/mockups/index.html) |
+| Sistema de diseño (colores, tipografía, componentes, estados) | [`texguard-frontend/Docs/03-Sistema-de-Diseno.md`](https://github.com/SecurTex-Devs/securtex-frontend/blob/main/Docs/03-Sistema-de-Diseno.md) |
+| Accesibilidad e internacionalización | [`texguard-frontend/Docs/06-Accesibilidad-e-i18n.md`](https://github.com/SecurTex-Devs/securtex-frontend/blob/main/Docs/06-Accesibilidad-e-i18n.md) |
+| Criptografía en el cliente (capas C1, C2 y C5) | [`texguard-frontend/Docs/08-Criptografia-en-el-Cliente.md`](https://github.com/SecurTex-Devs/securtex-frontend/blob/main/Docs/08-Criptografia-en-el-Cliente.md) |
 
 ---
 
