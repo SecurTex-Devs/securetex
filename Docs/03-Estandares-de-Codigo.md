@@ -74,6 +74,9 @@ El *hook* de pre-commit y el CI bloquean estos patrones:
 | `==` para comparar secretos | `crypto.timingSafeEqual` |
 | `rejectUnauthorized: false`, `verify: false` | Nunca |
 | `-shell-escape`, `shell_escape=t` | Nunca, bajo ninguna circunstancia |
+| Descifrar antes de verificar el HMAC o la etiqueta | Verificar primero, siempre (RS-075) |
+| AES-GCM para envolver claves | Usa AES-256-KW: determinista y sin nonce (RS-074) |
+| César, Vigenère, ROT13, XOR fijo, ECB, CBC sin MAC | Sin garantías frente a un adversario real (RS-081) |
 | `catch {}` vacío | Registra o relanza; jamás silencies |
 | `console.log` | El logger estructurado con redacción |
 | `process.env.X` disperso por el código | Configuración validada y centralizada |
@@ -136,14 +139,19 @@ try {
 
 **Regla número uno: no implementes criptografía.** Usa `packages/security`, que envuelve las primitivas aprobadas.
 
-| Uso | Primitiva |
-|---|---|
-| Contraseñas y tokens de API | Argon2id (m=64 MiB, t=3, p=4) |
-| Cifrado de contenido | AES-256-GCM con nonce aleatorio de 96 bits y AAD |
-| Firma de tokens internos | Ed25519 |
-| Aleatoriedad | `crypto.randomBytes` |
-| Comparación | `crypto.timingSafeEqual` |
-| Hash de integridad | SHA-256 |
+| Uso | Primitiva | Capa |
+|---|---|---|
+| Contraseñas y tokens de API | Argon2id (m=64 MiB, t=3, p=4) | — |
+| Apertura del sobre de transporte | X25519 + HKDF-SHA-256 + ChaCha20-Poly1305 | C2 |
+| Envoltura de claves (KEK, DEK) | **AES-256-KW** (RFC 3394) — nunca GCM | C3 |
+| Cifrado de contenido | AES-256-GCM, nonce de 96 bits, AAD `projectId ‖ fileId ‖ version` | C3 |
+| Columnas PII en PostgreSQL | AES-256-CBC + HMAC-SHA-256 (encrypt-then-MAC) | C3 |
+| Búsqueda sin descifrar | HMAC-SHA-256 truncado (índice ciego) — **nunca cifrado determinista** | C3 |
+| Integridad al recuperar | HMAC-SHA-256, verificado **antes** de descifrar | C4 |
+| Firma de artefactos y tokens internos | Ed25519 | C4 |
+| Aleatoriedad | `crypto.randomBytes` | — |
+| Comparación de secretos | `crypto.timingSafeEqual` | — |
+| Hash de integridad | SHA-256 | — |
 
 Toda operación de cifrado pasa por Vault Transit: **la clave maestra nunca está en el proceso**.
 
@@ -298,5 +306,3 @@ Plantilla de PR — se responde siempre:
 - [`../AGENTS.md`](../AGENTS.md) — versión operativa de estas reglas para agentes de IA
 - [02-Arquitectura-del-Backend.md](02-Arquitectura-del-Backend.md)
 - [`texguard-docs` · 12-DevSecOps-y-Testing](https://github.com/texguard/texguard-docs/blob/main/docs/12-DevSecOps-y-Testing.md)
-</content>
-</invoke>

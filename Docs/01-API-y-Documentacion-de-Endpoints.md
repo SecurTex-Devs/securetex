@@ -512,5 +512,3 @@ pnpm docs:build            # Sitio estático Redocly + AsyncAPI para publicar
 - [02-Requisitos](https://github.com/texguard/texguard-docs/blob/main/docs/02-Requisitos.md) — requisitos que cada endpoint implementa
 - [05-Seguridad](https://github.com/texguard/texguard-docs/blob/main/docs/05-Seguridad.md) — controles aplicados en la capa de API
 - [07-Casos-de-Uso](https://github.com/texguard/texguard-docs/blob/main/docs/07-Casos-de-Uso.md) — flujos que estos endpoints componen
-</content>
-</invoke>

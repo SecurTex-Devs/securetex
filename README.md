@@ -118,5 +118,3 @@ Ver [CONTRIBUTING.md](CONTRIBUTING.md). Ramas protegidas, commits firmados, una 
 ## Seguridad
 
 ¿Has encontrado una vulnerabilidad? [SECURITY.md](SECURITY.md). No abras un *issue* público.
-</content>
-</invoke>
