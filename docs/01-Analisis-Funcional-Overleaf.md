@@ -1,7 +1,7 @@
 # 01 — Análisis Funcional Exhaustivo de Overleaf
 
 > **Documento:** Inventario completo de funcionalidades de la plataforma de referencia
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Versión:** 1.0
 > **Estado:** Propuesta para revisión
 

@@ -2,11 +2,11 @@
 
 ## Divulgación responsable
 
-Si encuentras una vulnerabilidad en TeXGuard —en el código, en la infraestructura o en un fallo de diseño descrito en esta documentación— comunícala de forma privada.
+Si encuentras una vulnerabilidad en SecurTex —en el código, en la infraestructura o en un fallo de diseño descrito en esta documentación— comunícala de forma privada.
 
 | | |
 |---|---|
-| **Contacto** | `security@texguard.app` (o el asesor privado de GitHub del repositorio afectado) |
+| **Contacto** | `security@securtex.app` (o el asesor privado de GitHub del repositorio afectado) |
 | **Clave PGP** | Publicada en `/.well-known/security.txt` |
 | **Plazo de acuse de recibo** | 72 horas |
 | **Plazo de evaluación inicial** | 7 días |
@@ -53,4 +53,4 @@ No emprenderemos acciones legales contra investigación de buena fe que:
 
 ## Este repositorio
 
-`texguard-docs` no contiene código ejecutable. Si detectas en la documentación un **fallo de diseño** —un control ausente, una amenaza no modelada, una decisión insegura— abre un *issue* normal etiquetado `seguridad/diseño`: eso sí es discusión pública y bienvenida.
+`securtex-docs` no contiene código ejecutable. Si detectas en la documentación un **fallo de diseño** —un control ausente, una amenaza no modelada, una decisión insegura— abre un *issue* normal etiquetado `seguridad/diseño`: eso sí es discusión pública y bienvenida.

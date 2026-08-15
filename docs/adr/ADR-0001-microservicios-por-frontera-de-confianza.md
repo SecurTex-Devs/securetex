@@ -7,7 +7,7 @@
 
 ## Contexto
 
-TeXGuard ejecuta código arbitrario (LaTeX) suministrado por usuarios anónimos, gestiona credenciales y almacena contenido académico no publicado. La forma en que se descompone el sistema determina el **radio de explosión** de un compromiso.
+SecurTex ejecuta código arbitrario (LaTeX) suministrado por usuarios anónimos, gestiona credenciales y almacena contenido académico no publicado. La forma en que se descompone el sistema determina el **radio de explosión** de un compromiso.
 
 Las descomposiciones habituales —por entidad de negocio, por equipo, por conveniencia de despliegue— optimizan la velocidad de desarrollo, no la contención de daños.
 

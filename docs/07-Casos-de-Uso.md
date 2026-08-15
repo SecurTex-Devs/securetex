@@ -1,6 +1,6 @@
 # 07 — Casos de Uso y Casos de Abuso
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Notación:** UML 2.5 (diagramas de casos de uso) + plantilla de Cockburn para las especificaciones
 > **Versión:** 1.0
 
@@ -53,7 +53,7 @@ graph LR
     IDP(("🔗 IdP"))
     SC(("⚙️ Compilador"))
 
-    subgraph SISTEMA["TeXGuard"]
+    subgraph SISTEMA["SecurTex"]
         UC01(["CU-01 Registrarse"])
         UC02(["CU-02 Iniciar sesión con Google/Microsoft"])
         UC03(["CU-03 Configurar MFA"])

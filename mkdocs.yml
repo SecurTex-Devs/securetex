@@ -1,6 +1,6 @@
-site_name: TeXGuard · Documentación
+site_name: SecurTex · Documentación
 site_description: Editor LaTeX colaborativo seguro — documentación de planificación del proyecto
-site_author: Equipo TeXGuard
+site_author: Equipo SecurTex
 copyright: Universidad Técnica de Ambato · Seguridad de Software
 
 docs_dir: docs

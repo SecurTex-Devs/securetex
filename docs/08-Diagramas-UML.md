@@ -1,6 +1,6 @@
 # 08 — Diagramas UML
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Notación:** UML 2.5 · renderizado con Mermaid (compatible con la vista previa de GitHub)
 > **Versión:** 1.0
 

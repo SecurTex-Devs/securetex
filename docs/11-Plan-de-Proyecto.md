@@ -1,6 +1,6 @@
 # 11 — Plan de Proyecto
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Marco de trabajo:** Scrum adaptado + **Microsoft SDL** / **OWASP SAMM** integrados en cada sprint
 > **Versión:** 1.1
 
@@ -62,9 +62,9 @@ Diseñar, construir y verificar una plataforma web de edición colaborativa de d
 |---|---|---|
 | **Líder técnico / Arquitecto** | Arquitectura, ADR, coherencia entre repositorios | Documentos 03, 04, ADR |
 | **Responsable de seguridad** *(Security Champion)* | Modelado de amenazas, revisión de controles, pipeline de seguridad, pentest | Documentos 05, 12; informe de pentest |
-| **Desarrollador de backend** | Servicios, API, base de datos, orquestador de compilación | `texguard-backend` |
-| **Desarrollador de frontend** | SPA, editor, visor, accesibilidad | `texguard-frontend` |
-| **Responsable de infraestructura** | Contenedores, Kubernetes, IaC, observabilidad, copias | `texguard-infra`, documento 13 |
+| **Desarrollador de backend** | Servicios, API, base de datos, orquestador de compilación | `securtex-backend` |
+| **Desarrollador de frontend** | SPA, editor, visor, accesibilidad | `securtex-frontend` |
+| **Responsable de infraestructura** | Contenedores, Kubernetes, IaC, observabilidad, copias | `securtex-infra`, documento 13 |
 | **Responsable de calidad** | Estrategia de pruebas, cobertura, pruebas de abuso | Suite de pruebas, documento 12 |
 
 **Reglas de trabajo innegociables**
@@ -83,7 +83,7 @@ Diseñar, construir y verificar una plataforma web de edición colaborativa de d
 
 ```mermaid
 gantt
-    title TeXGuard · Cronograma por sprints
+    title SecurTex · Cronograma por sprints
     dateFormat YYYY-MM-DD
     axisFormat %d/%m
 
@@ -126,7 +126,7 @@ gantt
 | Modelo de datos | Documento 06 | — |
 | Casos de uso y de abuso | Documento 07 | — |
 | Diagramas UML | Documento 08 | — |
-| Mockups de todas las pantallas | `texguard-frontend/Docs` | RF-14x |
+| Mockups de todas las pantallas | `securtex-frontend/Docs` | RF-14x |
 | Organización de GitHub, 3 repos, equipos, protección de ramas | Repositorios operativos | — |
 | Monorepo por repositorio, linters, hooks, Docker Compose | `pnpm dev` levanta el entorno | RNF-021 |
 | **Pipeline de CI con todos los escáneres** | Workflows en verde | RS-061 |
@@ -380,9 +380,9 @@ Una historia está terminada cuando **todo** lo siguiente se cumple:
 
 | # | Entregable | Formato |
 |---|---|---|
-| E-1 | Documentación completa de planificación | 14 documentos + ADR, en `texguard-docs` |
-| E-2 | Código fuente del backend | Repositorio `texguard-backend` |
-| E-3 | Código fuente del frontend | Repositorio `texguard-frontend` |
+| E-1 | Documentación completa de planificación | 14 documentos + ADR, en `securtex-docs` |
+| E-2 | Código fuente del backend | Repositorio `securtex-backend` |
+| E-3 | Código fuente del frontend | Repositorio `securtex-frontend` |
 | E-4 | Documentación de la API | OpenAPI 3.1 + AsyncAPI 3.0 + portal navegable |
 | E-5 | Mockups de todas las pantallas | Documento + prototipo HTML navegable |
 | E-6 | Informe de modelado de amenazas | Documento 05 |

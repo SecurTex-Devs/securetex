@@ -1,6 +1,6 @@
 # 06 — Modelo de Datos
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Motor:** PostgreSQL 17 con Row Level Security
 > **Versión:** 1.0
 

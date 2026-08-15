@@ -1,6 +1,6 @@
-# texguard-docs
+# securtex-docs
 
-**Documentación de planificación del proyecto TeXGuard** — editor LaTeX colaborativo seguro.
+**Documentación de planificación del proyecto SecurTex** — editor LaTeX colaborativo seguro.
 
 > Proyecto final de la asignatura *Seguridad de Software* · Universidad Técnica de Ambato · 8.º semestre
 
@@ -22,8 +22,8 @@ docs/
 ├── 06-Modelo-de-Datos.md                 Entidad-relación, diccionario, RLS
 ├── 07-Casos-de-Uso.md                    Casos de uso y casos de abuso
 ├── 08-Diagramas-UML.md                   Clases, secuencia, actividad, estados, despliegue
-├── 09-Interfaces-y-Mockups.md            → apunta a texguard-frontend
-├── 10-API-y-Endpoints.md                 → apunta a texguard-backend
+├── 09-Interfaces-y-Mockups.md            → apunta a securtex-frontend
+├── 10-API-y-Endpoints.md                 → apunta a securtex-backend
 ├── 11-Plan-de-Proyecto.md                Roles, ceremonias, riesgos, DoD, entregables
 ├── 12-DevSecOps-y-Testing.md             Pipeline y estrategia de pruebas
 ├── 13-Infraestructura-y-Despliegue.md    Entornos, IaC, operación
@@ -39,9 +39,9 @@ docs/
 
 | Repositorio | Contenido |
 |---|---|
-| **texguard-docs** *(este)* | Documentación común y decisiones |
-| **texguard-backend** | API, servicios, orquestador de compilación, sandbox |
-| **texguard-frontend** | SPA, editor, visor PDF, sistema de diseño |
+| **securtex-docs** *(este)* | Documentación común y decisiones |
+| **securtex-backend** | API, servicios, orquestador de compilación, sandbox |
+| **securtex-frontend** | SPA, editor, visor PDF, sistema de diseño |
 
 El trabajo de los tres se planifica en un **GitHub Project (v2) de la organización**. Ver [00-Publicacion-de-la-Documentacion.md](docs/00-Publicacion-de-la-Documentacion.md).
 

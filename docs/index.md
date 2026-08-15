@@ -1,4 +1,4 @@
-# TeXGuard
+# SecurTex
 
 **Editor LaTeX colaborativo seguro** — Documentación de planificación del proyecto
 
@@ -7,7 +7,7 @@
 
 ---
 
-## Qué es TeXGuard
+## Qué es SecurTex
 
 Una plataforma web de edición colaborativa de documentos LaTeX **funcionalmente equivalente a Overleaf**, construida desde cero aplicando seguridad por diseño en cada capa.
 
@@ -54,8 +54,8 @@ El punto de partida técnico es incómodo y por eso interesante: **LaTeX es un l
 
 | # | Documento | Repositorio |
 |---|---|---|
-| 09 | [Interfaces y mockups](09-Interfaces-y-Mockups.md) | → `texguard-frontend` |
-| 10 | [API y endpoints](10-API-y-Endpoints.md) | → `texguard-backend` |
+| 09 | [Interfaces y mockups](09-Interfaces-y-Mockups.md) | → `securtex-frontend` |
+| 10 | [API y endpoints](10-API-y-Endpoints.md) | → `securtex-backend` |
 
 ### Ejecución
 
@@ -88,9 +88,9 @@ El punto de partida técnico es incómodo y por eso interesante: **LaTeX es un l
 
 | Repositorio | Qué contiene | Tecnología principal |
 |---|---|---|
-| **texguard-docs** *(este)* | Documentación común, ADR, plan de proyecto | Markdown + Mermaid + MkDocs |
-| **texguard-backend** | API REST, servicios, orquestador de compilación, sandbox | NestJS · Rust · PostgreSQL · Keycloak |
-| **texguard-frontend** | SPA, editor, visor PDF, sistema de diseño | Next.js · React · CodeMirror 6 · Yjs |
+| **securtex-docs** *(este)* | Documentación común, ADR, plan de proyecto | Markdown + Mermaid + MkDocs |
+| **securtex-backend** | API REST, servicios, orquestador de compilación, sandbox | NestJS · Rust · PostgreSQL · Keycloak |
+| **securtex-frontend** | SPA, editor, visor PDF, sistema de diseño | Next.js · React · CodeMirror 6 · Yjs |
 
 ---
 
@@ -100,8 +100,8 @@ El punto de partida técnico es incómodo y por eso interesante: **LaTeX es un l
 |---|---|
 | **Nuevo en el equipo** | **16** → 01 → 03 → 05 |
 | **Vas a decidir el alcance** | **16** completo, con la hoja de decisión del §21 |
-| **Desarrollador de backend** | 16 → 03 → 04 → 06 → 14 → `texguard-backend/AGENTS.md` |
-| **Desarrollador de frontend** | 16 → 03 → 09 → 14 → `texguard-frontend/AGENTS.md` |
+| **Desarrollador de backend** | 16 → 03 → 04 → 06 → 14 → `securtex-backend/AGENTS.md` |
+| **Desarrollador de frontend** | 16 → 03 → 09 → 14 → `securtex-frontend/AGENTS.md` |
 | **Responsable de seguridad** | 05 completo → **14** → 12 → 07 (casos de abuso) |
 | **Docente / evaluador** | 01 → 02 → 05 → 14 → 16 |
 | **Agente de IA** | El `AGENTS.md` del repositorio en el que vayas a trabajar, primero |

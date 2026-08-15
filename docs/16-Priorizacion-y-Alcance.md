@@ -415,7 +415,7 @@ Este documento no toma esa decisión por el equipo: la prepara. Cada funcionalid
 
 ```mermaid
 gantt
-    title TeXGuard · 10 semanas · Alcance B (recomendado)
+    title SecurTex · 10 semanas · Alcance B (recomendado)
     dateFormat YYYY-MM-DD
     axisFormat S%W
 

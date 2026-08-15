@@ -1,6 +1,6 @@
 # 03 — Arquitectura del Sistema
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Modelo de documentación:** C4 (Contexto → Contenedores → Componentes → Código) + vistas 4+1
 > **Versión:** 1.0
 
@@ -33,7 +33,7 @@ graph TB
         AUD["👤 Auditor de seguridad<br/>Consulta el registro forense"]
     end
 
-    TG["🖥️ <b>TeXGuard</b><br/>Plataforma web de edición<br/>colaborativa de LaTeX"]
+    TG["🖥️ <b>SecurTex</b><br/>Plataforma web de edición<br/>colaborativa de LaTeX"]
 
     subgraph "Sistemas externos"
         GOO["Google Identity<br/>OIDC"]

@@ -1,6 +1,6 @@
 # 05 — Arquitectura de Seguridad, Modelo de Amenazas y Controles
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Marcos aplicados:** STRIDE · OWASP Top 10 (2021) · OWASP ASVS 5.0 · OWASP SAMM · NIST SSDF (SP 800-218) · ISO/IEC 27001 Anexo A · MITRE ATT&CK
 > **Versión:** 1.0
 > **Este es el documento central de la asignatura.**
@@ -9,7 +9,7 @@
 
 ## 1. Resumen ejecutivo
 
-TeXGuard ejecuta, por diseño, **código arbitrario suministrado por usuarios anónimos**: LaTeX es un lenguaje Turing-completo con acceso al sistema de ficheros y capacidad de invocar procesos externos. Cualquier plataforma de este tipo es, en esencia, un servicio de ejecución remota de código voluntaria. La arquitectura de seguridad se organiza en torno a ese hecho.
+SecurTex ejecuta, por diseño, **código arbitrario suministrado por usuarios anónimos**: LaTeX es un lenguaje Turing-completo con acceso al sistema de ficheros y capacidad de invocar procesos externos. Cualquier plataforma de este tipo es, en esencia, un servicio de ejecución remota de código voluntaria. La arquitectura de seguridad se organiza en torno a ese hecho.
 
 **Las cinco amenazas de mayor riesgo residual y su tratamiento:**
 

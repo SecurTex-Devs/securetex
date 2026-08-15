@@ -1,6 +1,6 @@
 # 13 — Infraestructura y Despliegue
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Versión:** 1.0
 
 ---
@@ -70,7 +70,7 @@ graph TB
 
 ```bash
 git clone https://github.com/SecurTex-Devs/securtex-backend.git
-cd texguard-backend
+cd securtex-backend
 cp .env.example .env        # sin secretos reales; se generan al arrancar
 pnpm install
 pnpm dev                    # levanta todo el stack y siembra datos

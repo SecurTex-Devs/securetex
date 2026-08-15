@@ -2,13 +2,13 @@
 
 ## 1. Regla número uno
 
-**Un documento vive en un solo repositorio.** Nunca se copia contenido entre `texguard-docs`, `texguard-backend` y `texguard-frontend`. Si necesitas referenciar algo de otro repositorio, enlázalo.
+**Un documento vive en un solo repositorio.** Nunca se copia contenido entre `securtex-docs`, `securtex-backend` y `securtex-frontend`. Si necesitas referenciar algo de otro repositorio, enlázalo.
 
 | Si el contenido es… | Va en… |
 |---|---|
-| Común al sistema (requisitos, arquitectura, seguridad, datos, plan) | `texguard-docs` |
-| Específico de la API o de los servicios | `texguard-backend/Docs` |
-| Específico de la interfaz o del diseño | `texguard-frontend/Docs` |
+| Común al sistema (requisitos, arquitectura, seguridad, datos, plan) | `securtex-docs` |
+| Específico de la API o de los servicios | `securtex-backend/Docs` |
+| Específico de la interfaz o del diseño | `securtex-frontend/Docs` |
 
 ## 2. Flujo de trabajo
 

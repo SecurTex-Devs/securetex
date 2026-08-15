@@ -1,6 +1,6 @@
 # 14 — Glosario
 
-> Términos, acrónimos y decisiones de vocabulario del proyecto TeXGuard.
+> Términos, acrónimos y decisiones de vocabulario del proyecto SecurTex.
 
 ---
 
@@ -12,11 +12,11 @@
 | **Arquitectura hexagonal** | Patrón de puertos y adaptadores: el dominio no conoce la infraestructura. Permite sustituir base de datos, transporte o proveedor criptográfico sin tocar la lógica de negocio. |
 | **BFF** | *Backend For Frontend*. Capa que agrega y adapta los servicios internos a las necesidades del cliente. |
 | **C4** | Modelo de documentación de arquitectura en cuatro niveles: contexto, contenedores, componentes y código. |
-| **CRDT** | *Conflict-free Replicated Data Type*. Estructura de datos cuyas operaciones son conmutativas e idempotentes, de modo que todas las réplicas convergen sin coordinación central. Base de la edición colaborativa de TeXGuard (Yjs). |
-| **DTO** | *Data Transfer Object*. Objeto que define la forma exacta de una petición o respuesta; en TeXGuard es también la definición de validación y de documentación. |
+| **CRDT** | *Conflict-free Replicated Data Type*. Estructura de datos cuyas operaciones son conmutativas e idempotentes, de modo que todas las réplicas convergen sin coordinación central. Base de la edición colaborativa de SecurTex (Yjs). |
+| **DTO** | *Data Transfer Object*. Objeto que define la forma exacta de una petición o respuesta; en SecurTex es también la definición de validación y de documentación. |
 | **Objeto de valor** | Tipo del dominio que encapsula una regla de validación: si el objeto existe, el dato es válido. Ejemplo: `SafeFileName`, `Email`. |
-| **OT** | *Operational Transformation*. Algoritmo alternativo al CRDT para edición concurrente; descartado en TeXGuard (ver ADR-0004). |
-| **Monorepo** | Un repositorio con varios paquetes gestionados conjuntamente. TeXGuard usa un monorepo **dentro de cada** repositorio (backend y frontend), no entre ellos. |
+| **OT** | *Operational Transformation*. Algoritmo alternativo al CRDT para edición concurrente; descartado en SecurTex (ver ADR-0004). |
+| **Monorepo** | Un repositorio con varios paquetes gestionados conjuntamente. SecurTex usa un monorepo **dentro de cada** repositorio (backend y frontend), no entre ellos. |
 
 ---
 
@@ -28,7 +28,7 @@
 | **ASVS** | *Application Security Verification Standard* de OWASP. Catálogo de requisitos de seguridad verificables, en tres niveles. |
 | **Casos de abuso** | *Misuse cases*. Modelado del atacante como actor: qué quiere lograr y qué caso de uso legítimo amenaza. |
 | **Crypto-shredding** | Borrado definitivo de datos mediante la destrucción de la clave que los cifra, en lugar de (o además de) borrar los datos. |
-| **CSP** | *Content Security Policy*. Cabecera que restringe qué recursos puede cargar y ejecutar una página. En TeXGuard es estricta y basada en *nonce*. |
+| **CSP** | *Content Security Policy*. Cabecera que restringe qué recursos puede cargar y ejecutar una página. En SecurTex es estricta y basada en *nonce*. |
 | **Defensa en profundidad** | Múltiples controles independientes para la misma amenaza, de modo que el fallo de uno no implique compromiso. |
 | **Denegar por defecto** | Todo está prohibido salvo lo explícitamente permitido: rutas, puertos, *capabilities*, políticas. |
 | **DEK / KEK** | *Data Encryption Key* / *Key Encryption Key*. Clave que cifra los datos y clave que cifra a la anterior. Base del cifrado sobre envolvente. |
@@ -47,7 +47,7 @@
 | **SBOM** | *Software Bill of Materials*. Inventario firmado de todos los componentes de una versión. |
 | **Seccomp** | Mecanismo del kernel Linux que limita las llamadas al sistema que un proceso puede realizar. |
 | **Security Champion** | Persona del equipo con responsabilidad explícita sobre la seguridad del producto. |
-| **Shell escape** | Capacidad de LaTeX (`\write18`) de ejecutar comandos del sistema. **Deshabilitada de forma permanente e inviolable** en TeXGuard. |
+| **Shell escape** | Capacidad de LaTeX (`\write18`) de ejecutar comandos del sistema. **Deshabilitada de forma permanente e inviolable** en SecurTex. |
 | **SLSA** | *Supply-chain Levels for Software Artifacts*. Marco de niveles de garantía sobre la cadena de suministro. |
 | **SSRF** | *Server-Side Request Forgery*. Hacer que el servidor realice peticiones a destinos elegidos por el atacante. Amenaza de la función "crear archivo desde URL". |
 | **STRIDE** | Taxonomía de amenazas: *Spoofing*, *Tampering*, *Repudiation*, *Information disclosure*, *Denial of service*, *Elevation of privilege*. |
@@ -67,9 +67,9 @@
 | **LuaLaTeX** | Motor que embebe un intérprete Lua. Potente y, por lo mismo, un riesgo de seguridad: se ejecuta en modo restringido. |
 | **pdfLaTeX / XeLaTeX** | Motores de compilación. XeLaTeX admite fuentes del sistema y Unicode nativo. |
 | **SyncTeX** | Mecanismo que asocia cada posición del PDF con su línea del fuente, y viceversa. |
-| **TeX Live** | Distribución completa de TeX. TeXGuard embarca el esquema `full` para cubrir todos los comandos y paquetes. |
+| **TeX Live** | Distribución completa de TeX. SecurTex embarca el esquema `full` para cubrir todos los comandos y paquetes. |
 | **texcount** | Utilidad que cuenta palabras en un documento LaTeX ignorando el marcado. |
-| **`texmf.cnf`** | Fichero de configuración de la distribución TeX. En TeXGuard contiene los controles de seguridad no modificables por el usuario. |
+| **`texmf.cnf`** | Fichero de configuración de la distribución TeX. En SecurTex contiene los controles de seguridad no modificables por el usuario. |
 
 ---
 
@@ -81,7 +81,7 @@
 | **Control de cambios** | Modo en el que las modificaciones se registran como sugerencias con autoría, para ser aceptadas o rechazadas. |
 | **Documento principal** | Archivo `.tex` que se pasa al compilador; los demás se incluyen desde él. |
 | **Enlace de compartición** | Token que concede acceso a un proyecto sin invitación nominal. Revocable y regenerable. |
-| **Modo confidencial** | Modo de proyecto que desactiva enlaces públicos, exige MFA a todos los colaboradores y marca el PDF. Añadido de TeXGuard, no existe en Overleaf. |
+| **Modo confidencial** | Modo de proyecto que desactiva enlaces públicos, exige MFA a todos los colaboradores y marca el PDF. Añadido de SecurTex, no existe en Overleaf. |
 | **Modo visual** | Edición con formato enriquecido y matemáticas renderizadas, frente al modo código. |
 | **Plantilla** | Proyecto publicado para que otros lo usen como punto de partida. Es código que otros ejecutarán: se modera y se analiza. |
 | **Revisor** | Rol que puede comentar y sugerir, pero no modificar el documento aceptado. |

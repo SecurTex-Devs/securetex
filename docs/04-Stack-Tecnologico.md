@@ -1,6 +1,6 @@
 # 04 — Stack Tecnológico y Justificación de Seguridad
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Criterio rector:** *ante dos tecnologías con capacidad funcional equivalente, se elige la que ofrezca más garantías de seguridad **por defecto**, sin depender de que el desarrollador recuerde configurarlas.*
 
 ---
@@ -26,7 +26,7 @@ Puntuación mínima para ser aceptada: **7,5/10**.
 
 ```mermaid
 mindmap
-  root((TeXGuard))
+  root((SecurTex))
     Frontend
       Next.js 15 + React 19
       TypeScript strict
@@ -207,7 +207,7 @@ Hocuspocus es el servidor de referencia de Yjs: incluye ganchos de autenticació
 
 ### 6.1 **PostgreSQL 17**
 
-| Capacidad | Uso en TeXGuard |
+| Capacidad | Uso en SecurTex |
 |---|---|
 | **Row Level Security** | Segunda barrera de autorización: aunque un fallo de código omita la comprobación, la fila no es visible (RS-012) |
 | **Roles diferenciados por servicio** | Cada microservicio tiene un usuario con privilegios mínimos sobre sus tablas |
@@ -332,7 +332,7 @@ Cabeceras aplicadas en todas las respuestas:
 Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 Content-Security-Policy: default-src 'none'; script-src 'nonce-{RANDOM}' 'strict-dynamic';
   style-src 'self'; img-src 'self' data: blob:; font-src 'self';
-  connect-src 'self' wss://collab.texguard.app; frame-ancestors 'none';
+  connect-src 'self' wss://collab.securtex.app; frame-ancestors 'none';
   base-uri 'none'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
 X-Content-Type-Options: nosniff
 Referrer-Policy: strict-origin-when-cross-origin

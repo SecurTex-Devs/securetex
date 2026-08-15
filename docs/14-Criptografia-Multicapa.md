@@ -1,6 +1,6 @@
 # 14 — Criptografía Multicapa
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Alcance:** cinco capas de cifrado con **algoritmos distintos**, desde la pulsación de `Ctrl+S` hasta el descifrado de vuelta en el navegador
 > **Versión:** 1.0
 
@@ -141,7 +141,7 @@ export async function cifrarDocumento(
 ```mermaid
 graph LR
     PW["Contraseña del usuario<br/>(o extensión PRF de la passkey)"] -->|Argon2id<br/>m=64MiB t=3 p=4| MK["Clave maestra del usuario<br/>256 bits · solo en memoria"]
-    MK -->|HKDF-SHA-256<br/>info='texguard:identity:v1'| PRIV["Clave privada X25519<br/>del usuario"]
+    MK -->|HKDF-SHA-256<br/>info='securtex:identity:v1'| PRIV["Clave privada X25519<br/>del usuario"]
     DEK["DEK del documento<br/>generada aleatoriamente"] -->|se envuelve para| PRIV
     DEK -->|se envuelve para| SRV["Clave pública del<br/>servicio de compilación<br/>(solo en modo estándar)"]
     DEK -->|se envuelve para| COL["Clave pública de cada<br/>colaborador autorizado"]
@@ -183,7 +183,7 @@ En ámbar, los puntos donde el tráfico está **en claro dentro de la memoria de
 3. claveEnvoltura       ← HKDF-SHA-256(
                              ikm  = secretoCompartido,
                              salt = epk_pub ‖ clavePublicaDelServicio,
-                             info = "texguard:c2:v1:" ‖ projectId,
+                             info = "securtex:c2:v1:" ‖ projectId,
                              len  = 32)
 4. (dekEnvuelta, tag1)  ← ChaCha20-Poly1305(claveEnvoltura, nonce1, DEK, aad = contexto)
 5. (payload, tag2)      ← ChaCha20-Poly1305(claveEnvoltura, nonce2, bloqueC1, aad = contexto)
@@ -457,4 +457,4 @@ Por cada capa existe una prueba que **altera un bit** del criptograma, del nonce
 - [06-Modelo-de-Datos.md](06-Modelo-de-Datos.md) — columnas cifradas y jerarquía de claves
 - [ADR-0005](adr/ADR-0005-cifrado-sobre-envolvente-con-vault.md) — decisión original de envelope encryption
 - [ADR-0010](adr/ADR-0010-criptografia-multicapa-y-modo-e2ee.md) — decisión que amplía la anterior a cinco capas
-- [`texguard-frontend` · 08-Criptografia-en-el-Cliente](https://github.com/SecurTex-Devs/securtex-frontend/blob/main/Docs/08-Criptografia-en-el-Cliente.md)
+- [`securtex-frontend` · 08-Criptografia-en-el-Cliente](https://github.com/SecurTex-Devs/securtex-frontend/blob/main/Docs/08-Criptografia-en-el-Cliente.md)

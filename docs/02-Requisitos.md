@@ -1,7 +1,7 @@
 # 02 — Especificación de Requisitos de Software (ERS)
 
 > Basado en **IEEE 830 / ISO-IEC-IEEE 29148:2018**
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Versión:** 1.0
 
 ---
@@ -10,11 +10,11 @@
 
 ### 1.1 Propósito
 
-Especificar de forma verificable el comportamiento del sistema **TeXGuard**, una plataforma web de edición colaborativa de documentos LaTeX funcionalmente equivalente a Overleaf, construida con criterios de seguridad por diseño.
+Especificar de forma verificable el comportamiento del sistema **SecurTex**, una plataforma web de edición colaborativa de documentos LaTeX funcionalmente equivalente a Overleaf, construida con criterios de seguridad por diseño.
 
 ### 1.2 Alcance
 
-TeXGuard cubre las 222 funcionalidades inventariadas en [01-Analisis-Funcional-Overleaf.md](01-Analisis-Funcional-Overleaf.md). Queda **fuera de alcance**:
+SecurTex cubre las 222 funcionalidades inventariadas en [01-Analisis-Funcional-Overleaf.md](01-Analisis-Funcional-Overleaf.md). Queda **fuera de alcance**:
 
 - Pasarela de pago real (se implementa una simulación con Stripe en modo *test*).
 - Acuerdos comerciales con editoriales para el envío de manuscritos (se implementa el mecanismo técnico, no los convenios).
@@ -48,7 +48,7 @@ TeXGuard cubre las 222 funcionalidades inventariadas en [01-Analisis-Funcional-O
 
 ```mermaid
 graph LR
-    U[Usuario académico] -->|HTTPS| SYS[TeXGuard]
+    U[Usuario académico] -->|HTTPS| SYS[SecurTex]
     SYS -->|OIDC| G[Google Identity]
     SYS -->|OIDC| MS[Microsoft Entra ID]
     SYS -->|SAML 2.0| INST[IdP Institucional]

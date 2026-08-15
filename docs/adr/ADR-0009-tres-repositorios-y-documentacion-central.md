@@ -24,14 +24,14 @@ Una **organización de GitHub** con tres repositorios independientes:
 
 | Repositorio | Contenido |
 |---|---|
-| `texguard-docs` | Documentación común: análisis, requisitos, arquitectura, seguridad, datos, casos de uso, UML, plan, DevSecOps, infraestructura, ADR |
-| `texguard-backend` | Código del backend + su documentación específica (API y endpoints, estándares de backend) |
-| `texguard-frontend` | Código del frontend + su documentación específica (interfaces, mockups, sistema de diseño, accesibilidad) |
+| `securtex-docs` | Documentación común: análisis, requisitos, arquitectura, seguridad, datos, casos de uso, UML, plan, DevSecOps, infraestructura, ADR |
+| `securtex-backend` | Código del backend + su documentación específica (API y endpoints, estándares de backend) |
+| `securtex-frontend` | Código del frontend + su documentación específica (interfaces, mockups, sistema de diseño, accesibilidad) |
 
 Más:
 
 - Un **GitHub Project (v2) a nivel de organización** que agrupa los *issues* de los tres repositorios en un único tablero, con campos de sprint, módulo, requisito y riesgo de seguridad. Esto es el "proyecto grande con subproyectos".
-- Un sitio de documentación generado con **MkDocs Material** y publicado automáticamente desde `texguard-docs`.
+- Un sitio de documentación generado con **MkDocs Material** y publicado automáticamente desde `securtex-docs`.
 - Un repositorio `.github` con el perfil de la organización como portada.
 
 ## Reglas

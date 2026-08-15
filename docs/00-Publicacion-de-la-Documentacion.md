@@ -10,12 +10,12 @@
 
 ```mermaid
 graph TB
-    subgraph ORG["🏛️ Organización de GitHub · texguard"]
+    subgraph ORG["🏛️ Organización de GitHub · SecurTex-Devs"]
         direction TB
-        DOCS["📘 <b>texguard-docs</b><br/>Documentación común<br/>(fuente única de verdad)"]
-        BE["⚙️ <b>texguard-backend</b><br/>API, servicios, compilador<br/>+ su documentación técnica"]
-        FE["🎨 <b>texguard-frontend</b><br/>SPA, editor, visor PDF<br/>+ su documentación técnica"]
-        INFRA["🧱 <b>texguard-infra</b> (opcional)<br/>Terraform, Helm, políticas"]
+        DOCS["📘 <b>securtex-docs</b><br/>Documentación común<br/>(fuente única de verdad)"]
+        BE["⚙️ <b>securtex-backend</b><br/>API, servicios, compilador<br/>+ su documentación técnica"]
+        FE["🎨 <b>securtex-frontend</b><br/>SPA, editor, visor PDF<br/>+ su documentación técnica"]
+        INFRA["🧱 <b>securtex-infra</b> (opcional)<br/>Terraform, Helm, políticas"]
         PROJ["📋 <b>GitHub Project (v2)</b><br/>Tablero único que atraviesa<br/>los cuatro repositorios"]
     end
 
@@ -59,25 +59,25 @@ Sí existe lo que buscabas: **GitHub Projects (v2) a nivel de organización** es
 
 | Documento | Repositorio | Motivo |
 |---|---|---|
-| Análisis funcional de Overleaf | `texguard-docs` | Común a todo el sistema |
-| Especificación de requisitos | `texguard-docs` | Común |
-| Arquitectura general (C4) | `texguard-docs` | Común |
-| Stack tecnológico y su justificación | `texguard-docs` | Común |
-| Seguridad, modelo de amenazas y controles | `texguard-docs` | Común y transversal |
-| Modelo de datos | `texguard-docs` | Común (el frontend consume estas entidades) |
-| Casos de uso y casos de abuso | `texguard-docs` | Común |
-| Diagramas UML | `texguard-docs` | Común |
-| Plan de proyecto, sprints y roles | `texguard-docs` | Común |
-| DevSecOps y estrategia de pruebas | `texguard-docs` | Común, con detalles por repositorio |
-| Infraestructura y despliegue | `texguard-docs` | Común |
-| Glosario y ADR globales | `texguard-docs` | Común |
-| **API y documentación de endpoints** | `texguard-backend` | Se genera desde el código del backend |
-| Arquitectura interna de los servicios | `texguard-backend` | Específica |
-| Estándares de código de backend | `texguard-backend` | Específica |
-| **Interfaces, mockups y sistema de diseño** | `texguard-frontend` | Específica |
-| Arquitectura de componentes y estado | `texguard-frontend` | Específica |
-| Accesibilidad e internacionalización | `texguard-frontend` | Específica |
-| Estándares de código de frontend | `texguard-frontend` | Específica |
+| Análisis funcional de Overleaf | `securtex-docs` | Común a todo el sistema |
+| Especificación de requisitos | `securtex-docs` | Común |
+| Arquitectura general (C4) | `securtex-docs` | Común |
+| Stack tecnológico y su justificación | `securtex-docs` | Común |
+| Seguridad, modelo de amenazas y controles | `securtex-docs` | Común y transversal |
+| Modelo de datos | `securtex-docs` | Común (el frontend consume estas entidades) |
+| Casos de uso y casos de abuso | `securtex-docs` | Común |
+| Diagramas UML | `securtex-docs` | Común |
+| Plan de proyecto, sprints y roles | `securtex-docs` | Común |
+| DevSecOps y estrategia de pruebas | `securtex-docs` | Común, con detalles por repositorio |
+| Infraestructura y despliegue | `securtex-docs` | Común |
+| Glosario y ADR globales | `securtex-docs` | Común |
+| **API y documentación de endpoints** | `securtex-backend` | Se genera desde el código del backend |
+| Arquitectura interna de los servicios | `securtex-backend` | Específica |
+| Estándares de código de backend | `securtex-backend` | Específica |
+| **Interfaces, mockups y sistema de diseño** | `securtex-frontend` | Específica |
+| Arquitectura de componentes y estado | `securtex-frontend` | Específica |
+| Accesibilidad e internacionalización | `securtex-frontend` | Específica |
+| Estándares de código de frontend | `securtex-frontend` | Específica |
 
 **Regla de oro:** un documento vive en **un solo lugar**. Los demás repositorios lo **enlazan**, nunca lo copian. Un documento duplicado es un documento que se contradirá.
 
@@ -87,11 +87,11 @@ Sí existe lo que buscabas: **GitHub Projects (v2) a nivel de organización** es
 
 ### 4.1 Vía 1 — Leerla en GitHub (inmediata, sin configurar nada)
 
-GitHub renderiza Markdown y **diagramas Mermaid** de forma nativa. Basta con entrar en `texguard-docs/docs/` y navegar. Funciona en repositorios privados, para cualquiera con acceso.
+GitHub renderiza Markdown y **diagramas Mermaid** de forma nativa. Basta con entrar en `securtex-docs/docs/` y navegar. Funciona en repositorios privados, para cualquiera con acceso.
 
 ### 4.2 Vía 2 — Sitio web con MkDocs Material (profesional)
 
-`mkdocs.yml` en la raíz de `texguard-docs` genera un sitio con buscador, navegación lateral, modo oscuro, permalinks y diagramas renderizados. Se publica automáticamente en cada push a `main`.
+`mkdocs.yml` en la raíz de `securtex-docs` genera un sitio con buscador, navegación lateral, modo oscuro, permalinks y diagramas renderizados. Se publica automáticamente en cada push a `main`.
 
 ```bash
 pip install mkdocs-material mkdocs-mermaid2-plugin
@@ -103,7 +103,7 @@ mkdocs build      # genera el sitio estático en ./site
 
 | Escenario | Cómo |
 |---|---|
-| Repositorio **público** | GitHub Pages gratis: `https://<org>.github.io/texguard-docs` |
+| Repositorio **público** | GitHub Pages gratis: `https://<org>.github.io/securtex-docs` |
 | Repositorio **privado**, equipo pequeño | Leerla en GitHub (vía 1) o `mkdocs serve` en local |
 | Repositorio **privado** con sitio privado | Cloudflare Pages o Netlify con control de acceso, o GitHub Pages privado (requiere plan Enterprise) |
 
@@ -121,10 +121,10 @@ El repositorio especial `.github` con un `profile/README.md` muestra una portada
 
 | Repositorio | Visibilidad | Contenido |
 |---|---|---|
-| `texguard-docs` | Privado (público al entregar, si se quiere) | Documentación común + sitio MkDocs |
-| `texguard-backend` | Privado | API, servicios, orquestador de compilación |
-| `texguard-frontend` | Privado | SPA, editor, visor |
-| `texguard-infra` | Privado | Terraform, Helm, políticas (opcional; puede ir dentro de backend al inicio) |
+| `securtex-docs` | Privado (público al entregar, si se quiere) | Documentación común + sitio MkDocs |
+| `securtex-backend` | Privado | API, servicios, orquestador de compilación |
+| `securtex-frontend` | Privado | SPA, editor, visor |
+| `securtex-infra` | Privado | Terraform, Helm, políticas (opcional; puede ir dentro de backend al inicio) |
 | `.github` | Público | Portada de la organización y plantillas comunes |
 
 ### 5.2 Equipos y permisos (mínimo privilegio también aquí)
@@ -147,7 +147,7 @@ El repositorio especial `.github` con un `profile/README.md` muestra una portada
 
 ### 5.4 GitHub Project (v2) a nivel de organización
 
-Un único tablero llamado **TeXGuard — Plan de proyecto**:
+Un único tablero llamado **SecurTex — Plan de proyecto**:
 
 | Campo personalizado | Valores |
 |---|---|
@@ -166,7 +166,7 @@ Así se cumple lo que buscabas: **repositorios independientes, planificación un
 
 ## 6. Automatización
 
-### 6.1 Publicación del sitio (`texguard-docs/.github/workflows/docs.yml`)
+### 6.1 Publicación del sitio (`securtex-docs/.github/workflows/docs.yml`)
 
 Cada push a `main` que toque la documentación regenera y publica el sitio. Además valida:
 
@@ -176,7 +176,7 @@ Cada push a `main` que toque la documentación regenera y publica el sitio. Adem
 
 ### 6.2 Coherencia entre repositorios
 
-Un *workflow* semanal comprueba que los enlaces desde `texguard-backend` y `texguard-frontend` hacia `texguard-docs` sigan siendo válidos, y abre un *issue* automáticamente si alguno se rompe.
+Un *workflow* semanal comprueba que los enlaces desde `securtex-backend` y `securtex-frontend` hacia `securtex-docs` sigan siendo válidos, y abre un *issue* automáticamente si alguno se rompe.
 
 ---
 

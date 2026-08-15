@@ -1,6 +1,6 @@
 # 12 — DevSecOps y Estrategia de Pruebas
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro
 > **Marcos aplicados:** NIST SSDF (SP 800-218) · OWASP SAMM · Microsoft SDL · SLSA nivel 3
 > **Versión:** 1.0
 
@@ -34,7 +34,7 @@ graph LR
 | Control | Herramienta / práctica | Obligatoriedad |
 |---|---|---|
 | Modelado de amenazas de la épica | STRIDE sobre el diagrama de flujo de datos | Toda épica nueva |
-| Registro de la decisión | ADR en `texguard-docs/docs/adr/` | Toda decisión estructural |
+| Registro de la decisión | ADR en `securtex-docs/docs/adr/` | Toda decisión estructural |
 | Etiquetado de riesgo de la historia | Campo del tablero del proyecto | Toda historia |
 | Requisitos de seguridad de la historia | Checklist derivado de OWASP ASVS | Toda historia con riesgo ≥ medio |
 
@@ -346,7 +346,7 @@ graph LR
 
 ## 8. Trazabilidad NIST SSDF
 
-| Práctica SSDF | Implementación en TeXGuard |
+| Práctica SSDF | Implementación en SecurTex |
 |---|---|
 | **PO.1** Definir requisitos de seguridad | Documento 02 (`RS-*`), OWASP ASVS como línea base |
 | **PO.2** Roles y responsabilidades | Documento 11 §2; *Security Champion* designado |

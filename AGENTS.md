@@ -6,9 +6,9 @@
 
 ## 1. Qué es este repositorio
 
-`texguard-docs` es la **documentación de planificación** del proyecto TeXGuard, un editor LaTeX colaborativo seguro. **No contiene código de aplicación.**
+`securtex-docs` es la **documentación de planificación** del proyecto SecurTex, un editor LaTeX colaborativo seguro. **No contiene código de aplicación.**
 
-Los otros dos repositorios son `texguard-backend` y `texguard-frontend`, cada uno con su propio `AGENTS.md`.
+Los otros dos repositorios son `securtex-backend` y `securtex-frontend`, cada uno con su propio `AGENTS.md`.
 
 ---
 
@@ -79,7 +79,7 @@ Al crear un documento nuevo: usa el siguiente número libre, añádelo a `index.
 - ❌ Suavizar o eliminar advertencias de seguridad para que el texto "quede mejor"
 - ❌ Reescribir documentos completos cuando el cambio pedido es puntual
 - ❌ Cambiar la numeración de documentos existentes (rompe enlaces en los otros repositorios)
-- ❌ Crear código de aplicación aquí: va en `texguard-backend` o `texguard-frontend`
+- ❌ Crear código de aplicación aquí: va en `securtex-backend` o `securtex-frontend`
 - ❌ Prometer funcionalidades sin trazarlas a un `F-xxx` de [01-Analisis-Funcional-Overleaf.md](docs/01-Analisis-Funcional-Overleaf.md)
 
 ---
