@@ -629,6 +629,5 @@ CREATE POLICY comments_insert ON comments FOR INSERT WITH CHECK (
 
 - [03-Arquitectura.md](03-Arquitectura.md) — estrategia de almacenamiento y cifrado
 - [05-Seguridad.md](05-Seguridad.md) — clasificación de datos y amenazas asociadas
-- [10-API-Specification.md](10-API-Specification.md) — representación de estas entidades en la API
-</content>
-</invoke>
+- [10-API-y-Endpoints.md](10-API-y-Endpoints.md) — representación de estas entidades en la API
+- [14-Criptografia-Multicapa.md](14-Criptografia-Multicapa.md) — jerarquía de claves y cifrado de columnas

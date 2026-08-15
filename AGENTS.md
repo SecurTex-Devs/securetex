@@ -93,5 +93,3 @@ Antes de escribir sobre arquitectura o seguridad, lee al menos:
 3. Los ADR relevantes en [docs/adr/](docs/adr/)
 
 **Premisa que gobierna todo el diseño:** compilar LaTeX es ejecutar código arbitrario del usuario. Cualquier propuesta que ignore ese hecho está mal.
-</content>
-</invoke>

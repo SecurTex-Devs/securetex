@@ -650,5 +650,3 @@ graph LR
 - [02-Requisitos.md](02-Requisitos.md) — requisitos referenciados
 - [05-Seguridad.md](05-Seguridad.md) — amenazas STRIDE citadas
 - [08-Diagramas-UML.md](08-Diagramas-UML.md) — diagramas de secuencia y actividad de estos casos de uso
-</content>
-</invoke>

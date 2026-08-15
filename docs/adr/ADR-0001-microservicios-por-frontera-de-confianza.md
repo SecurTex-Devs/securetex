@@ -45,7 +45,5 @@ Se agrupan en un mismo servicio los componentes que **comparten nivel de confian
 ## Relacionadas
 
 - [ADR-0002](ADR-0002-sandbox-de-compilacion-con-gvisor.md)
+- [ADR-0010](ADR-0010-criptografia-multicapa-y-modo-e2ee.md)
 - [03-Arquitectura.md](../03-Arquitectura.md)
-</content>
-</invoke>
-<parameter name="parameter_name">file_text

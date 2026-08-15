@@ -329,6 +329,16 @@ graph TD
 
 ### 7.4 Criptografía — especificación
 
+> **Ampliación:** el diseño criptográfico completo, con **cinco capas y seis familias de algoritmos distintas** desde `Ctrl+S` hasta el descifrado de vuelta en el navegador, está en **[14-Criptografia-Multicapa.md](14-Criptografia-Multicapa.md)** (ADR-0010). La tabla siguiente es el resumen de las primitivas aprobadas.
+>
+> | Capa | Momento | Algoritmo | Amenaza que cubre |
+> |---|---|---|---|
+> | C1 | `Ctrl+S`, compilar, autoguardar | AES-256-GCM | El contenido sale del navegador en claro |
+> | C2 | Envío al backend | X25519 + HKDF-SHA-256 + ChaCha20-Poly1305 | TLS termina en un intermediario |
+> | C3 | Reposo | AES-256-KW + AES-256-GCM + AES-256-CBC/HMAC | Volcado de base de datos o de copias |
+> | C4 | Recuperación | HMAC-SHA-256 + Ed25519 | Manipulación silenciosa del dato en reposo |
+> | C5 | Descifrado en el navegador | AES-256-GCM con verificación de etiqueta y AAD | Cierra el ciclo sin mostrar nada no autenticado |
+
 | Uso | Algoritmo | Parámetros |
 |---|---|---|
 | Hash de contraseñas | **Argon2id** | m=64 MiB, t=3, p=4, sal de 16 B, salida de 32 B |
@@ -630,5 +640,3 @@ security/
 - [04-Stack-Tecnologico.md](04-Stack-Tecnologico.md) — justificación de cada tecnología
 - [12-DevSecOps-y-Testing.md](12-DevSecOps-y-Testing.md) — pipeline y estrategia de pruebas
 - [`../SECURITY.md`](../SECURITY.md) — política de divulgación responsable
-</content>
-</invoke>

@@ -46,5 +46,3 @@ El aprendizaje de la asignatura no se pierde: se traslada de *implementar* proto
 
 - [04-Stack-Tecnologico.md §5](../04-Stack-Tecnologico.md)
 - [07-Casos-de-Uso.md · CU-02](../07-Casos-de-Uso.md)
-</content>
-</invoke>

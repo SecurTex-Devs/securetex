@@ -54,5 +54,3 @@ Notion es cómodo para escribir, pero **desacopla la documentación del código*
 ## Relacionadas
 
 - [00-Publicacion-de-la-Documentacion.md](../00-Publicacion-de-la-Documentacion.md)
-</content>
-</invoke>

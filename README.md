@@ -24,11 +24,13 @@ docs/
 ├── 08-Diagramas-UML.md                   Clases, secuencia, actividad, estados, despliegue
 ├── 09-Interfaces-y-Mockups.md            → apunta a texguard-frontend
 ├── 10-API-y-Endpoints.md                 → apunta a texguard-backend
-├── 11-Plan-de-Proyecto.md                Sprints, roles, riesgos, entregables
+├── 11-Plan-de-Proyecto.md                Roles, ceremonias, riesgos, DoD, entregables
 ├── 12-DevSecOps-y-Testing.md             Pipeline y estrategia de pruebas
 ├── 13-Infraestructura-y-Despliegue.md    Entornos, IaC, operación
-├── 14-Glosario.md                        Términos y acrónimos
-└── adr/                                  9 registros de decisión arquitectónica
+├── 14-Criptografia-Multicapa.md          5 capas de cifrado, 6 familias criptográficas
+├── 15-Glosario.md                        Términos y acrónimos
+├── 16-Priorizacion-y-Alcance.md          ⭐ Qué se construye en 10 semanas y qué se saca
+└── adr/                                  10 registros de decisión arquitectónica
 ```
 
 ---
@@ -77,11 +79,11 @@ Detalle completo en [CONTRIBUTING.md](CONTRIBUTING.md).
 
 | | |
 |---|---|
-| Versión | 1.0 |
+| Versión | 1.1 |
 | Estado | **Propuesta en revisión** |
-| Funcionalidades inventariadas | 222 |
-| Requisitos especificados | 251 |
+| Funcionalidades inventariadas | 222, clasificadas en 5 niveles de prioridad |
+| Requisitos especificados | 262 |
 | Amenazas modeladas | 61 |
-| Última actualización | 2026-08-14 |
-</content>
-</invoke>
+| Capas de cifrado | 5 (6 familias criptográficas distintas) |
+| Calendario | **10 semanas · 5 sprints** — ver [16-Priorizacion-y-Alcance.md](docs/16-Priorizacion-y-Alcance.md) |
+| Última actualización | 2026-08-15 |

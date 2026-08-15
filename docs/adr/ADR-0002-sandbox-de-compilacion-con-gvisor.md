@@ -48,5 +48,3 @@ El **ejercicio de escape del sandbox** se ejecuta al final de cada sprint contra
 
 - [ADR-0001](ADR-0001-microservicios-por-frontera-de-confianza.md)
 - [ADR-0006](ADR-0006-rust-para-el-orquestador-de-compilacion.md)
-</content>
-</invoke>

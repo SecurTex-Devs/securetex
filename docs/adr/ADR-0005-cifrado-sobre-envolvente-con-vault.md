@@ -1,6 +1,6 @@
 # ADR-0005 · Cifrado sobre envolvente (envelope encryption) con HashiCorp Vault
 
-- **Estado:** Aceptada
+- **Estado:** Aceptada — **ampliada por [ADR-0010](ADR-0010-criptografia-multicapa-y-modo-e2ee.md)**
 - **Fecha:** 2026-08-14
 - **Decide:** Responsable de seguridad
 - **Afecta a:** `file-service`, `history-service`, modelo de datos, borrado de cuentas y proyectos
@@ -52,9 +52,9 @@ Clave maestra (Vault Transit, nunca sale de Vault)
 
 Sería más fuerte, pero impide compilar en el servidor, buscar en el contenido, generar vistas previas y colaborar con el modelo actual. Se documenta como posible evolución para el "modo confidencial" (F-268) en una versión futura.
 
+> **Actualización (ADR-0010).** Esta objeción se ha resuelto: existen motores TeX portados a **WebAssembly** que permiten compilar en el navegador, lo que hace viable el cifrado extremo a extremo real. El E2EE pasa a ser un **modo opcional por proyecto** (modo Confidencial), con sus limitaciones documentadas, mientras el modo Estándar sigue funcionando exactamente como describe este ADR. Ver [ADR-0010](ADR-0010-criptografia-multicapa-y-modo-e2ee.md) y [14-Criptografia-Multicapa.md](../14-Criptografia-Multicapa.md).
+
 ## Relacionadas
 
 - [06-Modelo-de-Datos.md §3.3](../06-Modelo-de-Datos.md)
 - [05-Seguridad.md §7.4](../05-Seguridad.md)
-</content>
-</invoke>

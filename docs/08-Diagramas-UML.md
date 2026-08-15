@@ -1008,5 +1008,3 @@ gantt
 - [03-Arquitectura.md](03-Arquitectura.md) — diagramas C4 de contexto y contenedores
 - [06-Modelo-de-Datos.md](06-Modelo-de-Datos.md) — diagrama entidad-relación
 - [07-Casos-de-Uso.md](07-Casos-de-Uso.md) — casos de uso que estos diagramas detallan
-</content>
-</invoke>

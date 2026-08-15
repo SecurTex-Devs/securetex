@@ -48,5 +48,3 @@ Bibliotecas: `axum`, `tokio`, `serde`, `rustls` (TLS sin OpenSSL), `secrecy` (ze
 
 - [ADR-0002](ADR-0002-sandbox-de-compilacion-con-gvisor.md)
 - [04-Stack-Tecnologico.md §4.2](../04-Stack-Tecnologico.md)
-</content>
-</invoke>

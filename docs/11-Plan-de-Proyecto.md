@@ -2,7 +2,35 @@
 
 > **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro
 > **Marco de trabajo:** Scrum adaptado + **Microsoft SDL** / **OWASP SAMM** integrados en cada sprint
-> **Versión:** 1.0
+> **Versión:** 1.1
+
+---
+
+## ⚠️ Aviso de vigencia
+
+**El calendario de 20 semanas de la sección 3 y el detalle de sprints de la sección 4 están obsoletos.** El proyecto dispone de **10 semanas**, y el alcance se ha recortado en consecuencia.
+
+| Qué sigue vigente en este documento | Qué está sustituido |
+|---|---|
+| §1 Objetivos | §3 Cronograma → [16 §20.2](16-Priorizacion-y-Alcance.md) |
+| §2 Equipo, roles y reglas de trabajo | §4 Detalle de los sprints → [16 §20.2](16-Priorizacion-y-Alcance.md) |
+| §6 Registro de riesgos del proyecto | §5 Hitos → [16 §20.2](16-Priorizacion-y-Alcance.md) |
+| §7 Ceremonias y ritmo | — |
+| §8 **Definición de Terminado** | — |
+| §9 Métricas de seguimiento | — |
+| §10 Entregables finales | — |
+
+👉 **El documento que gobierna qué se construye es [16-Priorizacion-y-Alcance.md](16-Priorizacion-y-Alcance.md).**
+
+Resumen del calendario vigente:
+
+| Sprint | Semanas | Entregable demostrable |
+|---|---|---|
+| S1 | 1–2 | Registro, login con Google y Microsoft, MFA, sesiones seguras, auditoría |
+| S2 | 3–4 | Proyectos con roles reales, archivos, **cifrado multicapa C1–C5 funcionando** |
+| S3 | 5–6 | **Escribir LaTeX y obtener un PDF compilado en el sandbox aislado** |
+| S4 | 7–8 | Visor con SyncTeX, **dos personas editando a la vez**, historial |
+| S5 | 9–10 | Plantillas, comentarios, endurecimiento, pentest interno, entrega |
 
 ---
 
@@ -293,7 +321,9 @@ gantt
 | R-09 | Integraciones externas (GitHub, Zotero) consumen más tiempo del previsto | 3 | 2 | 6 | Están en prioridad **Could**; se recortan antes que cualquier **Must** | Backend |
 | R-10 | Fuga accidental de un secreto en el repositorio | 2 | 5 | 10 | Gitleaks en pre-commit y en CI; rotación inmediata; procedimiento escrito | Seguridad |
 
-> **Sobre R-01, con honestidad:** replicar Overleaf al 100 % en 20 semanas con un equipo académico no es realista, y este plan no finge lo contrario. Lo que **sí** se compromete es: (a) toda la especificación de las 222 funcionalidades, (b) la implementación completa de los **Must** y los **Must-Security**, (c) los **Should** en la medida que permita el calendario, y (d) una declaración explícita y honesta de qué quedó fuera y por qué. Ocultar el recorte sería peor ingeniería que planificarlo.
+> **Sobre R-01, con honestidad:** replicar Overleaf al 100 % es imposible en 20 semanas, y mucho más en las **10 semanas** reales del proyecto. Este plan no finge lo contrario: por eso existe [16-Priorizacion-y-Alcance.md](16-Priorizacion-y-Alcance.md), donde cada una de las 222 funcionalidades está clasificada y donde se recomienda explícitamente **sacar del backlog el 38 %** del inventario (niveles N3 y N4).
+>
+> Lo que **sí** se compromete: (a) toda la especificación de las 222 funcionalidades, (b) la implementación completa de las **N0** y de **todo lo marcado 🛡️ SEC**, (c) las **N1** en la medida que permita el calendario, y (d) una declaración explícita de qué quedó fuera y por qué. Ocultar el recorte sería peor ingeniería que planificarlo.
 
 ---
 
@@ -318,6 +348,7 @@ Una historia está terminada cuando **todo** lo siguiente se cumple:
 - [ ] **Autorización aplicada en el servidor** y probada con acceso cruzado
 - [ ] Entradas validadas con esquema declarativo
 - [ ] Salidas codificadas según su contexto
+- [ ] Si maneja contenido del usuario: pasa por las capas criptográficas correspondientes (C1–C5) y tiene su prueba de manipulación de bit
 - [ ] Eventos de seguridad registrados en auditoría
 - [ ] Pruebas unitarias ≥ 80 % (100 % si toca autorización o criptografía)
 - [ ] Prueba de integración o E2E del flujo principal
@@ -370,5 +401,3 @@ Una historia está terminada cuando **todo** lo siguiente se cumple:
 - [02-Requisitos.md](02-Requisitos.md) — requisitos referenciados en cada sprint
 - [05-Seguridad.md](05-Seguridad.md) — amenazas que los sprints mitigan
 - [12-DevSecOps-y-Testing.md](12-DevSecOps-y-Testing.md) — cómo se verifica cada Definición de Terminado
-</content>
-</invoke>

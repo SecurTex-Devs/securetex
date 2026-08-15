@@ -33,5 +33,3 @@ done < <(find docs -name '*.md' -print0)
 
 echo "Diagramas verificados: $total · fallidos: $fallidos"
 [[ $fallidos -eq 0 ]]
-</content>
-</invoke>

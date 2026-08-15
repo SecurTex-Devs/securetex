@@ -46,5 +46,3 @@ El riesgo clásico es la **documentación que miente**: un `openapi.yaml` escrit
 
 - [`texguard-backend/Docs/01-API-y-Documentacion-de-Endpoints.md`](https://github.com/texguard/texguard-backend/blob/main/Docs/01-API-y-Documentacion-de-Endpoints.md)
 - [10-API-y-Endpoints.md](../10-API-y-Endpoints.md)
-</content>
-</invoke>

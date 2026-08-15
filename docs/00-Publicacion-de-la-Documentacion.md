@@ -213,7 +213,5 @@ flowchart LR
 ## 9. Documentos relacionados
 
 - [`index.md`](index.md) — portada e índice general
-- [12-Plan-de-Proyecto.md](12-Plan-de-Proyecto.md) — sprints, roles y ceremonias que alimentan el tablero
+- [11-Plan-de-Proyecto.md](11-Plan-de-Proyecto.md) — sprints, roles y ceremonias que alimentan el tablero
 - [`../README.md`](../README.md) — instrucciones de este repositorio
-</content>
-</invoke>

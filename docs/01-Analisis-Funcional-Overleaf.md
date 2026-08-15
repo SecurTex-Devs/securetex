@@ -477,18 +477,22 @@ Como el proyecto pertenece a la asignatura de **Seguridad de Software**, se inco
 
 ---
 
-## 19. Matriz de priorización (MoSCoW)
+## 19. Priorización
 
-Aunque **todas** las funcionalidades forman parte del alcance comprometido, la priorización determina el orden de construcción, no la exclusión.
+⚠️ **La priorización de este documento ha sido sustituida.** El calendario real del proyecto es de **10 semanas**, en las que cabe entre el 25 % y el 30 % de este inventario.
 
-| Prioridad | Criterio | Funcionalidades |
+La clasificación vigente está en **[16-Priorizacion-y-Alcance.md](16-Priorizacion-y-Alcance.md)**, donde **cada una de las 222 funcionalidades** lleva asignado uno de estos cinco niveles, con su justificación:
+
+| Marca | Nivel | Significado |
 |---|---|---|
-| **Must** (M) | Sin ellas el producto no es un editor LaTeX colaborativo | F-001…F-014, F-030…F-057, F-060…F-075, F-080…F-104, F-120…F-137, F-140…F-149, F-150…F-160, F-250…F-256 |
-| **Should** (S) | Definen la paridad real con Overleaf | F-165…F-189, F-195…F-214, F-016…F-027, F-240…F-246 |
-| **Could** (C) | Aportan valor pero dependen de terceros | F-220…F-227, F-230…F-238, F-105…F-116 |
-| **Must-Security** (MS) | Exigidas por la asignatura, no negociables | F-260…F-268 |
+| 🟥 | **N0 · Núcleo** | «Si no tiene esto, no es Overleaf». No se toca |
+| 🟧 | **N1 · Esencial** | Paridad creíble; se construye salvo que el calendario obligue |
+| 🟨 | **N2 · Deseable** | Primer sitio donde recortar |
+| ⬜ | **N3 · Prescindible** | Poco usado o coste desproporcionado; recortar por defecto |
+| ⛔ | **N4 · Fuera** | Recomendación explícita de sacarlo ya del backlog |
+| 🛡️ | **SEC** | Exigido por la asignatura: no negociable sea cual sea su nivel |
 
-> El orden de ejecución por *sprints* está en [11-Plan-de-Proyecto.md](11-Plan-de-Proyecto.md).
+**Este documento sigue siendo la fuente de verdad del *inventario*** —qué existe en Overleaf y qué habría que construir para igualarlo—, pero **no del alcance comprometido**.
 
 ---
 
@@ -498,5 +502,3 @@ Aunque **todas** las funcionalidades forman parte del alcance comprometido, la p
 2. [03-Arquitectura.md](03-Arquitectura.md) — arquitectura C4 completa
 3. [04-Stack-Tecnologico.md](04-Stack-Tecnologico.md) — tecnologías y su justificación de seguridad
 4. [05-Seguridad.md](05-Seguridad.md) — modelo de amenazas y controles
-</content>
-</invoke>

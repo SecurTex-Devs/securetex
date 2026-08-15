@@ -653,5 +653,3 @@ graph TB
 - [06-Modelo-de-Datos.md](06-Modelo-de-Datos.md) — modelo entidad-relación y esquema
 - [08-Diagramas-UML.md](08-Diagramas-UML.md) — clases, secuencia, actividad, estados, componentes
 - [13-Infraestructura-y-Despliegue.md](13-Infraestructura-y-Despliegue.md) — infraestructura como código y operación
-</content>
-</invoke>

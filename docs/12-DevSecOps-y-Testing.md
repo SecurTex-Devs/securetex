@@ -372,5 +372,3 @@ graph LR
 - [05-Seguridad.md](05-Seguridad.md) — amenazas que estas pruebas verifican
 - [11-Plan-de-Proyecto.md](11-Plan-de-Proyecto.md) — Definición de Terminado
 - [13-Infraestructura-y-Despliegue.md](13-Infraestructura-y-Despliegue.md) — entornos y operación
-</content>
-</invoke>

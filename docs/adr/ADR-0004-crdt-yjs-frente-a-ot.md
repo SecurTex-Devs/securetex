@@ -48,5 +48,3 @@ El argumento decisivo es de seguridad: con CRDT, **ningún mensaje del cliente p
 
 - [03-Arquitectura.md §5.2](../03-Arquitectura.md)
 - [07-Casos-de-Uso.md · CU-25](../07-Casos-de-Uso.md)
-</content>
-</invoke>

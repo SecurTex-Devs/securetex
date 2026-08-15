@@ -331,5 +331,3 @@ Para la asignatura basta el escenario de demostración: un único VPS con k3s ej
 - [03-Arquitectura.md](03-Arquitectura.md) — vista de despliegue
 - [05-Seguridad.md](05-Seguridad.md) — controles de infraestructura
 - [12-DevSecOps-y-Testing.md](12-DevSecOps-y-Testing.md) — pipeline que produce estos despliegues
-</content>
-</invoke>

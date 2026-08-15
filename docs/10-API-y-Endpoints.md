@@ -43,5 +43,3 @@ El contrato se **genera** desde el código, se **versiona** en git, se **valida*
 | Revisión, historial y bibliografía | 12 | §5.5 |
 | Plantillas, integraciones y administración | 14 | §5.6 |
 | **Total** | **~93 endpoints REST** + 1 canal WebSocket + 6 servicios gRPC internos | |
-</content>
-</invoke>

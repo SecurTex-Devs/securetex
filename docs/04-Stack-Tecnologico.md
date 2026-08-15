@@ -454,5 +454,3 @@ Cada petición lleva un `traceId` que aparece en logs, trazas y eventos de audit
 | gVisor | último estable | — |
 
 > Política de actualización: parches de seguridad en ≤ 7 días para severidad crítica, ≤ 30 días para alta. Automatizado con Renovate, con revisión humana obligatoria antes del merge.
-</content>
-</invoke>

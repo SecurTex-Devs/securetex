@@ -77,15 +77,17 @@ nav:
       - Modelo de datos: 06-Modelo-de-Datos.md
       - Casos de uso y de abuso: 07-Casos-de-Uso.md
       - Diagramas UML: 08-Diagramas-UML.md
+      - Criptografía multicapa: 14-Criptografia-Multicapa.md
   - Repositorios:
       - Interfaces y mockups: 09-Interfaces-y-Mockups.md
       - API y endpoints: 10-API-y-Endpoints.md
   - Ejecución:
+      - Priorización y alcance: 16-Priorizacion-y-Alcance.md
       - Plan de proyecto: 11-Plan-de-Proyecto.md
       - DevSecOps y testing: 12-DevSecOps-y-Testing.md
       - Infraestructura y despliegue: 13-Infraestructura-y-Despliegue.md
   - Referencia:
-      - Glosario: 14-Glosario.md
+      - Glosario: 15-Glosario.md
       - Decisiones (ADR):
           - ADR-0001 · Microservicios por frontera de confianza: adr/ADR-0001-microservicios-por-frontera-de-confianza.md
           - ADR-0002 · Sandbox con gVisor: adr/ADR-0002-sandbox-de-compilacion-con-gvisor.md
@@ -96,7 +98,6 @@ nav:
           - ADR-0007 · Row Level Security: adr/ADR-0007-postgresql-con-row-level-security.md
           - ADR-0008 · Documentación de API code-first: adr/ADR-0008-documentacion-de-api-code-first.md
           - ADR-0009 · Tres repositorios: adr/ADR-0009-tres-repositorios-y-documentacion-central.md
+          - ADR-0010 · Criptografía multicapa y E2EE: adr/ADR-0010-criptografia-multicapa-y-modo-e2ee.md
 
 strict: true
-</content>
-</invoke>

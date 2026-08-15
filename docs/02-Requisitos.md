@@ -375,6 +375,31 @@ graph LR
 | RS-063 | Las imágenes de contenedor DEBEN firmarse con **Sigstore/cosign** y verificarse en el despliegue mediante política de admisión. |
 | RS-064 | Las acciones de CI de terceros DEBEN fijarse por hash de *commit*, no por etiqueta. |
 
+### 5.8 Criptografía multicapa
+
+> Desarrollados en [14-Criptografia-Multicapa.md](14-Criptografia-Multicapa.md). Cinco capas, **cada una con un algoritmo distinto y una amenaza distinta**.
+
+| ID | Requisito | Capa |
+|---|---|---|
+| RS-070 | El cliente DEBE cifrar el contenido con **AES-256-GCM** antes de que salga del navegador, al pulsar `Ctrl+S`, al compilar y al autoguardar. | C1 |
+| RS-071 | Un nonce NUNCA DEBE reutilizarse con la misma clave; el sistema DEBE verificarlo antes de cada operación de cifrado. | C1, C2 |
+| RS-072 | El envío al backend DEBE usar un par **X25519** efímero por mensaje, destruido tras el envío, proporcionando secreto hacia adelante a nivel de aplicación. | C2 |
+| RS-073 | La capa de transporte aplicativo DEBE usar **ChaCha20-Poly1305**, algoritmo de familia distinta a la de C1, con la clave derivada por **HKDF-SHA-256**. | C2 |
+| RS-074 | El cifrado en reposo DEBE envolver claves con **AES-256-KW** y cifrar datos con **AES-256-GCM**; las columnas PII con **AES-256-CBC + HMAC-SHA-256** (encrypt-then-MAC). | C3 |
+| RS-075 | Al recuperar un dato, el sistema DEBE verificar el **HMAC-SHA-256 antes** de intentar descifrarlo. | C4 |
+| RS-076 | Los artefactos de compilación DEBEN firmarse con **Ed25519** y el cliente DEBE verificar la firma antes de renderizarlos. | C4 |
+| RS-077 | El cliente DEBE rechazar todo bloque cuya etiqueta de autenticación o AAD no valide, **sin mostrar contenido parcial**. | C5 |
+| RS-078 | Las claves en el navegador DEBEN ser objetos `CryptoKey` **no exportables** y NO DEBEN persistirse en `localStorage`, `sessionStorage` ni IndexedDB. | C1, C5 |
+| RS-079 | El **modo confidencial** DEBE compilar en el navegador mediante un motor TeX en WebAssembly y NO DEBE envolver la DEK para ninguna clave del servidor. | C1 |
+| RS-080 | Revocar el acceso de un colaborador DEBE provocar la **rotación de la DEK** del documento y su reenvoltura solo para quienes siguen autorizados. | C1 |
+| RS-081 | Se PROHÍBEN los cifrados clásicos por sustitución o transposición (César, Vigenère, ROT13), el XOR con clave fija, el modo ECB, el CBC sin MAC y el cifrado determinista para permitir búsquedas. | Todas |
+
+**Requisito funcional asociado:**
+
+| ID | Requisito | Origen | Criterio de aceptación |
+|---|---|---|---|
+| RF-150 | El sistema DEBE permitir activar el **modo confidencial** por proyecto, informando explícitamente de que la pérdida de la contraseña y de los códigos de recuperación implica pérdida irrecuperable del contenido, y de las funcionalidades que se desactivan. | F-268 | Una vez activado no se puede desactivar; la advertencia exige confirmación escrita. |
+
 ---
 
 ## 6. Matriz de trazabilidad (extracto)
@@ -402,5 +427,3 @@ El sistema se considera **entregable** cuando:
 4. La cobertura de pruebas cumple RNF-020.
 5. Los documentos de arquitectura, seguridad, API y despliegue están actualizados respecto al código.
 6. El despliegue completo se levanta desde cero con un único comando en un entorno limpio.
-</content>
-</invoke>

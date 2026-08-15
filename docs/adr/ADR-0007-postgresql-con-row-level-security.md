@@ -55,5 +55,3 @@ Por cada tabla con RLS existe un test que se conecta como un usuario ajeno e int
 
 - [06-Modelo-de-Datos.md §5](../06-Modelo-de-Datos.md)
 - [12-DevSecOps-y-Testing.md §4.3](../12-DevSecOps-y-Testing.md)
-</content>
-</invoke>

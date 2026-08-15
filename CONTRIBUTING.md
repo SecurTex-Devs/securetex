@@ -89,5 +89,3 @@ docs: añade el modelo de amenazas del módulo de plantillas
 docs(adr): registra la decisión sobre el aislamiento del compilador
 fix(docs): corrige el enlace roto a 06-Modelo-de-Datos
 ```
-</content>
-</invoke>

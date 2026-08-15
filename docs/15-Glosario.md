@@ -115,5 +115,3 @@
 | RFC 9457 | Formato de los errores de la API |
 | RFC 6238 / 4226 | TOTP y HOTP |
 | CIS Benchmarks | Endurecimiento de Kubernetes y del sistema operativo |
-</content>
-</invoke>
