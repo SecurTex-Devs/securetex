@@ -1,6 +1,6 @@
 # 09 — API y Estrategia de Documentación de Endpoints
 
-> **Proyecto:** TeXGuard — Editor LaTeX Colaborativo Seguro (backend)
+> **Proyecto:** SecurTex — Editor LaTeX Colaborativo Seguro (backend)
 > **Versión:** 1.0
 > **Pregunta que responde este documento:** ¿cómo se documenta el backend para que cualquiera —compañeros, el docente, o un agente de IA— vea y pruebe todos los endpoints sin leer el código?
 
@@ -15,7 +15,7 @@ Hay dos formas de documentar una API y ambas fallan de la misma manera si se eli
 | **Design-first** | Se escribe el `openapi.yaml` a mano y el código se implementa contra él | El código se desvía del contrato y nadie se entera |
 | **Code-first** | El contrato se **genera** desde el código (decoradores + esquemas) | Se documenta lo que hay, pero se pierde la fase de diseño previo |
 
-**Decisión de TeXGuard (ADR-0008): code-first con verificación de contrato.**
+**Decisión de SecurTex (ADR-0008): code-first con verificación de contrato.**
 
 1. El contrato **se genera** desde los decoradores de NestJS y los esquemas de Zod → imposible que la documentación mienta sobre la forma real de la petición o la respuesta.
 2. El contrato generado **se versiona en el repositorio** (`contracts/openapi.json`).
@@ -49,7 +49,7 @@ El usuario preguntaba si "Swagger u otras más completas". Esta es la evaluació
 |---|---|---|
 | **OpenAPI 3.1** ✅ | Estándar de facto para APIs REST. La 3.1 es **100 % compatible con JSON Schema**, lo que permite reutilizar los mismos esquemas de validación (Zod) como documentación | **Elegida.** Es la base de todo lo demás |
 | OpenAPI 3.0 | Versión anterior, JSON Schema solo parcialmente compatible | Descartada: obliga a duplicar esquemas |
-| **AsyncAPI 3.0** ✅ | El equivalente a OpenAPI para APIs asíncronas: WebSockets, colas, eventos | **Elegida como complemento.** TeXGuard tiene WebSockets (colaboración) y eventos (BullMQ, Redis Streams) que OpenAPI **no puede describir** |
+| **AsyncAPI 3.0** ✅ | El equivalente a OpenAPI para APIs asíncronas: WebSockets, colas, eventos | **Elegida como complemento.** SecurTex tiene WebSockets (colaboración) y eventos (BullMQ, Redis Streams) que OpenAPI **no puede describir** |
 | **Protobuf + gRPC reflection** ✅ | Contrato de la comunicación interna entre microservicios | **Elegida** para el tráfico interno (no público) |
 | RAML / API Blueprint | Alternativas históricas | Descartadas: ecosistema en declive |
 
@@ -189,7 +189,7 @@ export class InviteMemberDto {
 
 | Aspecto | Convención |
 |---|---|
-| Base | `https://api.texguard.app/api/v1` |
+| Base | `https://api.securtex.app/api/v1` |
 | Versionado | Por URI (`/v1`); las versiones conviven al menos 6 meses |
 | Formato | JSON (`application/json`); UTF-8 |
 | Nomenclatura | Recursos en plural y `kebab-case` en la ruta; propiedades en `camelCase` |
@@ -208,7 +208,7 @@ export class InviteMemberDto {
 
 ```json
 {
-  "type": "https://texguard.app/errors/insufficient-role",
+  "type": "https://securtex.app/errors/insufficient-role",
   "title": "Permisos insuficientes",
   "status": 403,
   "detail": "Tu rol en este proyecto no permite modificar archivos.",
@@ -359,7 +359,7 @@ Lo que OpenAPI no puede describir se documenta en `contracts/asyncapi.yaml`:
 ```yaml
 asyncapi: 3.0.0
 info:
-  title: TeXGuard Realtime API
+  title: SecurTex Realtime API
   version: 1.0.0
   description: |
     Canal WebSocket de edición colaborativa basado en Yjs (CRDT).
@@ -367,7 +367,7 @@ info:
     con alcance limitado a un único documento, enviado en el subprotocolo.
 servers:
   production:
-    host: collab.texguard.app
+    host: collab.securtex.app
     protocol: wss
     security:
       - $ref: '#/components/securitySchemes/collabToken'
@@ -411,7 +411,7 @@ Los servicios internos se comunican por gRPC sobre mTLS. El contrato son los `.p
 ```protobuf
 // contracts/proto/compile/v1/compile.proto
 syntax = "proto3";
-package texguard.compile.v1;
+package securtex.compile.v1;
 
 // Servicio de compilación. Solo accesible desde la red interna con mTLS.
 service CompileService {
@@ -443,7 +443,7 @@ message CompileRequest {
 |---|---|---|
 | Colecciones Bruno | `contracts/bruno/` | Peticiones listas para ejecutar, por módulo, con entornos `local` / `staging`. Versionadas en git; **sin secretos**, que se leen de variables de entorno |
 | Ejemplos ejecutables | `Docs/ejemplos/` | Scripts `curl` comentados para los flujos principales |
-| Diagramas de secuencia | [`texguard-docs` · 08-Diagramas-UML](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/08-Diagramas-UML.md) | Cómo se encadenan las llamadas |
+| Diagramas de secuencia | [`securtex-docs` · 08-Diagramas-UML](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/08-Diagramas-UML.md) | Cómo se encadenan las llamadas |
 | Guía de errores | `Docs/errores.md` | Catálogo de `type` de Problem Details con causa y solución |
 | Changelog de la API | `contracts/CHANGELOG.md` | Cambios por versión, marcando los incompatibles |
 | Portal público | GitHub Pages | Redocly + AsyncAPI, generado en cada release |
@@ -507,7 +507,7 @@ pnpm docs:build            # Sitio estático Redocly + AsyncAPI para publicar
 - [03-Estandares-de-Codigo.md](03-Estandares-de-Codigo.md) — reglas de escritura de controladores y casos de uso
 - [`../AGENTS.md`](../AGENTS.md) — instrucciones para agentes de IA que modifiquen la API
 
-**En `texguard-docs`**
+**En `securtex-docs`**
 
 - [02-Requisitos](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/02-Requisitos.md) — requisitos que cada endpoint implementa
 - [05-Seguridad](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/05-Seguridad.md) — controles aplicados en la capa de API

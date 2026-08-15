@@ -1,6 +1,6 @@
 # 03 — Estándares de Código
 
-> **Repositorio:** `texguard-backend`
+> **Repositorio:** `securtex-backend`
 > Aplicable a personas y a agentes de IA por igual. Lo que aquí se prohíbe, el CI lo bloquea.
 > **Versión:** 1.0
 
@@ -305,4 +305,4 @@ Plantilla de PR — se responde siempre:
 
 - [`../AGENTS.md`](../AGENTS.md) — versión operativa de estas reglas para agentes de IA
 - [02-Arquitectura-del-Backend.md](02-Arquitectura-del-Backend.md)
-- [`texguard-docs` · 12-DevSecOps-y-Testing](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/12-DevSecOps-y-Testing.md)
+- [`securtex-docs` · 12-DevSecOps-y-Testing](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/12-DevSecOps-y-Testing.md)

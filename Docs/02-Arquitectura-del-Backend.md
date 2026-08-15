@@ -1,7 +1,7 @@
 # 02 — Arquitectura Interna del Backend
 
-> **Repositorio:** `texguard-backend`
-> **Arquitectura general del sistema:** [`texguard-docs` · 03-Arquitectura](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/03-Arquitectura.md)
+> **Repositorio:** `securtex-backend`
+> **Arquitectura general del sistema:** [`securtex-docs` · 03-Arquitectura](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/03-Arquitectura.md)
 > Este documento describe **cómo está organizado el código dentro de este repositorio**.
 
 ---
@@ -9,7 +9,7 @@
 ## 1. Estructura del monorepo
 
 ```
-texguard-backend/
+securtex-backend/
 ├── apps/
 │   ├── gateway/                 NestJS · punto único de entrada
 │   ├── auth-service/            NestJS · sesiones, MFA, tokens
@@ -280,7 +280,7 @@ Descarga contenido desde URLs suministradas por el usuario (RF-032). Controla la
 
 ## 6bis. Criptografía multicapa en el servidor
 
-El backend implementa **tres de las cinco capas** del diseño criptográfico ([`texguard-docs` · 14](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/14-Criptografia-Multicapa.md)). C1 y C5 son responsabilidad del navegador.
+El backend implementa **tres de las cinco capas** del diseño criptográfico ([`securtex-docs` · 14](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/14-Criptografia-Multicapa.md)). C1 y C5 son responsabilidad del navegador.
 
 ```mermaid
 graph LR
@@ -334,4 +334,4 @@ graph LR
 - [01-API-y-Documentacion-de-Endpoints.md](01-API-y-Documentacion-de-Endpoints.md)
 - [03-Estandares-de-Codigo.md](03-Estandares-de-Codigo.md)
 - [`../AGENTS.md`](../AGENTS.md)
-- [`texguard-docs` · 06-Modelo-de-Datos](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/06-Modelo-de-Datos.md)
+- [`securtex-docs` · 06-Modelo-de-Datos](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/06-Modelo-de-Datos.md)
