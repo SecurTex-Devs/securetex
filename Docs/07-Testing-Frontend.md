@@ -215,5 +215,3 @@ test('ningún token queda accesible desde JavaScript', async ({ page }) => {
 - [02-Seguridad-en-el-Cliente.md](02-Seguridad-en-el-Cliente.md)
 - [06-Accesibilidad-e-i18n.md](06-Accesibilidad-e-i18n.md)
 - [`texguard-docs` · 12-DevSecOps-y-Testing](https://github.com/texguard/texguard-docs/blob/main/docs/12-DevSecOps-y-Testing.md)
-</content>
-</invoke>

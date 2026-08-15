@@ -230,5 +230,3 @@ Antes de dar por terminado un cambio: `pnpm lint && pnpm typecheck && pnpm test 
 ## 9. Contexto de producto, en una frase
 
 Una estudiante escribe su tesis durante meses en esta pantalla; su directora la revisa desde otro país al mismo tiempo. La interfaz tiene que ser rápida, predecible, usable con teclado y lectores de pantalla, y no debe filtrar nada de lo que el servidor le confía.
-</content>
-</invoke>

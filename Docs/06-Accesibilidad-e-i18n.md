@@ -171,5 +171,3 @@ Antes de fusionar cualquier componente nuevo:
 - [03-Sistema-de-Diseno.md](03-Sistema-de-Diseno.md)
 - [04-Interfaces-y-Mockups.md](04-Interfaces-y-Mockups.md) — cada mockup incluye su anotación de accesibilidad
 - [07-Testing-Frontend.md](07-Testing-Frontend.md)
-</content>
-</invoke>

@@ -198,5 +198,3 @@ e2e/security/
 - [01-Arquitectura-Frontend.md](01-Arquitectura-Frontend.md)
 - [`../AGENTS.md`](../AGENTS.md) — reglas obligatorias para quien escriba código aquí
 - [`texguard-docs` · 05-Seguridad](https://github.com/texguard/texguard-docs/blob/main/docs/05-Seguridad.md)
-</content>
-</invoke>

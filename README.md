@@ -7,11 +7,11 @@ Frontend de **TeXGuard**, editor LaTeX colaborativo seguro: aplicación web, edi
 
 ---
 
-## 📐 Prototipo de las 47 pantallas
+## 📐 Prototipo de las 50 pantallas
 
 **[`Docs/mockups/index.html`](Docs/mockups/index.html)** — ábrelo con doble clic. No necesita servidor, dependencias ni conexión.
 
-Incluye las 47 pantallas del producto en 7 grupos, con sus estados, sus anotaciones de seguridad y de accesibilidad, modo claro y oscuro, y trazabilidad a requisitos y casos de uso.
+Incluye las 50 pantallas del producto en 8 grupos, con sus estados, sus anotaciones de seguridad y de accesibilidad, modo claro y oscuro, y trazabilidad a requisitos y casos de uso.
 
 | Grupo | Pantallas |
 |---|---|
@@ -22,6 +22,7 @@ Incluye las 47 pantallas del producto en 7 grupos, con sus estados, sus anotacio
 | [5 · Plantillas](Docs/mockups/05-plantillas.html) | P-35 … P-37 |
 | [6 · Administración](Docs/mockups/06-administracion.html) | P-38 … P-41 |
 | [7 · Estados transversales](Docs/mockups/07-estados.html) | P-42 … P-47 |
+| [8 · Cifrado 🔐](Docs/mockups/08-cifrado.html) | P-48 … P-50 |
 
 ---
 
@@ -36,6 +37,7 @@ Incluye las 47 pantallas del producto en 7 grupos, con sus estados, sus anotacio
 | [Docs/05-Integracion-con-la-API.md](Docs/05-Integracion-con-la-API.md) | Contrato generado, errores, WebSocket |
 | [Docs/06-Accesibilidad-e-i18n.md](Docs/06-Accesibilidad-e-i18n.md) | WCAG 2.2 AA e internacionalización |
 | [Docs/07-Testing-Frontend.md](Docs/07-Testing-Frontend.md) | Estrategia de pruebas |
+| [Docs/08-Criptografia-en-el-Cliente.md](Docs/08-Criptografia-en-el-Cliente.md) | **Capas C1, C2 y C5**: cifrado al guardar, sobre de envío y descifrado |
 | [AGENTS.md](AGENTS.md) | **Instrucciones obligatorias para agentes de IA** |
 | [`texguard-docs`](https://github.com/texguard/texguard-docs) | Requisitos, arquitectura general, modelo de amenazas, plan |
 
@@ -53,6 +55,7 @@ Incluye las 47 pantallas del producto en 7 grupos, con sus estados, sus anotacio
 | Estado del servidor | **TanStack Query** |
 | Estado de interfaz | **Zustand** |
 | Validación | **Zod**, compartida con el backend |
+| Criptografía | **WebCrypto** (AES-256-GCM) · **X25519 + ChaCha20-Poly1305** · **Argon2id** (WASM) |
 | Pruebas | Vitest · Testing Library · Playwright · axe-core |
 
 ---
@@ -102,6 +105,7 @@ Antes de abrir un PR: `pnpm lint && pnpm typecheck && pnpm test && pnpm api:chec
 5. Ninguna cadena de texto fuera del sistema de i18n.
 6. Cero recursos de dominios externos: la CSP los bloquea.
 7. Cero violaciones críticas de accesibilidad: bloquean el merge.
+8. Nadie llama a `crypto.subtle` fuera de `src/shared/crypto`.
 
 Desarrollo completo en [AGENTS.md](AGENTS.md).
 
@@ -126,5 +130,3 @@ Ver [CONTRIBUTING.md](CONTRIBUTING.md). Ramas protegidas, commits firmados y una
 ## Seguridad
 
 [SECURITY.md](SECURITY.md). No abras un *issue* público para una vulnerabilidad.
-</content>
-</invoke>

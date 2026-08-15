@@ -189,5 +189,3 @@ src/shared/ui/
 - [04-Interfaces-y-Mockups.md](04-Interfaces-y-Mockups.md) — las 47 pantallas que aplican este sistema
 - [06-Accesibilidad-e-i18n.md](06-Accesibilidad-e-i18n.md)
 - [`mockups/assets/mockup.css`](mockups/assets/mockup.css) — implementación de referencia de los tokens
-</content>
-</invoke>

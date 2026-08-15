@@ -408,5 +408,3 @@ body.hide-notes .note { display: none; }
   .grid.c3, .grid.c4 { grid-template-columns: repeat(2, 1fr); }
 }
 @media print { .proto-bar { display: none; } .screen { page-break-inside: avoid; } }
-</content>
-</invoke>

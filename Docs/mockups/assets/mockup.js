@@ -10,6 +10,7 @@ const PAGINAS = [
   { href: '05-plantillas.html',    texto: '5 · Plantillas' },
   { href: '06-administracion.html',texto: '6 · Administración' },
   { href: '07-estados.html',       texto: '7 · Estados' },
+  { href: '08-cifrado.html',       texto: '8 · Cifrado' },
 ];
 
 (function () {
@@ -48,5 +49,3 @@ const PAGINAS = [
     localStorage.setItem('tg-notes', oculto ? 'off' : 'on');
   });
 })();
-</content>
-</invoke>

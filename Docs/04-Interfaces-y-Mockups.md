@@ -8,7 +8,7 @@
 
 ## 1. Qué contiene el prototipo
 
-47 pantallas especificadas y maquetadas en HTML estático, organizadas en 7 grupos. Cada pantalla incluye:
+50 pantallas especificadas y maquetadas en HTML estático, organizadas en 8 grupos. Cada pantalla incluye:
 
 - La **estructura y jerarquía de información** definitivas.
 - Los **estados** relevantes (vacío, cargando, error, sin permisos, sin conexión).
@@ -26,6 +26,7 @@ Docs/mockups/
 ├── 05-plantillas.html        P-35 … P-37
 ├── 06-administracion.html    P-38 … P-41
 ├── 07-estados.html           P-42 … P-47
+├── 08-cifrado.html           P-48 … P-50
 └── assets/
     ├── mockup.css            Tokens y componentes del prototipo
     └── mockup.js             Navegación, tema claro/oscuro, anotaciones
@@ -119,6 +120,14 @@ Docs/mockups/
 | P-46 | Mantenimiento | RF-133 |
 | P-47 | **Compilación bloqueada por seguridad** | RS-041 |
 
+### Grupo 8 · Cifrado
+
+| ID | Pantalla | Requisitos | Capa |
+|---|---|---|---|
+| P-48 | Guardado cifrado (`Ctrl+S`) | RS-070, RS-072 | C1 · C2 |
+| P-49 | Modo confidencial y claves de recuperación | RS-079, RF-150 | C1 |
+| P-50 | Contenido no verificable | RS-076, RS-077 | C4 · C5 |
+
 ---
 
 ## 3. Decisiones de diseño de interacción
@@ -192,8 +201,7 @@ El objetivo en móvil no es escribir una tesis: es **revisar, comentar y compila
 ## 7. Documentos relacionados
 
 - [03-Sistema-de-Diseno.md](03-Sistema-de-Diseno.md) — tokens, componentes y estados
+- [08-Criptografia-en-el-Cliente.md](08-Criptografia-en-el-Cliente.md) — lo que implementan las pantallas P-48 a P-50
 - [06-Accesibilidad-e-i18n.md](06-Accesibilidad-e-i18n.md) — criterios WCAG y traducción
 - [`texguard-docs` · 02-Requisitos](https://github.com/texguard/texguard-docs/blob/main/docs/02-Requisitos.md)
 - [`texguard-docs` · 07-Casos-de-Uso](https://github.com/texguard/texguard-docs/blob/main/docs/07-Casos-de-Uso.md)
-</content>
-</invoke>
