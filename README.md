@@ -21,7 +21,7 @@ Compilar LaTeX **es ejecutar código arbitrario suministrado por un usuario anó
 | [Docs/02-Arquitectura-del-Backend.md](Docs/02-Arquitectura-del-Backend.md) | Estructura del monorepo y arquitectura hexagonal |
 | [Docs/03-Estandares-de-Codigo.md](Docs/03-Estandares-de-Codigo.md) | Reglas de escritura de código |
 | [AGENTS.md](AGENTS.md) | **Instrucciones obligatorias para agentes de IA** |
-| [`texguard-docs`](https://github.com/texguard/texguard-docs) | Requisitos, arquitectura general, modelo de amenazas, datos, plan de proyecto |
+| [`texguard-docs`](https://github.com/SecurTex-Devs/securtex-docs) | Requisitos, arquitectura general, modelo de amenazas, datos, plan de proyecto |
 
 ---
 
@@ -38,7 +38,7 @@ Compilar LaTeX **es ejecutar código arbitrario suministrado por un usuario anó
 | Secretos y claves | **HashiCorp Vault** | Envelope encryption; la clave maestra nunca toca la aplicación |
 | Compilación | **TeX Live full + gVisor** | Kernel independiente para código no confiable |
 
-Justificación completa en [`texguard-docs` · 04-Stack-Tecnologico](https://github.com/texguard/texguard-docs/blob/main/docs/04-Stack-Tecnologico.md).
+Justificación completa en [`texguard-docs` · 04-Stack-Tecnologico](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/04-Stack-Tecnologico.md).
 
 ---
 
@@ -66,7 +66,7 @@ pnpm docs:serve           # http://localhost:3000/api/docs
 ## Puesta en marcha
 
 ```bash
-git clone https://github.com/texguard/texguard-backend.git
+git clone https://github.com/SecurTex-Devs/securtex-backend.git
 cd texguard-backend
 cp .env.example .env
 pnpm install

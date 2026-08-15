@@ -4,7 +4,7 @@
 
 Lee, en este orden:
 
-1. [`texguard-docs` · 05-Seguridad](https://github.com/texguard/texguard-docs/blob/main/docs/05-Seguridad.md) — el modelo de amenazas
+1. [`texguard-docs` · 05-Seguridad](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/05-Seguridad.md) — el modelo de amenazas
 2. [`Docs/02-Arquitectura-del-Backend.md`](Docs/02-Arquitectura-del-Backend.md)
 3. [`Docs/03-Estandares-de-Codigo.md`](Docs/03-Estandares-de-Codigo.md)
 4. [`AGENTS.md`](AGENTS.md) — aplica también a personas
@@ -41,7 +41,7 @@ Responde siempre en la descripción:
 
 ## 4. Definición de Terminado
 
-La lista completa está en [`texguard-docs` · 11-Plan-de-Proyecto §8](https://github.com/texguard/texguard-docs/blob/main/docs/11-Plan-de-Proyecto.md). Resumen: implementado, autorizado en el servidor, validado, auditado, probado (incluido el caso de abuso si el riesgo es medio o superior), sin hallazgos críticos ni altos, y documentado.
+La lista completa está en [`texguard-docs` · 11-Plan-de-Proyecto §8](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/11-Plan-de-Proyecto.md). Resumen: implementado, autorizado en el servidor, validado, auditado, probado (incluido el caso de abuso si el riesgo es medio o superior), sin hallazgos críticos ni altos, y documentado.
 
 ## 5. Motivos de rechazo
 

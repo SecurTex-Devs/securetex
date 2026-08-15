@@ -443,7 +443,7 @@ message CompileRequest {
 |---|---|---|
 | Colecciones Bruno | `contracts/bruno/` | Peticiones listas para ejecutar, por módulo, con entornos `local` / `staging`. Versionadas en git; **sin secretos**, que se leen de variables de entorno |
 | Ejemplos ejecutables | `Docs/ejemplos/` | Scripts `curl` comentados para los flujos principales |
-| Diagramas de secuencia | [`texguard-docs` · 08-Diagramas-UML](https://github.com/texguard/texguard-docs/blob/main/docs/08-Diagramas-UML.md) | Cómo se encadenan las llamadas |
+| Diagramas de secuencia | [`texguard-docs` · 08-Diagramas-UML](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/08-Diagramas-UML.md) | Cómo se encadenan las llamadas |
 | Guía de errores | `Docs/errores.md` | Catálogo de `type` de Problem Details con causa y solución |
 | Changelog de la API | `contracts/CHANGELOG.md` | Cambios por versión, marcando los incompatibles |
 | Portal público | GitHub Pages | Redocly + AsyncAPI, generado en cada release |
@@ -509,6 +509,6 @@ pnpm docs:build            # Sitio estático Redocly + AsyncAPI para publicar
 
 **En `texguard-docs`**
 
-- [02-Requisitos](https://github.com/texguard/texguard-docs/blob/main/docs/02-Requisitos.md) — requisitos que cada endpoint implementa
-- [05-Seguridad](https://github.com/texguard/texguard-docs/blob/main/docs/05-Seguridad.md) — controles aplicados en la capa de API
-- [07-Casos-de-Uso](https://github.com/texguard/texguard-docs/blob/main/docs/07-Casos-de-Uso.md) — flujos que estos endpoints componen
+- [02-Requisitos](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/02-Requisitos.md) — requisitos que cada endpoint implementa
+- [05-Seguridad](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/05-Seguridad.md) — controles aplicados en la capa de API
+- [07-Casos-de-Uso](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/07-Casos-de-Uso.md) — flujos que estos endpoints componen

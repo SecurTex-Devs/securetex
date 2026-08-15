@@ -305,4 +305,4 @@ Plantilla de PR — se responde siempre:
 
 - [`../AGENTS.md`](../AGENTS.md) — versión operativa de estas reglas para agentes de IA
 - [02-Arquitectura-del-Backend.md](02-Arquitectura-del-Backend.md)
-- [`texguard-docs` · 12-DevSecOps-y-Testing](https://github.com/texguard/texguard-docs/blob/main/docs/12-DevSecOps-y-Testing.md)
+- [`texguard-docs` · 12-DevSecOps-y-Testing](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/12-DevSecOps-y-Testing.md)

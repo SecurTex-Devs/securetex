@@ -45,4 +45,4 @@ No emprenderemos acciones legales contra investigación de buena fe que no acced
 
 ## Modelo de amenazas
 
-El modelo completo (61 amenazas STRIDE con sus controles y riesgo residual) está en [`texguard-docs` · 05-Seguridad](https://github.com/texguard/texguard-docs/blob/main/docs/05-Seguridad.md).
+El modelo completo (61 amenazas STRIDE con sus controles y riesgo residual) está en [`texguard-docs` · 05-Seguridad](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/05-Seguridad.md).
