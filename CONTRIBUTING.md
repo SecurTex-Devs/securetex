@@ -1,5 +1,13 @@
 # Cómo contribuir · securtex-frontend
 
+## 0. Antes de nada: activa el hook (una sola vez)
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Bloquea el `git push` directo a `main`. Es un sustituto local de la protección de ramas, que no está disponible en repositorios privados del plan Free. Sin ejecutarlo, el hook no se activa.
+
 ## 1. Antes de escribir código
 
 Lee, en este orden:
