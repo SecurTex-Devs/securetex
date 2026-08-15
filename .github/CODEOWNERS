@@ -1,0 +1,11 @@
+* @DaGeus15
+
+# Zonas de riesgo crítico: no se fusionan sin revisión del responsable de seguridad
+/AGENTS.md                              @DaGeus15
+/Docs/03-Estandares-de-Codigo.md        @DaGeus15
+/packages/security/                     @DaGeus15
+/apps/auth-service/                     @DaGeus15
+/apps/compile-orchestrator/             @DaGeus15
+/apps/url-fetcher/                      @DaGeus15
+/packages/db/migrations/                @DaGeus15
+/infra/                                 @DaGeus15
