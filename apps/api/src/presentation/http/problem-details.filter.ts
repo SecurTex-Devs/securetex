@@ -2,6 +2,7 @@ import { Catch, HttpException, HttpStatus, Logger, type ArgumentsHost, type Exce
 import { ThrottlerException } from '@nestjs/throttler';
 import type { FastifyReply } from 'fastify';
 import {
+  CompileBlockedError,
   DomainError,
   InvalidCredentialsError,
   RateLimitedError,
@@ -20,6 +21,7 @@ interface Problem {
   fields?: Readonly<Record<string, string>>;
   retryAfterSeconds?: number;
   remainingAttempts?: number;
+  findings?: readonly unknown[];
 }
 
 const TYPE_BASE = 'https://securtex.app/errors/';
@@ -62,6 +64,8 @@ export class ProblemDetailsFilter implements ExceptionFilter {
     if (e instanceof ValidationError) problem.fields = e.fields;
     if (e instanceof RateLimitedError) problem.retryAfterSeconds = e.retryAfterSeconds;
     if (e instanceof InvalidCredentialsError && e.remainingAttempts !== null) problem.remainingAttempts = e.remainingAttempts;
+    // Los hallazgos del análisis son del propio proyecto de quien compila: dónde está y qué usar en su lugar.
+    if (e instanceof CompileBlockedError) problem.findings = e.findings;
     return problem;
   }
 

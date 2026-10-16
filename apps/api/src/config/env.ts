@@ -38,6 +38,12 @@ const EnvSchema = z.object({
   TRANSPORT_PRIVATE_KEY: z.string().min(40),
   /** Clave maestra de las columnas cifradas (C3c) y de los índices ciegos; de ella se derivan subclaves con HKDF. */
   DATA_MASTER_KEY: base64Key32,
+  /** Clave privada Ed25519 (PKCS#8, base64) que firma los PDF compilados (C4b). Nunca entra en el sandbox. */
+  COMPILER_SIGNING_KEY: z.string().min(40),
+  /** Volumen tmpfs compartido con el sandbox de compilación (sin red): peticiones y resultados. */
+  COMPILE_JOBS_DIR: z.string().default('/jobs'),
+  /** Debe coincidir con el plazo del trabajador del sandbox. */
+  COMPILE_TIMEOUT_MS: z.coerce.number().int().min(1_000).max(120_000).default(30_000),
   COOKIE_SECURE: boolFromString,
 
   SMTP_HOST: z.string().default('mailpit'),

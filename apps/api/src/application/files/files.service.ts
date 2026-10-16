@@ -157,7 +157,20 @@ export class FilesService {
    * bloqueos se auditan: son la señal más directa de un intento de abuso.
    */
   async analyze(actor: Actor, projectId: string, m: RequestMeta): Promise<AnalysisResult> {
+    return (await this.snapshot(actor, projectId, m)).analysis;
+  }
+
+  /**
+   * Lo que entra al sandbox: el proyecto descifrado y su análisis, de la MISMA
+   * lectura. Analizar una versión y compilar otra abriría una carrera
+   * (TOCTOU) en la que un colaborador cuela \write18 entre las dos.
+   */
+  async snapshot(actor: Actor, projectId: string, m: RequestMeta): Promise<{ readonly files: FileWithContent[]; readonly analysis: AnalysisResult }> {
     const files = await this.readAll(actor, projectId, m);
+    return { files, analysis: await this.assess(actor, projectId, files, m) };
+  }
+
+  private async assess(actor: Actor, projectId: string, files: readonly FileWithContent[], m: RequestMeta): Promise<AnalysisResult> {
     const findings = analyzeLatex(files);
     const blocked = findings.some((f) => f.severity === 'blocking');
     // Solo se auditan los bloqueos: los avisos se repetirían en cada autocompilación.

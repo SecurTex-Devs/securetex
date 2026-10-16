@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Headers, HttpCode, Param, ParseUUIDPipe,
 import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { CollabService } from '../../application/collab/collab.service';
+import { CompileService, type CompileOutput } from '../../application/compile/compile.service';
 import { FilesService } from '../../application/files/files.service';
 import type { Actor, RequestMeta } from '../../application/request-meta';
 import { ValidationError } from '../../domain/errors';
@@ -115,13 +116,55 @@ export class FilesController {
   }
 }
 
+/**
+ * Texto plano del sobre de una compilación: u32be(longitud) ‖ cabecera JSON ‖
+ * bytes del PDF. Binario a propósito: un PDF de 16 MB no se infla con un
+ * segundo base64 dentro del JSON.
+ */
+function compileFrame(out: CompileOutput): Buffer {
+  const b64 = (b: Buffer) => b.toString('base64url');
+  const header = Buffer.from(JSON.stringify({
+    v: 1,
+    compilationId: out.compilationId, status: out.status, engine: out.engine, mainFile: out.mainFile,
+    durationMs: out.durationMs, runs: out.runs, log: out.log, diagnostics: out.diagnostics, warnings: out.warnings,
+    pdfBytes: out.pdf?.length ?? 0,
+    signature: out.signature
+      ? { alg: out.signature.alg, pdfSha256: b64(out.signature.pdfSha256), sourceTreeHash: b64(out.signature.sourceTreeHash), value: b64(out.signature.value) }
+      : null,
+  }), 'utf8');
+  const length = Buffer.alloc(4);
+  length.writeUInt32BE(header.length);
+  return Buffer.concat([length, header, out.pdf ?? Buffer.alloc(0)]);
+}
+
 @ApiTags('Compilación')
 @Controller({ path: 'projects/:projectId/compile', version: '1' })
 export class CompileController {
   constructor(
     private readonly files: FilesService,
     private readonly collab: CollabService,
+    private readonly compiler: CompileService,
+    private readonly transport: TransportCrypto,
   ) {}
+
+  @Post()
+  @HttpCode(200)
+  @Policy('authenticated')
+  // Lo más costoso del servicio (T-C04). Además: una compilación a la vez por persona.
+  @Throttle({ default: { limit: 12, ttl: MINUTE } })
+  @replyKeyHeader
+  @ApiOperation({
+    summary: 'Compilar el proyecto en el sandbox y devolver el PDF firmado',
+    description: 'Autoriza `compile`, repite el análisis de seguridad (422 `compile_blocked` si hay algo bloqueante) y compila en un contenedor sin red, de solo lectura, sin capacidades y con -no-shell-escape, openin_any=p, openout_any=p y un plazo de 30 s. El PDF se valida (firma %PDF, %%EOF, 16 MB), se firma con Ed25519 (C4b) y viaja en un sobre C1 + C2 con contexto `compile:pdf`: u32be(longitud) ‖ cabecera JSON ‖ PDF. 429 `compile_busy` si ya hay una compilación en curso; 503 `compiler_unavailable` si el sandbox no responde.',
+  })
+  async compile(@Param('projectId', uuid) projectId: string, @Headers(REPLY_KEY) replyKey: string | undefined, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<SealedResponseDto> {
+    if (!replyKey) throw new ValidationError({ replyKey: 'Falta la cabecera X-SecurTex-Reply-Key.' }, 'Falta la clave efímera del cliente para cifrar la respuesta.');
+    const recipient = this.transport.parseReplyKey(replyKey);
+    // Se compila lo último que hay en la sala de colaboración, no lo último guardado.
+    await this.collab.persistNow(projectId);
+    const out = await this.compiler.compile(actor, projectId, meta);
+    return { envelope: this.transport.seal(compileFrame(out), recipient, envelopeContext(projectId, 'compile:pdf')) };
+  }
 
   @Post('analyze')
   @HttpCode(200)

@@ -1944,6 +1944,47 @@
         ]
       }
     },
+    "/api/v1/projects/{projectId}/compile": {
+      "post": {
+        "description": "Autoriza `compile`, repite el análisis de seguridad (422 `compile_blocked` si hay algo bloqueante) y compila en un contenedor sin red, de solo lectura, sin capacidades y con -no-shell-escape, openin_any=p, openout_any=p y un plazo de 30 s. El PDF se valida (firma %PDF, %%EOF, 16 MB), se firma con Ed25519 (C4b) y viaja en un sobre C1 + C2 con contexto `compile:pdf`: u32be(longitud) ‖ cabecera JSON ‖ PDF. 429 `compile_busy` si ya hay una compilación en curso; 503 `compiler_unavailable` si el sandbox no responde.",
+        "operationId": "Compile_compile",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-SecurTex-Reply-Key",
+            "in": "header",
+            "description": "Clave pública X25519 efímera del cliente (base64url): la respuesta se sella para ella (C2).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SealedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Compilar el proyecto en el sandbox y devolver el PDF firmado",
+        "tags": [
+          "Compilación"
+        ]
+      }
+    },
     "/api/v1/projects/{projectId}/compile/analyze": {
       "post": {
         "description": "Decisión autoritativa del servidor: \\write18, lecturas fuera del proyecto, código Lua, E/S directa. Los bloqueos se auditan.",
@@ -1994,6 +2035,29 @@
           }
         },
         "summary": "Clave pública de transporte (C2)",
+        "tags": [
+          "Criptografía"
+        ]
+      }
+    },
+    "/api/v1/crypto/artifact-key": {
+      "get": {
+        "description": "Ed25519 en base64url. Firma = Ed25519(SHA-256(pdf) ‖ compilationId ‖ sourceTreeHash).",
+        "operationId": "Crypto_artifactKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtifactKeyDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Clave pública de firma de artefactos (C4b)",
         "tags": [
           "Criptografía"
         ]
@@ -3423,8 +3487,8 @@
           "severity": {
             "type": "string",
             "enum": [
-              "warning",
-              "blocking"
+              "blocking",
+              "warning"
             ]
           },
           "title": {
@@ -3502,6 +3566,27 @@
           "alg",
           "key",
           "contexts"
+        ]
+      },
+      "ArtifactKeyDto": {
+        "type": "object",
+        "properties": {
+          "alg": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "Clave pública de 32 bytes en base64url."
+          },
+          "message": {
+            "type": "string",
+            "description": "Qué se firma: SHA-256(pdf) ‖ compilationId (16 bytes) ‖ sourceTreeHash (32 bytes)."
+          }
+        },
+        "required": [
+          "alg",
+          "key",
+          "message"
         ]
       },
       "AdminUserDto": {

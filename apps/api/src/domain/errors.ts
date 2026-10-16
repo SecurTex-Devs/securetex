@@ -1,3 +1,5 @@
+import type { SecurityFinding } from './latex-analyzer';
+
 /**
  * Errores de dominio tipados (03-Estandares §4.1). La frontera HTTP los
  * convierte en Problem Details (RFC 9457) sin exponer detalles internos.
@@ -103,6 +105,21 @@ export class ServiceUnavailableError extends DomainError {
 
   constructor(readonly code: string, detail: string) {
     super(detail);
+  }
+}
+
+/**
+ * El análisis autoritativo encontró algo bloqueante: el proyecto no llega al
+ * sandbox. Se devuelven los hallazgos para que la interfaz muestre dónde y
+ * qué alternativa hay (P-47).
+ */
+export class CompileBlockedError extends DomainError {
+  readonly code = 'compile_blocked';
+  readonly httpStatus = 422;
+  readonly title = 'Compilación bloqueada';
+
+  constructor(readonly findings: readonly SecurityFinding[]) {
+    super('El proyecto contiene construcciones que no se pueden compilar por seguridad. Revisa los avisos marcados.');
   }
 }
 

@@ -94,3 +94,27 @@ export const COLLAB = {
   HANDSHAKE_TIMEOUT_MS: 5_000,
   MAX_FRAME_BYTES: 1_100_000,
 } as const;
+
+/**
+ * Compilación real en el sandbox (Zona 4, AGENTS.md §3.3). Los límites se
+ * imponen dos veces: en el contenedor (cgroups, prlimit) y aquí, al aceptar
+ * la salida.
+ */
+export const COMPILE = {
+  /** Plazo de reloj para todas las pasadas de TeX (y BibTeX) de una compilación. */
+  TIMEOUT_MS: 30_000,
+  /** Margen sobre el plazo: cola del trabajador y lectura del resultado. */
+  WAIT_GRACE_MS: 15_000,
+  /** Si el trabajador no reclama la petición en este tiempo, el sandbox no está disponible. */
+  CLAIM_TIMEOUT_MS: 10_000,
+  POLL_MS: 100,
+  /** Tamaño máximo del PDF entregado; el sandbox mata a TeX al superarlo (RLIMIT_FSIZE). */
+  MAX_PDF_BYTES: 16 * 1024 * 1024,
+  /** Registro que se devuelve a la interfaz, ya saneado. */
+  MAX_LOG_CHARS: 200_000,
+  MAX_DIAGNOSTICS: 200,
+  /** Compilaciones simultáneas en todo el servicio y por persona. */
+  MAX_IN_FLIGHT: 4,
+  MAX_IN_FLIGHT_PER_USER: 1,
+  RETRY_AFTER_SECONDS: 5,
+} as const;

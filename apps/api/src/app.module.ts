@@ -5,6 +5,9 @@ import { AccountService } from './application/account/account.service';
 import { AdminUsersService } from './application/admin/admin-users.service';
 import { EncryptedFileStore } from './application/files/file-store';
 import { FilesService } from './application/files/files.service';
+import { CompileService } from './application/compile/compile.service';
+import { SandboxClient } from './infrastructure/compiler/sandbox-client';
+import { ArtifactSigner } from './infrastructure/security/artifact-signer';
 import { CollabService } from './application/collab/collab.service';
 import { FileCrypto } from './infrastructure/security/envelope';
 import { FieldCipher } from './infrastructure/security/field-cipher';
@@ -46,6 +49,7 @@ import { AdminController, HealthController } from './presentation/http/system.co
     AuditLog, SessionService, LoginThrottle, MfaService, EmailTokenService, NewPasswordService,
     AuthService, OidcService, AccountService, ProjectsService,
     FileCrypto, FieldCipher, PersonalData, TransportCrypto, EncryptedFileStore, FilesService, AdminUsersService,
+    SandboxClient, ArtifactSigner, CompileService,
     CollabService, CollabGateway,
     // Orden: primero el límite de tasa (antes de gastar CPU en Argon2id, T-A10),
     // después identidad + política + CSRF.

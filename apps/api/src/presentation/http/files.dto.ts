@@ -91,6 +91,14 @@ export class AdminUserDto {
   readonly activeSessions!: number;
 }
 
+export class ArtifactKeyDto {
+  readonly alg!: 'Ed25519';
+  /** Clave pública de 32 bytes en base64url. */
+  readonly key!: string;
+  /** Qué se firma: SHA-256(pdf) ‖ compilationId (16 bytes) ‖ sourceTreeHash (32 bytes). */
+  readonly message!: string;
+}
+
 export class TransportKeyDto {
   readonly alg!: 'X25519';
   /** Clave pública de 32 bytes en base64url. */
