@@ -24,7 +24,10 @@ interface ToastState {
 let seq = 0;
 const useToasts = create<ToastState>((set) => ({
   items: [],
-  push: (t) => set((s) => ({ items: [...s.items.slice(-3), { ...t, id: ++seq }] })),
+  // Un aviso idéntico sustituye al anterior (p. ej., pulsar Ctrl+S varias veces) en vez de apilarse.
+  push: (t) => set((s) => ({
+    items: [...s.items.filter((i) => i.tone !== t.tone || i.title !== t.title || i.description !== t.description).slice(-3), { ...t, id: ++seq }],
+  })),
   remove: (id) => set((s) => ({ items: s.items.filter((i) => i.id !== id) })),
 }));
 

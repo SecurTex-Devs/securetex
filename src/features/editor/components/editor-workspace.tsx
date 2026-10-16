@@ -76,6 +76,7 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
   const files = useEditor((s) => s.files);
   const autoCompile = useEditor((s) => s.autoCompile);
   const compile = useEditor((s) => s.compile);
+  const build = useEditor((s) => s.build);
   const connection = useEditor((s) => s.connection);
   const synced = useEditor((s) => s.synced);
   const pending = useEditor((s) => s.saveState !== 'saved');
@@ -131,17 +132,20 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
   }, [ready]);
 
   // Autocompilación: 1,5 s después de dejar de escribir (F-121), también ante cambios de los demás.
+  // Con el PDF real a la vista, se recompila también en el sandbox (como Overleaf); si no, basta la vista rápida.
   useEffect(() => {
     if (!autoCompile || !ready) return;
-    const id = window.setTimeout(() => void compile(), 1500);
+    const id = window.setTimeout(() => void (useEditor.getState().previewMode === 'pdf' ? build() : compile()), 1500);
     return () => window.clearTimeout(id);
-  }, [files, autoCompile, ready, compile]);
+  }, [files, autoCompile, ready, compile, build]);
 
   // Estable (sin dependencias): si cambiara en cada render, CodeMirror reconstruiría su estado.
+  // Ctrl+S guarda ya y recompila el PDF real, como en Overleaf.
   const onSave = useCallback(() => {
     useEditor.getState().flush();
     const e = getT('editor');
     toast.security(e('crypto.savedToast'), e('crypto.savedHint'));
+    void useEditor.getState().build();
   }, []);
 
   if (connection === 'integrity') return <IntegrityView />;

@@ -218,6 +218,7 @@ export const useEditor = create<EditorState>((set, get) => ({
 
   stop: () => {
     get().collab?.destroy();
+    pdfAgain = false;
     set({ collab: null, projectId: null });
   },
 
@@ -320,7 +321,10 @@ export const useEditor = create<EditorState>((set, get) => ({
    */
   compilePdf: async () => {
     const { projectId, pdfStatus } = get();
-    if (!projectId || pdfStatus === 'running') return;
+    if (!projectId) return;
+    // El servidor admite una compilación a la vez por persona: lo pedido mientras
+    // tanto se compila al terminar, con el contenido de ese momento.
+    if (pdfStatus === 'running') { pdfAgain = true; return; }
     set({ pdfStatus: 'running', pdfError: null });
     try {
       const { header, pdf, synctex } = await compileApi.run(projectId);
@@ -343,6 +347,8 @@ export const useEditor = create<EditorState>((set, get) => ({
       set({ pdfStatus: 'failed', pdfError: pdfErrorMessage(e) });
       // Un 422 es una carrera con un colaborador: el análisis vuelve a mostrar el bloqueo.
       if (isApiError(e) && e.status === 422) void get().compile();
+    } finally {
+      if (pdfAgain && get().projectId === projectId) { pdfAgain = false; void get().build(); }
     }
   },
 
@@ -381,6 +387,9 @@ export const useEditor = create<EditorState>((set, get) => ({
     });
   },
 }));
+
+/** Una recompilación pedida mientras otra estaba en curso (Ctrl+S, autocompilación). */
+let pdfAgain = false;
 
 function emptyResult(previous: CompileResult | null): Omit<CompileResult, 'findings' | 'durationMs' | 'finishedAt'> {
   return previous ?? { model: { blocks: [], labels: new Map(), citations: new Map() }, pages: [], diagnostics: [] };
