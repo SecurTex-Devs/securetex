@@ -3,7 +3,8 @@ import { AUTH } from '../../domain/constants';
 import { RateLimitedError } from '../../domain/errors';
 import type { Email } from '../../domain/values';
 import { Databases } from '../../infrastructure/db/databases';
-import { sha256, type Bytes } from '../../infrastructure/security/tokens';
+import { FieldCipher } from '../../infrastructure/security/field-cipher';
+import type { Bytes } from '../../infrastructure/security/tokens';
 
 export interface FailureOutcome {
   readonly locked: boolean;
@@ -19,7 +20,10 @@ export interface FailureOutcome {
  */
 @Injectable()
 export class LoginThrottle {
-  constructor(private readonly db: Databases) {}
+  constructor(
+    private readonly db: Databases,
+    private readonly cipher: FieldCipher,
+  ) {}
 
   async assertNotLocked(email: Email): Promise<void> {
     const row = await this.db.identity.loginThrottle.findUnique({ where: { keyHash: this.key(email) } });
@@ -59,6 +63,7 @@ export class LoginThrottle {
   }
 
   private key(email: Email): Bytes {
-    return sha256(`login:${email.toString()}`);
+    // HMAC con clave (índice ciego): un SHA-256 sin clave del correo se revierte probando correos conocidos.
+    return Buffer.from(this.cipher.index('login', email.toString()), 'hex');
   }
 }

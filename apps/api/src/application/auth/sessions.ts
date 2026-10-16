@@ -6,6 +6,7 @@ import { Databases } from '../../infrastructure/db/databases';
 import { AccessTokenService } from '../../infrastructure/security/access-tokens';
 import { anonymizeIp, deviceLabel, hashUserAgent } from '../../infrastructure/security/client-info';
 import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
+import { Mailer } from '../../infrastructure/mail/mailer';
 import {
   formatCompositeToken,
   parseCompositeToken,
@@ -48,18 +49,24 @@ export class SessionService {
     private readonly tokens: AccessTokenService,
     private readonly audit: AuditLog,
     private readonly cipher: FieldCipher,
+    private readonly mailer: Mailer,
   ) {}
 
   async create(user: Pick<User, 'id'>, authMethod: string, remember: boolean, meta: RequestMeta): Promise<IssuedSession> {
     const now = Date.now();
     const ttl = remember ? AUTH.SESSION_REMEMBER_TTL_MS : AUTH.SESSION_DEFAULT_TTL_MS;
     const csrfToken = randomSecret();
+    const uaHash = hashUserAgent(meta.userAgent);
+    const [knownDevice, anyBefore] = await Promise.all([
+      this.db.identity.session.count({ where: { userId: user.id, userAgentHash: uaHash } }),
+      this.db.identity.session.count({ where: { userId: user.id } }),
+    ]);
     const session = await this.db.identity.session.create({
       data: {
         userId: user.id,
         csrfHash: sha256(csrfToken),
         ipPrefix: this.cipher.encrypt(anonymizeIp(meta.ip), FIELD.sessionIp),
-        userAgentHash: hashUserAgent(meta.userAgent),
+        userAgentHash: uaHash,
         deviceLabel: this.cipher.encrypt(deviceLabel(meta.userAgent), FIELD.sessionDevice),
         authMethod,
         remember,
@@ -72,7 +79,23 @@ export class SessionService {
     await this.db.identity.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date(now) } });
     const refreshToken = await this.newRefreshToken(session.id, session.expiresAt);
     const accessToken = await this.tokens.issue({ userId: user.id, sessionId: session.id });
+    // Primer acceso desde este navegador (y no es la primera sesión de la cuenta): se avisa al titular.
+    if (knownDevice === 0 && anyBefore > 0) await this.notifyNewDevice(user.id, deviceLabel(meta.userAgent));
     return { sessionId: session.id, accessToken, refreshToken, csrfToken, remember, expiresAt: session.expiresAt };
+  }
+
+  private async notifyNewDevice(userId: string, device: string): Promise<void> {
+    const u = await this.db.identity.user.findUnique({ where: { id: userId }, select: { primaryEmail: true } });
+    if (!u) return;
+    await this.mailer.send({
+      to: this.cipher.decrypt(u.primaryEmail, FIELD.userEmail),
+      subject: 'Nuevo inicio de sesión en tu cuenta de SecurTex',
+      heading: 'Nuevo inicio de sesión',
+      paragraphs: [
+        `Se ha iniciado sesión en tu cuenta desde un dispositivo nuevo: ${device}.`,
+        'Si has sido tú, no tienes que hacer nada. Si no, cambia tu contraseña y cierra las demás sesiones desde Ajustes → Seguridad.',
+      ],
+    });
   }
 
   /** Rota el refresh token. Lanza 401 si no es válido; revoca la familia si se reutiliza. */
