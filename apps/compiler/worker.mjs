@@ -32,7 +32,8 @@ const STALE_MS = 2 * 60_000;
 const HEARTBEAT = '/tmp/compiler-alive';
 
 const ENGINES = { pdflatex: 'pdflatex', xelatex: 'xelatex', lualatex: 'lualatex' };
-const ALLOWED_EXT = new Set(['tex', 'bib', 'cls', 'sty', 'txt', 'bst']);
+const BINARY_EXT = new Set(['png', 'jpg', 'jpeg', 'pdf']);
+const ALLOWED_EXT = new Set(['tex', 'bib', 'cls', 'sty', 'txt', 'bst', ...BINARY_EXT]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const JOBNAME = 'output';
 
@@ -81,7 +82,10 @@ function parseRequest(raw) {
   const files = req.files.map((f) => {
     const path = safeRelativePath(f?.path);
     if (!path || typeof f.content !== 'string') throw new Error('archivo inválido');
-    return { path, content: f.content };
+    // Imágenes y PDF llegan en base64 y solo con esas extensiones.
+    const binary = f.encoding === 'base64';
+    if (binary !== BINARY_EXT.has(path.split('.').pop().toLowerCase())) throw new Error('codificación inválida');
+    return { path, content: binary ? Buffer.from(f.content, 'base64') : f.content };
   });
   if (!files.some((f) => f.path === mainFile)) throw new Error('falta el documento principal');
   return { engine, mainFile, files };
@@ -183,7 +187,7 @@ async function compileJob(id, req) {
     for (const f of req.files) {
       await mkdir(dirname(join(dir, f.path)), { recursive: true, mode: 0o700 });
       // 'wx': nunca se sigue ni se pisa nada que ya exista.
-      await writeFile(join(dir, f.path), f.content, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+      await writeFile(join(dir, f.path), f.content, { flag: 'wx', mode: 0o600 });
     }
     const result = await compileInto(dir, req, started + TIMEOUT_MS);
     const pdf = await readCapped(join(dir, `${JOBNAME}.pdf`), MAX_PDF_BYTES + 1);

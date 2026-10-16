@@ -10,7 +10,8 @@ import { ServiceUnavailableError } from '../../domain/errors';
 export interface SandboxRequest {
   readonly engine: CompileEngine;
   readonly mainFile: string;
-  readonly files: ReadonlyArray<{ readonly path: string; readonly content: string }>;
+  /** `base64` para imágenes y PDF; el resto es texto UTF-8. */
+  readonly files: ReadonlyArray<{ readonly path: string; readonly content: string; readonly encoding: 'utf8' | 'base64' }>;
 }
 
 /** Lo que el sandbox dice de sí mismo. Es salida de código hostil: se valida todo antes de usarla. */

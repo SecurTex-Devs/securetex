@@ -11,7 +11,7 @@ import { SafeFilePath } from '../../domain/values';
 import { SandboxClient, type SandboxRequest } from '../../infrastructure/compiler/sandbox-client';
 import { ArtifactSigner } from '../../infrastructure/security/artifact-signer';
 import { AuditLog, type AuditEntry } from '../audit/audit-log';
-import { FilesService } from '../files/files.service';
+import { FilesService, isBinaryKind } from '../files/files.service';
 import { ProjectsService } from '../projects/projects.service';
 import type { Actor, RequestMeta } from '../request-meta';
 
@@ -70,7 +70,7 @@ export class CompileService {
     const engine = (COMPILE_ENGINES as readonly string[]).includes(row.compiler) ? (row.compiler as CompileEngine) : 'pdflatex';
     // Toda ruta que entra al sandbox pasa otra vez por SafeFilePath (AGENTS.md §3.3).
     const mainFile = SafeFilePath.of(row.mainFile).toString();
-    const sources = files.map((f) => ({ path: SafeFilePath.of(f.path).toString(), content: f.content }));
+    const sources = files.map((f) => ({ path: SafeFilePath.of(f.path).toString(), content: f.content, encoding: isBinaryKind(f.kind) ? 'base64' as const : 'utf8' as const }));
     if (!mainFile.endsWith('.tex') || !sources.some((f) => f.path === mainFile)) {
       throw new ValidationError({ mainFile: 'El documento principal no existe en el proyecto.' }, 'Elige un documento principal .tex en los ajustes del proyecto.');
     }

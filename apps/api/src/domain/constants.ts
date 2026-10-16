@@ -72,13 +72,21 @@ export const PROJECTS = {
 export const FILES = {
   /** F-074 · cuota por archivo de texto */
   MAX_FILE_BYTES: 1_000_000,
+  /** F-074 · cuota por imagen o PDF subido */
+  MAX_BINARY_BYTES: 5_000_000,
   /** F-074 · cuota por proyecto */
-  MAX_PROJECT_BYTES: 20_000_000,
+  MAX_PROJECT_BYTES: 50_000_000,
   MAX_FILES_PER_PROJECT: 200,
   MAX_PATH_LENGTH: 200,
   MAX_PATH_DEPTH: 4,
-  /** Solo texto en esta entrega: las subidas binarias requieren antimalware (F-263). */
-  ALLOWED_EXTENSIONS: ['tex', 'bib', 'cls', 'sty', 'txt', 'bst'],
+  TEXT_EXTENSIONS: ['tex', 'bib', 'cls', 'sty', 'txt', 'bst'],
+  /**
+   * Binarios admitidos para figuras: solo formatos cuyo tipo real se comprueba
+   * por sus primeros bytes. Sin SVG (puede llevar scripts) ni ejecutables.
+   * El análisis antimalware (F-263) queda como riesgo residual documentado.
+   */
+  BINARY_EXTENSIONS: ['png', 'jpg', 'jpeg', 'pdf'],
+  ALLOWED_EXTENSIONS: ['tex', 'bib', 'cls', 'sty', 'txt', 'bst', 'png', 'jpg', 'jpeg', 'pdf'],
 } as const;
 
 /** Colaboración en tiempo real (F-090 … F-095). */
@@ -117,4 +125,11 @@ export const COMPILE = {
   MAX_IN_FLIGHT: 4,
   MAX_IN_FLIGHT_PER_USER: 1,
   RETRY_AFTER_SECONDS: 5,
+} as const;
+
+/** Historial de versiones (F-150). */
+export const HISTORY = {
+  /** Como mucho una instantánea por archivo y autor cada 2 minutos de edición continua. */
+  SNAPSHOT_MIN_INTERVAL_MS: 120_000,
+  MAX_VERSIONS_PER_FILE: 60,
 } as const;

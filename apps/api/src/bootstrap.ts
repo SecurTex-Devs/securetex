@@ -10,8 +10,8 @@ import { AppModule } from './app.module';
 import { loadEnv } from './config/env';
 import { ValidationError } from './domain/errors';
 
-// 1 MB de contenido por archivo, cifrado en un sobre C1 + C2 y en base64url: algo menos de 1,4 MB.
-const BODY_LIMIT_BYTES = 1_500_000;
+// Subidas de imágenes: 5 MB cifrados en un sobre y en base64url (≈ 6,8 MB). Los DTO acotan cada campo.
+const BODY_LIMIT_BYTES = 7_500_000;
 
 /** Construye la aplicación con todos los controles transversales. Compartido por main y por el generador de contratos. */
 export async function createApp(): Promise<NestFastifyApplication> {

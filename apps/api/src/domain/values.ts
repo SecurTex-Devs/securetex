@@ -134,12 +134,31 @@ export class SafeFilePath {
     }
     const extension = (path.split('.').pop() ?? '').toLowerCase();
     if (!path.includes('.') || !(FILES.ALLOWED_EXTENSIONS as readonly string[]).includes(extension)) {
-      throw invalid('Extensión no permitida. Usa .tex, .bib, .cls, .sty, .bst o .txt.');
+      throw invalid('Extensión no permitida. Usa .tex, .bib, .cls, .sty, .bst, .txt, .png, .jpg o .pdf.');
     }
     return new SafeFilePath(path, extension);
+  }
+
+  get isBinary(): boolean {
+    return (FILES.BINARY_EXTENSIONS as readonly string[]).includes(this.extension);
   }
 
   toString(): string {
     return this.value;
   }
+}
+
+/**
+ * Comprueba que los bytes son de verdad del tipo que dice la extensión (magic
+ * bytes): un «.png» que en realidad es HTML o un ejecutable se rechaza. Devuelve
+ * el tipo MIME que se usará siempre al mostrarlo, nunca el que diga el cliente.
+ */
+export function verifyBinaryType(bytes: Uint8Array, extension: string): string {
+  const starts = (...sig: number[]) => sig.every((b, i) => bytes[i] === b);
+  const ok =
+    (extension === 'png' && starts(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)) ? 'image/png' :
+    ((extension === 'jpg' || extension === 'jpeg') && starts(0xff, 0xd8, 0xff)) ? 'image/jpeg' :
+    (extension === 'pdf' && starts(0x25, 0x50, 0x44, 0x46, 0x2d)) ? 'application/pdf' : null;
+  if (!ok) throw new ValidationError({ file: 'El contenido no corresponde a la extensión.' }, 'El archivo no es una imagen PNG o JPG, ni un PDF válido.');
+  return ok;
 }
