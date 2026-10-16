@@ -119,7 +119,7 @@ export function EditorPreferences() {
               <Field label={t('editor.size')}>{(a) => <Select {...a} value={String(prefs.fontSize)} onValueChange={(v) => update('fontSize', Number(v))} options={['12', '13', '14', '15', '16', '18'].map((s) => ({ value: s, label: `${s} px` }))} />}</Field>
               <Field label={t('editor.lineHeight')}>{(a) => <Select {...a} value={String(prefs.lineHeight)} onValueChange={(v) => update('lineHeight', Number(v))} options={['1.5', '1.65', '1.75', '2'].map((s) => ({ value: s, label: s }))} />}</Field>
             </div>
-            <Field label={t('editor.spell')}>{(a) => <Select {...a} value={prefs.spell} onValueChange={(v) => update('spell', v)} options={[{ value: 'es', label: 'Español (Ecuador)' }, { value: 'en', label: 'English (US)' }]} />}</Field>
+            <Field label={t('editor.spell')}>{(a) => <Select {...a} value={prefs.spell} onValueChange={(v) => update('spell', v)} options={[{ value: 'es', label: 'Español (Ecuador)' }, { value: 'en', label: 'English (US)' }, { value: 'off', label: t('editor.spellOff') }]} />}</Field>
             <ul className="grid divide-y divide-line rounded-[12px] shadow-[inset_0_0_0_1px_var(--border)]">
               {([['wrap', t('editor.wrap')], ['autocomplete', t('editor.autocomplete')], ['autoclose', t('editor.autoclose')], ['lineNumbers', t('editor.lineNumbers')]] as const).map(([k, label]) => (
                 <li key={k} className="flex items-center justify-between px-4 py-3 text-[13px] text-fg">{label}<Switch label={label} checked={prefs[k]} onCheckedChange={(v) => update(k, v)} /></li>
@@ -129,7 +129,7 @@ export function EditorPreferences() {
         </Panel>
         <div>
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-fg-3">{t('editor.preview')}</p>
-          <pre className="card overflow-hidden p-4 font-mono" style={{ fontSize: prefs.fontSize, lineHeight: prefs.lineHeight }} aria-hidden="true">
+          <pre className="card overflow-hidden p-4 font-mono" style={{ fontSize: prefs.fontSize, lineHeight: prefs.lineHeight, ...(prefs.font === 'system' ? { fontFamily: 'ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace' } : {}) }} aria-hidden="true">
             {prefs.lineNumbers && <span className="mr-3 text-fg-3">1</span>}<span className="text-brand">\documentclass</span><span className="text-fg-3">{'{'}</span><span className="text-sec">article</span><span className="text-fg-3">{'}'}</span>{'\n'}
             {prefs.lineNumbers && <span className="mr-3 text-fg-3">2</span>}<span className="text-brand">\begin</span><span className="text-fg-3">{'{'}</span><span className="text-sec">document</span><span className="text-fg-3">{'}'}</span>{'\n'}
             {prefs.lineNumbers && <span className="mr-3 text-fg-3">3</span>}Hola, <span className="text-brand">\textbf</span><span className="text-fg-3">{'{'}</span>mundo<span className="text-fg-3">{'}'}</span>.{'\n'}

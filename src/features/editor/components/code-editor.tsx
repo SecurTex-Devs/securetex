@@ -12,6 +12,9 @@ import { allBibEntries, collectLabels, flatten } from '../lib/latex-source';
 import { baseExtensions } from '../lib/codemirror-setup';
 import { isBinaryKind, useEditor } from '../store';
 
+/** «Monoespaciada del sistema»: la del sistema operativo, sin descargar nada. */
+const SYSTEM_MONO = 'ui-monospace, "Cascadia Mono", Consolas, "SF Mono", Menlo, "DejaVu Sans Mono", monospace';
+
 const flashEffect = StateEffect.define<number | null>();
 const flashField = StateField.define({
   create: () => Decoration.none,
@@ -49,7 +52,7 @@ export function CodeEditor({ readOnly, onSave, viewRef }: {
   const synced = useEditor((s) => s.synced);
   const jump = useEditor((s) => s.jump);
   const prefs = useEditorPrefs();
-  const prefsKey = `${prefs.wrap}${prefs.lineNumbers}${prefs.autocomplete}${prefs.autoclose}`;
+  const prefsKey = `${prefs.wrap}${prefs.lineNumbers}${prefs.autocomplete}${prefs.autoclose}${prefs.spell}`;
 
   useEffect(() => {
     if (!host.current) return;
@@ -98,8 +101,14 @@ export function CodeEditor({ readOnly, onSave, viewRef }: {
             useEditor.getState().setCursor(line.number, head - line.from + 1);
           }
         }),
-        // Corrector ortográfico del navegador, en español, como en Overleaf.
-        EditorView.contentAttributes.of({ 'aria-label': getT('editor')('editor.label', { file: activeFile }), spellcheck: 'true', lang: 'es', autocorrect: 'off', autocapitalize: 'off' }),
+        // Corrector ortográfico del navegador en el idioma elegido en Ajustes (o ninguno), como en Overleaf.
+        EditorView.contentAttributes.of({
+          'aria-label': getT('editor')('editor.label', { file: activeFile }),
+          spellcheck: prefs.spell === 'off' ? 'false' : 'true',
+          lang: prefs.spell === 'en' ? 'en-US' : 'es-EC',
+          autocorrect: 'off',
+          autocapitalize: 'off',
+        }),
       ],
     }));
     // Los demás ven en qué archivo estamos (el nombre y el color los fija el servidor).
@@ -125,7 +134,7 @@ export function CodeEditor({ readOnly, onSave, viewRef }: {
   return (
     <div
       ref={host}
-      style={{ '--cm-font-size': `${prefs.fontSize}px`, '--cm-line-height': String(prefs.lineHeight) } as React.CSSProperties}
+      style={{ '--cm-font-size': `${prefs.fontSize}px`, '--cm-line-height': String(prefs.lineHeight), ...(prefs.font === 'system' ? { '--cm-font-family': SYSTEM_MONO } : {}) } as React.CSSProperties}
       className="h-full min-h-0 overflow-hidden [&_.cm-editor]:h-full [&_.cm-editor.cm-focused]:outline-none"
     />
   );

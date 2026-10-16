@@ -25,7 +25,7 @@ export const latexHighlight = HighlightStyle.define([
 
 export const editorTheme = EditorView.theme({
   '&': { height: '100%', fontSize: 'var(--cm-font-size, 14px)', backgroundColor: 'var(--surface)', color: 'var(--text)' },
-  '.cm-scroller': { fontFamily: 'var(--font-jetbrains), ui-monospace, monospace', lineHeight: 'var(--cm-line-height, 1.75)' },
+  '.cm-scroller': { fontFamily: 'var(--cm-font-family, var(--font-jetbrains), ui-monospace, monospace)', lineHeight: 'var(--cm-line-height, 1.75)' },
   '.cm-content': { padding: '14px 0 40vh', caretColor: 'var(--brand)' },
   '.cm-line': { padding: '0 18px 0 6px' },
   '.cm-gutters': { backgroundColor: 'var(--surface)', color: 'var(--text-3)', border: 'none', paddingLeft: '8px' },

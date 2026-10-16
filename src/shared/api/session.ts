@@ -47,9 +47,13 @@ export interface EditorPrefs {
   readonly lineNumbers: boolean;
   readonly autocomplete: boolean;
   readonly autoclose: boolean;
+  /** 'jetbrains' | 'system'. */
+  readonly font: string;
+  /** Idioma del corrector del navegador: 'es' | 'en' | 'off'. */
+  readonly spell: string;
 }
 
-export const DEFAULT_EDITOR_PREFS: EditorPrefs = { fontSize: 14, lineHeight: 1.75, wrap: true, lineNumbers: true, autocomplete: true, autoclose: true };
+export const DEFAULT_EDITOR_PREFS: EditorPrefs = { fontSize: 14, lineHeight: 1.75, wrap: true, lineNumbers: true, autocomplete: true, autoclose: true, font: 'jetbrains', spell: 'es' };
 
 /** Todas las preferencias guardadas (cifradas en el servidor), tal cual. */
 export function useRawPreferences() {

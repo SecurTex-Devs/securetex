@@ -133,6 +133,7 @@ export const account = {
   'editor.keymap': 'Atajos de teclado',
   'editor.keymap.standard': 'Estándar',
   'editor.spell': 'Idioma del corrector',
+  'editor.spellOff': 'Desactivado',
   'editor.wrap': 'Ajuste de línea',
   'editor.autocomplete': 'Autocompletado',
   'editor.autoclose': 'Autocierre de llaves y entornos',
