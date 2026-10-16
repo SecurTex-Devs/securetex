@@ -64,13 +64,13 @@ describe('Cifrado de archivos en reposo (C3) con verificación previa (C4)', () 
 });
 
 describe('Rutas de archivo seguras', () => {
-  it.each(['main.tex', 'capitulos/intro.tex', 'refs/biblio.bib', 'estilo/uta-tesis.cls', 'a/b/c/d.tex'])('acepta %s', (p) => {
+  it.each(['main.tex', 'capitulos/intro.tex', 'refs/biblio.bib', 'estilo/uta-tesis.cls', 'a/b/c/d.tex', 'figuras/diagrama.png', 'fotos/portada.jpg'])('acepta %s', (p) => {
     expect(SafeFilePath.of(p).toString()).toBe(p);
   });
 
   it.each([
     '../secreto.tex', 'capitulos/../../x.tex', '/etc/passwd.tex', 'C:/Windows/x.tex', 'a\\b.tex', '.oculto.tex',
-    'capitulos/./x.tex', 'imagen.png', 'script.sh', 'sin-extension', 'a/b/c/d/e.tex', 'con<raro>.tex', 'nul\u0000.tex', '',
+    'capitulos/./x.tex', 'imagen.svg', 'pagina.html', 'script.sh', 'sin-extension', 'a/b/c/d/e.tex', 'con<raro>.tex', 'nul\u0000.tex', '',
   ])('rechaza %j', (p) => {
     expect(() => SafeFilePath.of(p)).toThrow(ValidationError);
   });
