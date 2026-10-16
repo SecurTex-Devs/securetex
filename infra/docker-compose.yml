@@ -1,0 +1,124 @@
+# SecurTex · entorno local completo (Sprint 1)
+#
+#   node infra/generate-env.mjs        # una vez: secretos aleatorios en infra/.env
+#   docker compose -f infra/docker-compose.yml up --build
+#
+# Requiere los tres repositorios clonados uno al lado del otro
+# (securtex-backend/ y securtex-frontend/ en la misma carpeta).
+#
+# | Servicio  | URL                              | Para qué                          |
+# |-----------|----------------------------------|-----------------------------------|
+# | web       | http://localhost:3000            | La aplicación                     |
+# | api       | http://localhost:4000/api/docs   | Swagger (solo en desarrollo)      |
+# | mailpit   | http://localhost:8025            | Bandeja de los correos enviados   |
+#
+# Los puertos internos (PostgreSQL) no se publican. Los publicados se atan a
+# 127.0.0.1: no quedan expuestos a la red local.
+
+name: securtex
+
+x-api-env: &api-env
+  NODE_ENV: development
+  PORT: "4000"
+  APP_ORIGIN: http://localhost:3000
+  # La API solo confía en X-Forwarded-For si viene de la red interna (el proxy de Next).
+  TRUST_PROXY: loopback,uniquelocal
+  DATABASE_URL_IDENTITY: postgresql://securtex_identity:${DB_IDENTITY_PASSWORD:?ejecuta node infra/generate-env.mjs}@postgres:5432/securtex
+  DATABASE_URL_APP: postgresql://securtex_app:${DB_APP_PASSWORD:?}@postgres:5432/securtex
+  DATABASE_URL_AUDIT: postgresql://securtex_audit:${DB_AUDIT_PASSWORD:?}@postgres:5432/securtex
+  JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:?}
+  MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?}
+  FILES_MASTER_KEY: ${FILES_MASTER_KEY:?ejecuta node infra/generate-env.mjs --force}
+  COOKIE_SECURE: "false"
+  SMTP_HOST: mailpit
+  SMTP_PORT: "1025"
+  HIBP_ENABLED: ${HIBP_ENABLED:-true}
+  API_DOCS_ENABLED: "true"
+  GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+  GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+  MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
+  MICROSOFT_CLIENT_SECRET: ${MICROSOFT_CLIENT_SECRET:-}
+  MICROSOFT_TENANT: ${MICROSOFT_TENANT:-consumers}
+
+services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_USER: securtex_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?}
+      POSTGRES_DB: securtex
+      DB_IDENTITY_PASSWORD: ${DB_IDENTITY_PASSWORD:?}
+      DB_APP_PASSWORD: ${DB_APP_PASSWORD:?}
+      DB_AUDIT_PASSWORD: ${DB_AUDIT_PASSWORD:?}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres/01-roles.sh:/docker-entrypoint-initdb.d/01-roles.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U securtex_owner -d securtex"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports:
+      - "127.0.0.1:8025:8025"
+    restart: unless-stopped
+
+  # Migraciones y datos de demostración. Es el ÚNICO servicio con las
+  # credenciales del propietario de la base de datos; la API nunca las tiene.
+  migrate:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    image: securtex-api:local
+    environment:
+      <<: *api-env
+      DATABASE_URL: postgresql://securtex_owner:${POSTGRES_PASSWORD:?}@postgres:5432/securtex
+      SEED_DEMO_PASSWORD: ${SEED_DEMO_PASSWORD:-}
+    command: ["sh", "-c", "pnpm exec prisma migrate deploy && node dist/scripts/seed.js"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    image: securtex-api:local
+    environment: *api-env
+    ports:
+      - "127.0.0.1:4000:4000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      mailpit:
+        condition: service_started
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ../../securtex-frontend
+    environment:
+      API_INTERNAL_URL: http://api:4000
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    restart: unless-stopped
+
+volumes:
+  pgdata:
