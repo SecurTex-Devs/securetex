@@ -3,7 +3,44 @@
 Frontend de **SecurTex**, editor LaTeX colaborativo seguro: aplicación web, editor de código, visor PDF, colaboración en tiempo real y sistema de diseño.
 
 > Proyecto final de la asignatura *Seguridad de Software* · Universidad Técnica de Ambato
-> **Estado: planificación aprobada, implementación pendiente (Sprint 0).**
+> **Estado: primera entrega funcional conectada a la API real.** Ver [Estado de esta entrega](#estado-de-esta-entrega).
+
+---
+
+## Estado de esta entrega
+
+### Arrancar
+
+La forma recomendada es la pila completa de `securtex-backend` (construye también esta aplicación):
+
+```bash
+cd ../securtex-backend
+node infra/generate-env.mjs
+docker compose -f infra/docker-compose.yml up --build -d   # http://localhost:3000
+```
+
+Para desarrollar solo el frontend contra esa API: `pnpm install`, copiar `.env.example` a `.env.local` y `pnpm dev`. Tras cambiar endpoints en el backend: `pnpm api:sync` (copia `contracts/openapi.json` y regenera los tipos; nunca se escriben a mano).
+
+### Stack real
+
+Next 15 (App Router) · React 19 · Tailwind 4 con los tokens «Papel y tinta» · Radix · TanStack Query · Zustand · `openapi-fetch` con tipos generados · CodeMirror 6 · KaTeX + DOMPurify. Arquitectura por *features* (`src/features/*` nunca se importan entre sí; lo común vive en `src/shared`).
+
+### Qué funciona de verdad
+
+- **Acceso**: registro, verificación por correo, inicio de sesión con bloqueo tras intentos fallidos, recuperación, Google/Microsoft, segundo factor TOTP y códigos de recuperación.
+- **Proyectos**: listado con filtros, búsqueda, etiquetas, vista en cuadrícula o lista; crear en blanco o desde las 5 plantillas del equipo; archivar, papelera, compartir por correo con roles.
+- **Editor**: los archivos llegan descifrados del servidor y se **autoguardan cifrados** 700 ms después de dejar de escribir. Si otra pestaña o persona guardó antes, aparece un aviso de conflicto con «Usar la del servidor» / «Conservar la mía»; nada se pisa en silencio. Árbol de archivos con carpetas, crear, renombrar/mover, duplicar, descargar, eliminar y documento principal. Si el servidor detecta un archivo alterado (HMAC), se muestra la pantalla de integridad (P-50) en lugar del contenido.
+- **Compilar**: el servidor analiza el proyecto (P-47 si bloquea, con la línea exacta y una alternativa); si no hay nada bloqueante, la vista previa tipográfica se compone en el navegador con SyncTeX en ambos sentidos.
+- **Cuenta**: perfil, sesiones activas, actividad, preferencias del editor, cuentas vinculadas y exportación de todos tus datos (perfil, etiquetas y proyectos con sus archivos) en JSON.
+- **Administración**: resumen calculado con datos reales, gestión de cuentas (suspender/reactivar) y auditoría con verificación de la cadena.
+
+### Seguridad en el cliente
+
+CSP con nonce por petición (sin `'unsafe-inline'` para estilos ni scripts); CodeMirror y Radix reciben el nonce **del documento**, también tras navegaciones de cliente. Cookies HttpOnly, token CSRF en cabecera, proxy same-origin `/api/v1`. El HTML de KaTeX pasa por DOMPurify. Ocultar acciones según el rol es cortesía visual: la API y RLS deciden.
+
+### Fuera del alcance
+
+Chat, comentarios, control de cambios, historial de versiones, presencia y cursores remotos, modo confidencial (C1/C2/C5), importación .zip/GitHub, subida de imágenes, tokens de aplicación, passkeys, SAML, métricas y moderación. Los mockups de `Docs/mockups` siguen describiendo el diseño completo como referencia.
 
 ---
 
