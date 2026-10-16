@@ -128,6 +128,11 @@ export function replyKeyPair(): { readonly secret: Uint8Array; readonly header: 
 
 /** C5 · abre un sobre del servidor: Poly1305 de la DEK, Poly1305 del bloque y etiqueta GCM con su AAD. */
 export function openFromServer(env: Envelope, keys: ReturnType<typeof replyKeyPair>, context: string): string {
+  return dec.decode(openBytesFromServer(env, keys, context));
+}
+
+/** Igual que `openFromServer`, pero devuelve los bytes: lo necesita la trama binaria de una compilación. */
+export function openBytesFromServer(env: Envelope, keys: ReturnType<typeof replyKeyPair>, context: string): Uint8Array {
   const epk = fromB64url(env.epk);
   const shared = x25519.getSharedSecret(keys.secret, epk);
   const wrap = hkdf(sha256, shared, concat(epk, keys.publicKey), enc.encode(context), 32);
@@ -136,7 +141,7 @@ export function openFromServer(env: Envelope, keys: ReturnType<typeof replyKeyPa
   try {
     dek = chachaOpen(wrap, fromB64url(env.n1), fromB64url(env.wdek), aad, 'c2_dek');
     const block = chachaOpen(wrap, fromB64url(env.n2), fromB64url(env.body), aad, 'c2_body');
-    return dec.decode(gcmOpen(dek, block, aad));
+    return gcmOpen(dek, block, aad);
   } finally {
     wipe(shared, wrap, keys.secret);
     if (dek) wipe(dek);
