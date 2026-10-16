@@ -16,8 +16,10 @@ import { toast } from '@/shared/ui/toast';
 import { NotFoundView } from '@/shared/ui/not-found-view';
 import { filesApi, type FileMeta } from '../api';
 import { collabUrl } from '../collab';
-import { useEditor } from '../store';
+import { isBinaryKind, useEditor } from '../store';
+import { BinaryPreview } from './binary-preview';
 import { CodeEditor } from './code-editor';
+import { HistoryPanel } from './history-panel';
 import { CompileLog } from './compile-log';
 import { EditorTopBar } from './editor-top-bar';
 import { FileTree } from './file-tree';
@@ -80,6 +82,8 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
   const readOnly = useEditor((s) => s.readOnly);
   const notice = useEditor((s) => s.notice);
   const loadedId = useEditor((s) => s.projectId);
+  const panel = useEditor((s) => s.panel);
+  const activeBinary = useEditor((s) => { const e = s.entries[s.activeFile]; return e && isBinaryKind(e.kind) ? e : null; });
   const viewRef = useRef<EditorView | null>(null);
   const container = useRef<HTMLDivElement>(null);
   const [treeWidth, setTreeWidth] = useState(244);
@@ -87,6 +91,7 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
   const [dialog, setDialog] = useState<'share' | 'settings' | null>(null);
   const online = useOnline() && connection !== 'offline';
   const wide = useMediaQuery('(min-width: 1024px)');
+  const xl = useMediaQuery('(min-width: 1280px)');
   const ready = loadedId === project.id && synced;
 
   useEffect(() => {
@@ -146,7 +151,8 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
   const effective = !wide && view === 'split' ? 'code' : view;
   const showCode = effective !== 'pdf';
   const showPdf = effective !== 'code';
-  const maxEditor = Math.max(360, (container.current?.clientWidth ?? 1200) - treeWidth - 340);
+  // Con el historial abierto en pantallas anchas, el panel ocupa 340 px más a la derecha.
+  const maxEditor = Math.max(360, (container.current?.clientWidth ?? 1200) - treeWidth - 340 - (panel && xl ? 340 : 0));
 
   return (
     <div className="flex h-dvh flex-col bg-bg">
@@ -161,7 +167,7 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
           <Eye className="size-4 text-fg-3" strokeWidth={1.75} aria-hidden="true" />{t('readonly.banner')}
         </div>
       )}
-      <div ref={container} className="flex min-h-0 flex-1">
+      <div ref={container} className="relative flex min-h-0 flex-1 overflow-hidden">
         <nav aria-label={t('files.label')} className="hidden shrink-0 border-r border-line bg-surface lg:block" style={{ width: treeWidth }}>
           <FileTree canEdit={!readOnly} />
         </nav>
@@ -170,15 +176,23 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
         {showCode && (
           <section aria-label={t('editor.label', { file: '' })} className="flex min-w-0 flex-col bg-surface" style={showPdf ? { width: Math.min(editorWidth, maxEditor) } : { flex: 1 }}>
             <TabsBar />
-            <FormatToolbar viewRef={viewRef} readOnly={readOnly} />
-            <div className="min-h-0 flex-1"><CodeEditor readOnly={readOnly} onSave={onSave} viewRef={viewRef} /></div>
+            {!activeBinary && <FormatToolbar viewRef={viewRef} readOnly={readOnly} />}
+            {/* El editor sigue montado con una imagen abierta: así conserva su estado al volver al texto. */}
+            <div className={activeBinary ? 'hidden' : 'min-h-0 flex-1'}><CodeEditor readOnly={readOnly} onSave={onSave} viewRef={viewRef} /></div>
+            {activeBinary && <div className="min-h-0 flex-1"><BinaryPreview projectId={project.id} file={activeBinary} /></div>}
           </section>
         )}
         {showCode && showPdf && <ResizeHandle label={t('views.split')} value={Math.min(editorWidth, maxEditor)} min={320} max={maxEditor} onChange={setEditorWidth} />}
         {showPdf && (
-          <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
             <div className="min-h-0 flex-1"><PreviewPane /></div>
             {logOpen && status !== 'blocked' && <div className="h-[38%] min-h-[180px]"><CompileLog engine={project.compiler} /></div>}
+          </div>
+        )}
+        {/* Por debajo de 1280 px no cabe un cuarto panel: el historial se superpone al PDF. */}
+        {panel === 'history' && (
+          <div className="absolute inset-y-0 right-0 z-20 w-[340px] max-w-full shadow-[var(--shadow-pop)] xl:static xl:z-auto xl:shrink-0 xl:shadow-none">
+            <HistoryPanel canEdit={!readOnly} />
           </div>
         )}
       </div>

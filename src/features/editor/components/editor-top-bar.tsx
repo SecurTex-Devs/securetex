@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Code2, Columns2, FileText, Play, Settings2, Share2 } from 'lucide-react';
+import { ChevronDown, Code2, Columns2, FileText, History, Play, Settings2, Share2 } from 'lucide-react';
 import Link from 'next/link';
 import type { Project } from '@/shared/api/types';
 import { getT } from '@/shared/i18n';
@@ -24,6 +24,8 @@ export function EditorTopBar({ project, online, onShare, onSettings }: {
   const c = getT('common');
   const view = useEditor((s) => s.view);
   const setView = useEditor((s) => s.setView);
+  const panel = useEditor((s) => s.panel);
+  const togglePanel = useEditor((s) => s.togglePanel);
   const status = useEditor((s) => s.status);
   const build = useEditor((s) => s.build);
   const compilingPdf = useEditor((s) => s.pdfStatus === 'running');
@@ -49,6 +51,8 @@ export function EditorTopBar({ project, online, onShare, onSettings }: {
         ]} />
 
         <span className="mx-0.5 hidden h-5 w-px bg-line md:block" aria-hidden="true" />
+        <IconButton size="sm" label={t('history.title')} aria-pressed={panel === 'history'} className={panel === 'history' ? 'bg-brand-soft text-brand' : undefined}
+          icon={<History className="size-4" strokeWidth={1.5} />} onClick={() => togglePanel('history')} />
         <IconButton size="sm" label={t('settings')} icon={<Settings2 className="size-4" strokeWidth={1.5} />} onClick={onSettings} />
         <Button size="sm" leading={<Share2 className="size-3.5" strokeWidth={1.75} />} onClick={onShare}>{t('share')}</Button>
         <CompileButton busy={busy} onCompile={() => void build()} />
