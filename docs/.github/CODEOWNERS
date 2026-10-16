@@ -1,0 +1,8 @@
+# Revisores por defecto de la documentación común.
+# GitHub solicita su revisión automáticamente en cada pull request.
+*                       @DaGeus15
+
+# Seguridad y criptografía: revisión obligatoria del responsable de seguridad
+/docs/05-Seguridad.md                @DaGeus15
+/docs/14-Criptografia-Multicapa.md   @DaGeus15
+/docs/adr/                           @DaGeus15
