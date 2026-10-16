@@ -79,3 +79,21 @@ export function collectLabels(lines: readonly SourceLine[]): string[] {
   for (const l of lines) for (const m of l.text.matchAll(/\\label\{([^}]+)\}/g)) if (m[1]) labels.push(m[1]);
   return labels;
 }
+
+/**
+ * Recuento de palabras del documento (como el de Overleaf): sigue los \input
+ * desde el principal, ignora comentarios, preámbulo, comandos, entornos y
+ * fórmulas, y cuenta las palabras del texto que se lee.
+ */
+export function countWords(mainFile: string, files: Readonly<Record<string, string>>): number {
+  const lines = flatten(mainFile, files).map((l) => stripComment(l.text));
+  const begin = lines.findIndex((l) => l.includes('\\begin{document}'));
+  const body = (begin >= 0 ? lines.slice(begin + 1) : lines).join('\n');
+  const text = body
+    .replace(/\$\$[\s\S]*?\$\$|\$[^$]*\$|\\\[[\s\S]*?\\\]/g, ' ')
+    .replace(/\\begin\{(equation|align|figure|table|tabular|lstlisting|verbatim)\*?\}[\s\S]*?\\end\{\1\*?\}/g, ' ')
+    .replace(/\\(begin|end|label|ref|eqref|cite|input|include|includegraphics|bibliography|bibliographystyle)\*?(\[[^\]]*\])?\{[^}]*\}/g, ' ')
+    .replace(/\\[a-zA-Z]+\*?/g, ' ')
+    .replace(/[{}[\]~\\&]/g, ' ');
+  return (text.match(/[\p{L}\p{N}]+(?:[-'][\p{L}\p{N}]+)*/gu) ?? []).length;
+}

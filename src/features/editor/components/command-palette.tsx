@@ -12,7 +12,7 @@ import { Tooltip } from '@/shared/ui/menu';
 import { COMMAND_GROUPS, effectiveCommands, insertCommand, previewTemplate, type CommandPrefs, type LatexCommand } from '../lib/latex-commands';
 import { CommandsDialog } from './commands-dialog';
 
-const fold = (v: string) => v.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const fold = (v: string) => v.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 /** Catálogo efectivo de la persona (de serie + personalizados), desde sus preferencias. */
 export function useLatexCommands(): LatexCommand[] {

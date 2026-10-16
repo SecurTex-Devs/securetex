@@ -1,10 +1,12 @@
 'use client';
 
 import { CircleAlert, CircleCheck, CircleX, ShieldAlert, ShieldCheck, Terminal, Wifi, WifiOff } from 'lucide-react';
+import { useMemo } from 'react';
 import type { CompilerEngine } from '@/shared/api/types';
 import { getT } from '@/shared/i18n';
 import { cn } from '@/shared/lib/cn';
 import { Spinner } from '@/shared/ui/spinner';
+import { countWords } from '../lib/latex-source';
 import { useEditor } from '../store';
 
 const ENGINE: Record<CompilerEngine, string> = { pdflatex: 'pdfLaTeX', xelatex: 'XeLaTeX', lualatex: 'LuaLaTeX' };
@@ -16,6 +18,9 @@ export function StatusBar({ engine, online, readOnly }: { readonly engine: Compi
   const result = useEditor((s) => s.result);
   const cursor = useEditor((s) => s.cursor);
   const activeFile = useEditor((s) => s.activeFile);
+  const mainFile = useEditor((s) => s.mainFile);
+  const files = useEditor((s) => s.files);
+  const words = useMemo(() => countWords(mainFile, files), [mainFile, files]);
   const setLogOpen = useEditor((s) => s.setLogOpen);
   const logOpen = useEditor((s) => s.logOpen);
   const warnings = result?.diagnostics.filter((d) => d.level !== 'error').length ?? 0;
@@ -49,7 +54,8 @@ export function StatusBar({ engine, online, readOnly }: { readonly engine: Compi
       )}
       <span className="ml-auto hidden items-center gap-1 whitespace-nowrap text-sec xl:flex"><ShieldCheck className="size-3.5" strokeWidth={1.75} aria-hidden="true" />{t('compile.serverAnalysis')}</span>
       <span className="hidden whitespace-nowrap lg:inline">{ENGINE[engine]}</span>
-      <span className="ml-auto whitespace-nowrap tabular xl:ml-0">{activeFile.split('/').pop()} · {t('editor.position', { line: cursor.line, col: cursor.col })}</span>
+      <span className="ml-auto hidden whitespace-nowrap tabular md:inline xl:ml-0" title={t('words.hint')}>{t('words.count', { n: words.toLocaleString('es') })}</span>
+      <span className="whitespace-nowrap tabular">{activeFile.split('/').pop()} · {t('editor.position', { line: cursor.line, col: cursor.col })}</span>
       {readOnly && <span className="font-medium text-warn">{t('editor.readonly')}</span>}
       <span className={cn('flex items-center gap-1', online ? 'text-ok' : 'text-warn')}>
         {online ? <Wifi className="size-3.5" strokeWidth={1.75} aria-hidden="true" /> : <WifiOff className="size-3.5" strokeWidth={1.75} aria-hidden="true" />}

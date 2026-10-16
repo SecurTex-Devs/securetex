@@ -10,7 +10,7 @@ import { useNonce } from '@/shared/providers';
 import { getT } from '@/shared/i18n';
 import { allBibEntries, collectLabels, flatten } from '../lib/latex-source';
 import { baseExtensions } from '../lib/codemirror-setup';
-import { useEditor } from '../store';
+import { isBinaryKind, useEditor } from '../store';
 
 const flashEffect = StateEffect.define<number | null>();
 const flashField = StateField.define({
@@ -43,7 +43,8 @@ export function CodeEditor({ readOnly, onSave, viewRef }: {
   const undo = useRef(new Map<string, Y.UndoManager>());
   const nonce = useNonce();
   const activeFile = useEditor((s) => s.activeFile);
-  const fileId = useEditor((s) => s.entries[s.activeFile]?.id ?? null);
+  // Las imágenes y los PDF no se enlazan al CRDT: se ven en BinaryPreview.
+  const fileId = useEditor((s) => { const e = s.entries[s.activeFile]; return e && !isBinaryKind(e.kind) ? e.id : null; });
   const collab = useEditor((s) => s.collab);
   const synced = useEditor((s) => s.synced);
   const jump = useEditor((s) => s.jump);
@@ -97,7 +98,8 @@ export function CodeEditor({ readOnly, onSave, viewRef }: {
             useEditor.getState().setCursor(line.number, head - line.from + 1);
           }
         }),
-        EditorView.contentAttributes.of({ 'aria-label': getT('editor')('editor.label', { file: activeFile }) }),
+        // Corrector ortográfico del navegador, en español, como en Overleaf.
+        EditorView.contentAttributes.of({ 'aria-label': getT('editor')('editor.label', { file: activeFile }), spellcheck: 'true', lang: 'es', autocorrect: 'off', autocapitalize: 'off' }),
       ],
     }));
     // Los demás ven en qué archivo estamos (el nombre y el color los fija el servidor).
