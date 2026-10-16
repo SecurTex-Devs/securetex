@@ -21,6 +21,7 @@ docker compose -f infra/docker-compose.yml up --build -d
 | Aplicación web | http://localhost:3000 | Imagen de `../securtex-frontend` |
 | API + documentación | http://localhost:4000/api/docs | OpenAPI generado desde el código |
 | Correo de pruebas (Mailpit) | http://localhost:8025 | Enlaces de verificación y recuperación |
+| Compilador (sandbox) | — | Sin red: no publica puertos ni puede abrir conexiones |
 
 Si ya tenías un `infra/.env` de una versión anterior: `node infra/generate-env.mjs --add-missing` añade solo las claves nuevas. La migración S3 cifra columnas que antes estaban en claro y necesita una base vacía: `docker compose -f infra/docker-compose.yml down -v` antes de volver a levantar.
 
@@ -39,6 +40,7 @@ El servicio `migrate` aplica las migraciones y siembra el escenario sintético: 
 | **Datos personales cifrados (C3c)** | Correos, nombres, institución, cargo, sujetos y correos OIDC, IP y dispositivo de las sesiones, etiquetas, nombres de proyecto, documento principal, rutas de archivo, invitaciones y preferencias: AES-256-CBC + HMAC-SHA-256 (encrypt-then-MAC), contexto `tabla.columna`. Búsquedas y unicidad con índices ciegos HMAC; RLS casa invitaciones por índice ciego |
 | Edición | Árbol de archivos (crear, renombrar/mover, eliminar, documento principal) con rutas validadas (`SafeFilePath`), cuotas (1 MB por archivo, 20 MB y 200 archivos por proyecto) |
 | Compilación segura | `POST /projects/:id/compile/analyze`: guarda lo de la sala y decide antes de compilar. Bloquea `\write18`, `\input{|…}`, lecturas fuera del proyecto, Lua y E/S directa; avisa de paquetes con shell-escape y `\catcode`. Los bloqueos se auditan |
+| **Compilación real (C4b)** | `POST /projects/:id/compile`: autoriza `compile`, repite el análisis sobre la MISMA lectura que se compila (422 `compile_blocked` si bloquea), compila con TeX Live en el servicio `compiler` y devuelve el PDF firmado con Ed25519 dentro de un sobre C1 + C2. Detalle en [Compilación en el sandbox](#compilación-en-el-sandbox) |
 | Plantillas | 5 plantillas del equipo generadas en el servidor y cifradas desde el primer byte |
 | Administración | Listado de cuentas, suspender (cierra sus sesiones al instante) y reactivar; auditoría global con verificación de la cadena de hashes |
 | Auditoría | Registro append-only encadenado por hash, escrito por un rol de base de datos que solo puede insertar. Es la única tabla con metadatos en claro (tipo de evento, prefijo de IP anonimizado): cifrarla rompería la verificación de la cadena |
@@ -77,17 +79,45 @@ Después: `docker compose -f infra/docker-compose.yml up -d --force-recreate api
 
 ### Fuera del alcance de esta entrega
 
-Chat del proyecto, comentarios y control de cambios, historial de versiones, modo confidencial (DEK que el servidor nunca recibe y compilación en el navegador), importación desde .zip o GitHub, subida de binarios (imágenes, PDF), tokens de aplicación, passkeys, SAML, métricas de servicio y moderación de plantillas. **La compilación real con TeX Live en un sandbox gVisor tampoco está**: la vista previa tipográfica se compone en el navegador, pero solo después de que el análisis del servidor no encuentre nada bloqueante; por eso tampoco hay firma Ed25519 de PDF (C4b).
+Chat del proyecto, comentarios y control de cambios, historial de versiones, modo confidencial (DEK que el servidor nunca recibe y compilación en el navegador), importación desde .zip o GitHub, subida de binarios (imágenes, PDF), tokens de aplicación, passkeys, SAML, métricas de servicio y moderación de plantillas.
 
 ### Pruebas
 
 ```bash
 cd apps/api
-npx vitest run                              # 73 unitarias: dominio, primitivas, cifrado (bit-flip, AAD, KEK ajena), rutas, analizador
-node --test "test/security/*.test.mjs"     # 47 casos de abuso contra la pila en marcha (Docker arriba)
+npx vitest run                              # 91 unitarias: dominio, primitivas, cifrado (bit-flip, AAD, KEK ajena), rutas, analizador, PDF, registro y firma C4b
+node --test "test/security/*.test.mjs"     # 56 casos de abuso contra la pila en marcha (Docker arriba)
 ```
 
-Los casos de abuso cubren acceso cruzado e IDOR, rol insuficiente, recorrido de rutas, conflictos de versión, cuotas, el bloqueo de `\write18`, reutilización de refresh tokens, CSRF, fuerza bruta, MFA, sobres C2 manipulados o reubicados, y en la colaboración: CSWSH, sesión ausente, lector que intenta escribir, trama manipulada y revocación en caliente. `test/security/demo-maria.mjs` simula a una segunda persona escribiendo para verlo en el navegador.
+Los casos de abuso cubren acceso cruzado e IDOR, rol insuficiente, recorrido de rutas, conflictos de versión, cuotas, el bloqueo de `\write18`, reutilización de refresh tokens, CSRF, fuerza bruta, MFA, sobres C2 manipulados o reubicados, y en la colaboración: CSWSH, sesión ausente, lector que intenta escribir, trama manipulada y revocación en caliente. En la compilación (`compile.test.mjs`): las cinco plantillas a PDF con firma válida, PDF manipulado, `\write18` directo (422) y ofuscado (el sandbox lo deja en `runsystem(…)...disabled`), `\input{/etc/passwd}` directo (422) y escondido en una macro (openin_any=p), bucle infinito (plazo de 30 s) y PDF enorme (RLIMIT_FSIZE). `test/security/demo-maria.mjs` simula a una segunda persona escribiendo para verlo en el navegador.
+
+### Compilación en el sandbox
+
+Compilar LaTeX es ejecutar código hostil, así que el compilador vive en su propio contenedor (`apps/compiler`, Zona 4) y la API nunca ejecuta TeX:
+
+```
+navegador ──C1+C2──▶ API ── análisis ──▶ volumen tmpfs compile-jobs ──▶ compiler (sin red)
+          ◀─C1+C2── firma Ed25519 ◀── valida PDF ◀── <id>.res ◀───────── TeX Live
+```
+
+| Control | Cómo |
+|---|---|
+| Sin red | `network_mode: none`: solo `lo`. Ni Internet, ni la API, ni PostgreSQL. Los trabajos llegan por un volumen **tmpfs** (`noexec,nosuid,nodev`, 128 MB) con un protocolo de archivos de un solo uso; la petición se lee y se borra al reclamarla |
+| Contenedor | `read_only`, `cap_drop: ALL`, `no-new-privileges`, usuario 1000, `pids_limit: 64`, 1,5 GB de memoria sin swap, 2 CPU, sin volcados de memoria |
+| TeX | `-no-shell-escape`, `shell_escape=f`, `openin_any=p`, `openout_any=p` y `mktex*=0` en `texmf.cnf` **y** en el entorno de cada proceso (que kpathsea antepone); la imagen no se construye si la configuración efectiva no es esa. LuaTeX además con `--safer --nosocket` |
+| Proceso | `spawn` con argv, sin shell, entorno mínimo sin secretos (kpathsea expande `$VAR` en los nombres de archivo); `prlimit` con CPU, memoria virtual 2 GB, **RLIMIT_FSIZE de 16 MB** (un PDF o un registro más grande mata a TeX) y 256 descriptores; plazo de reloj de **30 s** para todas las pasadas, tras el que se mata el grupo de procesos entero |
+| Directorio | Uno por trabajo en `/work` (tmpfs privado, `noexec`), borrado en `finally`: éxito, error, plazo o excepción. La API también borra sus archivos del volumen en `finally` |
+| Salida | La API valida el PDF por su contenido (`%PDF-1.x`/`2.x`, `%%EOF`, ≤ 16 MB), sanea el registro (sin rutas absolutas ni caracteres de control, acotado) y extrae los errores en formato `-file-line-error` |
+| Firma (C4b) | `Ed25519(SHA-256(pdf) ‖ compilationId[16] ‖ sourceTreeHash[32])` con `COMPILER_SIGNING_KEY`. La clave la tiene la API, no el sandbox: si el sandbox la tuviera, el propio documento hostil podría filtrarla. Clave pública en `GET /api/v1/crypto/artifact-key`; el navegador verifica antes de renderizar |
+| Coste | 12 compilaciones/min por cliente, una a la vez por persona y 4 en todo el servicio (429 `compile_busy`); 503 `compiler_unavailable` si el sandbox no reclama el trabajo en 10 s |
+| Auditoría | `compile.completed`, `compile.failed`, `compile.output_rejected` (plazo, tamaño, PDF inválido) y `compile.blocked`, con motor, duración, pasadas y bytes; nunca contenido |
+
+**Riesgos residuales** (documentados, no resueltos en esta entrega):
+
+- **Sin gVisor.** Docker Desktop no trae `runsc`, así que el aislamiento es el de `runc` (espacios de nombres + seccomp por defecto de Docker), no un kernel de usuario. AGENTS.md exige gVisor en producción: donde esté instalado, `COMPILER_RUNTIME=runsc` en `infra/.env` lo activa sin tocar nada más.
+- **Un contenedor de larga vida, no uno por compilación.** Se destruye el directorio de cada trabajo, no el contenedor. Crear contenedores desde la API exigiría darle el socket de Docker (equivale a root en el anfitrión). Con 2 trabajos a la vez y el mismo uid, una fuga de TeX hasta ejecución de código podría leer el otro trabajo en curso o una petición aún en cola en el volumen.
+- **Lua puede leer archivos del contenedor.** Con `--safer` LuaTeX no ejecuta programas ni borra, pero `io.open` sigue leyendo cualquier archivo legible de la imagen (no hay secretos en ella). El análisis bloquea `\directlua`, pero es una lista de bloqueo que `\csname` puede esquivar: el contenedor es la frontera real.
+- **TeX Live 2022 de Debian bookworm**, no la última versión de TeX Live; las actualizaciones de seguridad llegan con la imagen base.
 
 ---
 
