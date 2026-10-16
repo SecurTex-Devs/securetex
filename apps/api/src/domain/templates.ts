@@ -1,7 +1,8 @@
 /**
  * Plantillas precargadas por el equipo (16-Priorizacion §14: F-209 con un
  * catálogo fijo; la publicación comunitaria queda fuera de alcance). Todas
- * superan el análisis de seguridad sin avisos.
+ * superan el análisis de seguridad sin avisos y compilan sin errores en el
+ * sandbox (bibliografía con BibTeX, que el sandbox ejecuta sin shell).
  */
 export const TEMPLATE_IDS = ['blank', 'tesis-uta', 'articulo', 'informe-lab', 'presentacion'] as const;
 export type TemplateId = (typeof TEMPLATE_IDS)[number];
@@ -70,7 +71,8 @@ manteniendo la latencia por debajo de 40 ms.
 \input{capitulos/metodologia}
 \input{capitulos/resultados}
 
-\printbibliography
+\bibliographystyle{plain}
+\bibliography{referencias}
 \end{document}
 `,
   },
@@ -112,7 +114,8 @@ $P(a)$ y la verosimilitud de cada tipo de evidencia.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.8\linewidth]{figuras/arquitectura.pdf}
+  % Sustituye el recuadro por \includegraphics cuando se admitan imágenes en el proyecto.
+  \fbox{\parbox[c][3.5cm][c]{0.75\linewidth}{\centering Sensores $\rightarrow$ Modelo $\rightarrow$ Orquestador}}
   \caption{Arquitectura del sistema de detección.}
   \label{fig:arq}
 \end{figure}
@@ -217,7 +220,8 @@ Describe cómo has abordado el problema.
 \section{Conclusiones}
 Cierra con lo que aporta el trabajo y las líneas futuras.
 
-\printbibliography
+\bibliographystyle{plain}
+\bibliography{referencias}
 \end{document}
 `,
   },
