@@ -11,7 +11,7 @@ import type { NextRequest } from 'next/server';
 export const dynamic = 'force-dynamic';
 
 const API_URL = process.env.API_INTERNAL_URL ?? 'http://localhost:4000';
-const FORWARD_REQUEST = ['accept', 'accept-language', 'content-type', 'cookie', 'origin', 'referer', 'user-agent', 'x-csrf-token', 'x-request-id'];
+const FORWARD_REQUEST = ['accept', 'accept-language', 'content-type', 'cookie', 'origin', 'referer', 'user-agent', 'x-csrf-token', 'x-request-id', 'x-securtex-reply-key'];
 const DROP_RESPONSE = new Set(['set-cookie', 'content-encoding', 'content-length', 'transfer-encoding', 'connection', 'keep-alive']);
 const SEGMENT = /^[A-Za-z0-9._~-]+$/;
 

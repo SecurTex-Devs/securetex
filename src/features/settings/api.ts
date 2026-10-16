@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@/shared/api/client';
 import type { components } from '@/shared/api/generated';
 import { authKeys } from '@/shared/api/session';
+import { envelopeContext, fetchSealed } from '@/shared/crypto/transport';
 
 type Schemas = components['schemas'];
 
@@ -134,7 +135,9 @@ export async function exportMyData() {
   for (const filter of ['all', 'archived'] as const) {
     const list = await unwrap(api.GET('/api/v1/projects', { params: { query: { filter, sort: 'name' } } }));
     for (const p of list.items) {
-      const files = await unwrap(api.GET('/api/v1/projects/{projectId}/files/contents', { params: { path: { projectId: p.id } } }));
+      const files = await fetchSealed<Array<{ path: string; version: number; updatedAt: string; content: string }>>(
+        `/api/v1/projects/${p.id}/files/contents`, envelopeContext(p.id, 'files:contents'),
+      );
       projects.push({
         id: p.id, name: p.name, role: p.role, compiler: p.compiler, mainFile: p.mainFile, archived: p.archived,
         files: files.map((f) => ({ path: f.path, version: f.version, updatedAt: f.updatedAt, content: f.content })),

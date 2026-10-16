@@ -30,7 +30,8 @@ function readCsrfToken(): string | null {
 }
 
 function requestId(): string {
-  return crypto.randomUUID().replace(/-/g, '');
+  // getRandomValues funciona también en http://IP (red local); randomUUID solo en contextos seguros.
+  return Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 let refreshing: Promise<boolean> | null = null;
