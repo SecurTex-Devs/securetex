@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { generateKeyPairSync, randomBytes } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { anonymizeIp, deviceLabel } from '../../src/infrastructure/security/client-info';
 import { parseCompositeToken, randomSecret, secretMatches, sha256 } from '../../src/infrastructure/security/tokens';
@@ -35,6 +35,8 @@ describe('Cifrado autenticado de secretos (AES-256-GCM)', () => {
       DATABASE_URL_AUDIT: 'postgresql://u:p@localhost/db',
       JWT_PRIVATE_KEY: 'x'.repeat(48),
       MFA_ENCRYPTION_KEY: randomBytes(32).toString('base64'),
+      TRANSPORT_PRIVATE_KEY: generateKeyPairSync('x25519').privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64'),
+      DATA_MASTER_KEY: randomBytes(32).toString('base64'),
       FILES_MASTER_KEY: randomBytes(32).toString('base64'),
     });
     const { SecretBox } = await import('../../src/infrastructure/security/secret-box');

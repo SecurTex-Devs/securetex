@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { generateKeyPairSync, randomBytes } from 'node:crypto';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { IntegrityError, ValidationError } from '../../src/domain/errors';
 import { analyzeLatex } from '../../src/domain/latex-analyzer';
@@ -17,6 +17,8 @@ describe('Cifrado de archivos en reposo (C3) con verificación previa (C4)', () 
       DATABASE_URL_AUDIT: 'postgresql://u:p@localhost/db',
       JWT_PRIVATE_KEY: 'x'.repeat(48),
       MFA_ENCRYPTION_KEY: randomBytes(32).toString('base64'),
+      TRANSPORT_PRIVATE_KEY: generateKeyPairSync('x25519').privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64'),
+      DATA_MASTER_KEY: randomBytes(32).toString('base64'),
       FILES_MASTER_KEY: randomBytes(32).toString('base64'),
     });
     const { FileCrypto } = await import('../../src/infrastructure/security/envelope');
