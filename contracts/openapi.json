@@ -2135,7 +2135,7 @@
     },
     "/api/v1/projects/{projectId}/compile": {
       "post": {
-        "description": "Autoriza `compile`, repite el análisis de seguridad (422 `compile_blocked` si hay algo bloqueante) y compila en un contenedor sin red, de solo lectura, sin capacidades y con -no-shell-escape, openin_any=p, openout_any=p y un plazo de 30 s. El PDF se valida (firma %PDF, %%EOF, 16 MB), se firma con Ed25519 (C4b) y viaja en un sobre C1 + C2 con contexto `compile:pdf`: u32be(longitud) ‖ cabecera JSON ‖ PDF. 429 `compile_busy` si ya hay una compilación en curso; 503 `compiler_unavailable` si el sandbox no responde.",
+        "description": "Autoriza `compile`, repite el análisis de seguridad (422 `compile_blocked` si hay algo bloqueante) y compila en un contenedor sin red, de solo lectura, sin capacidades y con -no-shell-escape, openin_any=p, openout_any=p y un plazo de 30 s. El PDF se valida (firma %PDF, %%EOF, 16 MB), se firma con Ed25519 (C4b) y viaja en un sobre C1 + C2 con contexto `compile:pdf`: u32be(longitud) ‖ cabecera JSON ‖ PDF ‖ mapa SyncTeX (v2; `pdfBytes` y `synctexBytes` delimitan cada parte). El mapa SyncTeX (PDF ↔ archivo:línea, solo rutas del proyecto, 4 MB como mucho) se valida y se firma aparte: Ed25519(\"securtex:c4b:synctex:v1\" ‖ SHA-256(mapa) ‖ compilationId ‖ SHA-256(pdf)). 429 `compile_busy` si ya hay una compilación en curso; 503 `compiler_unavailable` si el sandbox no responde.",
         "operationId": "Compile_compile",
         "parameters": [
           {
@@ -2273,7 +2273,7 @@
     },
     "/api/v1/crypto/artifact-key": {
       "get": {
-        "description": "Ed25519 en base64url. Firma = Ed25519(SHA-256(pdf) ‖ compilationId ‖ sourceTreeHash).",
+        "description": "Ed25519 en base64url. Firma = Ed25519(SHA-256(pdf) ‖ compilationId ‖ sourceTreeHash). El mapa SyncTeX se firma con la misma clave: Ed25519(\"securtex:c4b:synctex:v1\" ‖ SHA-256(mapa) ‖ compilationId ‖ SHA-256(pdf)).",
         "operationId": "Crypto_artifactKey",
         "parameters": [],
         "responses": {
