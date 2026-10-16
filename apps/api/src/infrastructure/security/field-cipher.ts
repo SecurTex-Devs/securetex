@@ -74,7 +74,7 @@ export class FieldCipher {
 
   /** Unicidad de etiquetas sin distinguir mayúsculas ni tildes. */
   tagIndex(name: string): string {
-    return this.index('tag', name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim());
+    return this.index('tag', name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim());
   }
 
   private mac(context: string, iv: Buffer, ct: Buffer): Buffer {
