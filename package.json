@@ -1,0 +1,16 @@
+{
+  "name": "securtex-backend",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "dev": "docker compose -f infra/docker-compose.yml up --build",
+    "dev:down": "docker compose -f infra/docker-compose.yml down",
+    "build": "pnpm --filter @securtex/api build",
+    "test": "pnpm --filter @securtex/api test",
+    "test:security": "pnpm --filter @securtex/api test:security",
+    "typecheck": "pnpm --filter @securtex/api typecheck",
+    "contracts:generate": "pnpm --filter @securtex/api contracts:generate",
+    "db:migrate": "pnpm --filter @securtex/api db:migrate",
+    "db:seed": "pnpm --filter @securtex/api db:seed"
+  }
+}
