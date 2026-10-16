@@ -1,23 +1,34 @@
 'use client';
 
-import type { PDFDocumentLoadingTask } from 'pdfjs-dist';
+import type { PDFDocumentLoadingTask, PDFWorker } from 'pdfjs-dist';
 
 type PdfJs = typeof import('pdfjs-dist');
 
-let loaded: Promise<PdfJs> | null = null;
+let loaded: Promise<{ pdfjs: PdfJs; worker: PDFWorker }> | null = null;
 
 /**
  * PDF.js se carga bajo demanda (solo en el cliente) y su análisis del PDF
  * corre en un Worker propio del mismo origen (CSP `worker-src 'self'`): un
  * PDF malicioso que explotara el analizador no comparte hilo con la página
  * ni con las claves de sesión en memoria.
+ *
+ * El PDFWorker es único y se pasa explícitamente a cada documento: con
+ * `GlobalWorkerOptions.workerPort` todos los documentos comparten el mismo
+ * PDFWorker y destruir el anterior (recompilación en curso) cerraba su canal,
+ * con lo que el PDF nuevo fallaba al abrirse.
  */
-export function loadPdfJs(): Promise<PdfJs> {
+function load(): Promise<{ pdfjs: PdfJs; worker: PDFWorker }> {
   loaded ??= import('pdfjs-dist').then((pdfjs) => {
-    pdfjs.GlobalWorkerOptions.workerPort = new Worker(new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url), { type: 'module' });
-    return pdfjs;
+    const port = new Worker(new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url), { type: 'module' });
+    // fromPort: el constructor está mal tipado en pdfjs-dist 4.10 (port?: null).
+    const worker: PDFWorker = pdfjs.PDFWorker.fromPort({ port });
+    return { pdfjs, worker };
   }).catch((e: unknown) => { loaded = null; throw e; });
   return loaded;
+}
+
+export async function loadPdfJs(): Promise<PdfJs> {
+  return (await load()).pdfjs;
 }
 
 /**
@@ -29,8 +40,9 @@ export function loadPdfJs(): Promise<PdfJs> {
  *  · disableAutoFetch/disableStream: los bytes ya están en memoria y verificados.
  */
 export async function openPdf(data: Uint8Array): Promise<PDFDocumentLoadingTask> {
-  const pdfjs = await loadPdfJs();
+  const { pdfjs, worker } = await load();
   return pdfjs.getDocument({
+    worker,
     // Copia: PDF.js transfiere el búfer al Worker y dejaría vacío el original (que se usa para descargar).
     data: data.slice(),
     isEvalSupported: false,
