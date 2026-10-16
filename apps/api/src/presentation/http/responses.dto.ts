@@ -229,3 +229,8 @@ export class HealthDto {
   readonly status!: 'ok' | 'degraded';
   readonly database!: boolean;
 }
+
+export class RedirectUrlDto {
+  /** URL del proveedor de identidad a la que debe navegar el navegador. */
+  readonly url!: string;
+}

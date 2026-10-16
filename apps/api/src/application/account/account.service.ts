@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { NotFoundError, ValidationError } from '../../domain/errors';
+import { ConflictError, NotFoundError, ValidationError } from '../../domain/errors';
 import { asUserId } from '../../domain/values';
 import { Databases } from '../../infrastructure/db/databases';
 import { Mailer } from '../../infrastructure/mail/mailer';
@@ -109,6 +109,24 @@ export class AccountService {
       orderBy: { linkedAt: 'asc' },
     });
     return rows.map((r) => ({ ...r, providerEmail: this.cipher.decryptOptional(r.providerEmail, FIELD.identityEmail) }));
+  }
+
+  /**
+   * Quitar Google o Microsoft. Nunca deja la cuenta sin forma de entrar: debe
+   * quedar una contraseña u otro proveedor. La identidad local no se quita aquí.
+   */
+  async unlinkIdentity(actor: Actor, identityId: string, meta: RequestMeta): Promise<void> {
+    const [identity, user, others] = await Promise.all([
+      this.db.identity.userIdentity.findFirst({ where: { id: identityId, userId: actor.userId }, select: { id: true, provider: true } }),
+      this.db.identity.user.findUniqueOrThrow({ where: { id: actor.userId }, select: { passwordHash: true } }),
+      this.db.identity.userIdentity.count({ where: { userId: actor.userId, provider: { not: 'local' }, NOT: { id: identityId } } }),
+    ]);
+    if (!identity || identity.provider === 'local') throw new NotFoundError();
+    if (!user.passwordHash && others === 0) {
+      throw new ConflictError('last_login_method', 'Es tu única forma de entrar. Crea una contraseña antes de desvincularlo.');
+    }
+    await this.db.identity.userIdentity.delete({ where: { id: identity.id } });
+    await this.audit.record({ type: 'auth.oidc.unlinked', severity: 'notice', actorUserId: actor.userId, target: { type: 'user', id: actor.userId }, outcome: 'success', metadata: { provider: identity.provider } }, meta);
   }
 
   async activity(actor: Actor) {

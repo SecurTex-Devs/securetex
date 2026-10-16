@@ -15,7 +15,7 @@ import {
 } from './auth.dto';
 import { clearChallengeCookie, clearSessionCookies, COOKIES, setChallengeCookie, setSessionCookies } from './cookies';
 import {
-  ClosedSessionsDto, ElevationDto, LoginResponseDto, MfaStatusDto, ProvidersDto, RecoveryCodesDto, RetryAfterDto,
+  ClosedSessionsDto, ElevationDto, LoginResponseDto, MfaStatusDto, ProvidersDto, RecoveryCodesDto, RedirectUrlDto, RetryAfterDto,
   StatusResponseDto, TotpSetupDto,
 } from './responses.dto';
 import { CsrfExempt, CurrentActor, Meta, Policy, type SecuredRequest } from './security';
@@ -232,6 +232,22 @@ export class AuthController {
     }
   }
 
+  /**
+   * Vincular Google o Microsoft a la cuenta actual. POST (con CSRF) y sesión
+   * reautenticada en los últimos 5 min: añadir una forma de entrar es una
+   * acción sensible (RS-006). Devuelve la URL del proveedor; el navegador va allí.
+   */
+  @Post('oidc/:provider/link')
+  @HttpCode(200)
+  @Policy('elevated')
+  @Throttle({ default: { limit: 10, ttl: 10 * MINUTE } })
+  @ApiOperation({ summary: 'Iniciar la vinculación de un proveedor externo' })
+  async oidcLink(@Param('provider') provider: string, @CurrentActor() actor: Actor, @Res({ passthrough: true }) reply: FastifyReply): Promise<RedirectUrlDto> {
+    const { url, challengeToken } = await this.oidc.start(provider, actor.userId);
+    setChallengeCookie(reply, COOKIES.oidc, challengeToken, AUTH.OIDC_CHALLENGE_TTL_MS / 1000, 'lax');
+    return { url };
+  }
+
   @Get('oidc/:provider/callback')
   @Policy('public')
   @ApiOperation({ summary: 'Retorno del proveedor OIDC' })
@@ -240,7 +256,11 @@ export class AuthController {
     const challenge = req.cookies[COOKIES.oidc];
     clearChallengeCookie(reply, COOKIES.oidc);
     try {
-      const result = await this.oidc.callback(provider, currentUrl, challenge, meta);
+      const result = await this.oidc.callback(provider, currentUrl, challenge, req.actor?.userId ?? null, meta);
+      if (result.kind === 'linked') {
+        void reply.redirect(`${this.origin}/ajustes/cuentas?vinculado=${result.provider}`, 302);
+        return;
+      }
       if (result.kind === 'mfa_required') {
         setChallengeCookie(reply, COOKIES.mfa, result.challengeToken, AUTH.MFA_CHALLENGE_TTL_MS / 1000, 'strict');
         void reply.redirect(`${this.origin}/mfa`, 302);

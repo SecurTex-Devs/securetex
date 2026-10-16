@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { IdpProvider } from '@prisma/client';
 import { loadEnv } from '../../config/env';
 import { AUTH } from '../../domain/constants';
-import { NotFoundError, UnauthorizedError } from '../../domain/errors';
+import { ConflictError, NotFoundError, UnauthorizedError } from '../../domain/errors';
 import { Email } from '../../domain/values';
 import { Databases } from '../../infrastructure/db/databases';
 import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
@@ -27,7 +27,11 @@ interface ChallengeData {
   readonly state: string;
   readonly nonce: string;
   readonly verifier: string;
+  /** Presente solo al VINCULAR desde Ajustes: la cuenta a la que se añade el proveedor. */
+  readonly linkUserId?: string;
 }
+
+export type OidcOutcome = LoginResult | { readonly kind: 'linked'; readonly provider: ExternalProvider };
 
 /**
  * Inicio de sesión con Google y Microsoft (RF-002, RF-003) mediante OpenID
@@ -58,7 +62,7 @@ export class OidcService {
     return (['google', 'microsoft'] as const).filter((p) => this.providerConfig(p) !== null);
   }
 
-  async start(provider: string): Promise<{ readonly url: string; readonly challengeToken: string }> {
+  async start(provider: string, linkUserId?: string): Promise<{ readonly url: string; readonly challengeToken: string }> {
     const p = this.asProvider(provider);
     const client = await this.client();
     const config = await this.configuration(p);
@@ -67,6 +71,7 @@ export class OidcService {
       state: client.randomState(),
       nonce: client.randomNonce(),
       verifier: client.randomPKCECodeVerifier(),
+      ...(linkUserId ? { linkUserId } : {}),
     };
     const secret = randomSecret();
     const challenge = await this.db.identity.authChallenge.create({
@@ -84,7 +89,7 @@ export class OidcService {
     return { url: url.href, challengeToken: formatCompositeToken(challenge.id, secret) };
   }
 
-  async callback(provider: string, currentUrl: URL, rawChallenge: string | undefined, meta: RequestMeta): Promise<LoginResult> {
+  async callback(provider: string, currentUrl: URL, rawChallenge: string | undefined, sessionUserId: string | null, meta: RequestMeta): Promise<OidcOutcome> {
     const p = this.asProvider(provider);
     const data = await this.consumeChallenge(rawChallenge, p);
     const client = await this.client();
@@ -97,8 +102,38 @@ export class OidcService {
     });
     const claims = tokens.claims();
     if (!claims?.sub) throw new UnauthorizedError('oidc_failed', 'No hemos podido completar el inicio de sesión con el proveedor.');
+    if (data.linkUserId) {
+      // El reto se creó con una sesión reautenticada; la vuelta debe llegar con esa misma sesión.
+      if (sessionUserId !== data.linkUserId) throw new UnauthorizedError('oidc_state_invalid', 'El inicio de sesión ha caducado. Inténtalo de nuevo.');
+      await this.link(p, claims.sub, claims['email'], data.linkUserId, meta);
+      return { kind: 'linked', provider: p };
+    }
     const userId = await this.resolveUser(p, claims.sub, claims['email'], claims['email_verified'], claims, meta);
     return this.auth.finishPrimaryAuth({ id: userId }, p, true, meta);
+  }
+
+  /**
+   * Vincular un proveedor a la cuenta ya autenticada (RF-005). Una identidad
+   * externa pertenece a una sola cuenta: si ya está en otra, se rechaza.
+   */
+  private async link(provider: ExternalProvider, subject: string, rawEmail: unknown, userId: string, meta: RequestMeta): Promise<void> {
+    const subjectIndex = this.cipher.index(`subject:${provider}`, subject);
+    const existing = await this.db.identity.userIdentity.findUnique({ where: { provider_subjectIndex: { provider, subjectIndex } }, select: { userId: true } });
+    if (existing && existing.userId !== userId) {
+      await this.audit.record({ type: 'auth.oidc.link_conflict', severity: 'warning', actorUserId: userId, outcome: 'denied', metadata: { provider } }, meta);
+      throw new ConflictError('oidc_already_linked', 'Esa cuenta del proveedor ya está vinculada a otro usuario de SecurTex.');
+    }
+    if (!existing) {
+      const email = typeof rawEmail === 'string' ? rawEmail.slice(0, 254) : null;
+      await this.db.identity.userIdentity.create({
+        data: {
+          userId, provider, subjectIndex, lastUsedAt: new Date(),
+          providerSubject: this.cipher.encrypt(subject, FIELD.identitySubject),
+          providerEmail: email ? this.cipher.encrypt(email, FIELD.identityEmail) : null,
+        },
+      });
+    }
+    await this.audit.record({ type: 'auth.oidc.linked', severity: 'notice', actorUserId: userId, target: { type: 'user', id: userId }, outcome: 'success', metadata: { provider } }, meta);
   }
 
   private async resolveUser(

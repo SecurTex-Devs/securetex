@@ -59,6 +59,16 @@ export class MeController {
     return this.account.identities(actor);
   }
 
+  @Delete('identities/:identityId')
+  @HttpCode(200)
+  @Policy('elevated')
+  @Throttle({ default: { limit: 10, ttl: HOUR } })
+  @ApiOperation({ summary: 'Desvincular un proveedor externo', description: 'Exige reautenticación y que quede otra forma de entrar.' })
+  async unlinkIdentity(@Param('identityId', new ParseUUIDPipe()) identityId: string, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<StatusResponseDto> {
+    await this.account.unlinkIdentity(actor, identityId, meta);
+    return { status: 'unlinked' };
+  }
+
   @Get('activity')
   @Policy('authenticated')
   @ApiOperation({ summary: 'Actividad reciente de la cuenta', description: 'Vista de solo lectura sobre la auditoría propia (F-024).' })
