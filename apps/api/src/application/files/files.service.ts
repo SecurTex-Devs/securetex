@@ -29,9 +29,7 @@ export interface AnalysisResult {
   readonly analyzedFiles: number;
 }
 
-function meta(f: ProjectFile): FileMeta {
-  return { id: f.id, path: f.path, kind: f.kind, size: f.size, version: f.version, updatedAt: f.updatedAt };
-}
+const byPath = (a: { path: string }, b: { path: string }) => a.path.localeCompare(b.path, 'es');
 
 function assertSize(content: string): void {
   if (Buffer.byteLength(content, 'utf8') > FILES.MAX_FILE_BYTES) {
@@ -55,15 +53,15 @@ export class FilesService {
 
   async list(actor: Actor, projectId: string): Promise<FileMeta[]> {
     const { id } = await this.projects.authorize(actor, projectId, 'view');
-    const rows = await this.db.asUser(asUserId(actor.userId), (tx) => tx.projectFile.findMany({ where: { projectId: id }, orderBy: { path: 'asc' } }));
-    return rows.map(meta);
+    const rows = await this.db.asUser(asUserId(actor.userId), (tx) => tx.projectFile.findMany({ where: { projectId: id } }));
+    return rows.map((f) => this.meta(f)).sort(byPath);
   }
 
   async read(actor: Actor, projectId: string, fileId: string, m: RequestMeta): Promise<FileWithContent> {
     const { id } = await this.projects.authorize(actor, projectId, 'view');
     return this.withIntegrity(actor, id, m, async (tx) => {
       const file = await this.find(tx, id, fileId);
-      return { ...meta(file), content: await this.store.read(tx, file) };
+      return { ...this.meta(file), content: await this.store.read(tx, file) };
     });
   }
 
@@ -71,10 +69,10 @@ export class FilesService {
   async readAll(actor: Actor, projectId: string, m: RequestMeta): Promise<FileWithContent[]> {
     const { id } = await this.projects.authorize(actor, projectId, 'view');
     return this.withIntegrity(actor, id, m, async (tx) => {
-      const rows = await tx.projectFile.findMany({ where: { projectId: id }, orderBy: { path: 'asc' } });
+      const rows = await tx.projectFile.findMany({ where: { projectId: id } });
       const out: FileWithContent[] = [];
-      for (const f of rows) out.push({ ...meta(f), content: await this.store.read(tx, f) });
-      return out;
+      for (const f of rows) out.push({ ...this.meta(f), content: await this.store.read(tx, f) });
+      return out.sort(byPath);
     });
   }
 
@@ -84,13 +82,13 @@ export class FilesService {
     assertSize(content);
     const file = await this.db.asUser(asUserId(actor.userId), async (tx) => {
       await this.assertQuota(tx, id, Buffer.byteLength(content, 'utf8'), true);
-      if (await tx.projectFile.findFirst({ where: { projectId: id, path: path.toString() }, select: { id: true } })) {
+      if (await tx.projectFile.findFirst({ where: { projectId: id, pathIndex: this.store.pathIndex(id, path.toString()) }, select: { id: true } })) {
         throw new ConflictError('file_exists', 'Ya existe un archivo con ese nombre.');
       }
       return this.store.insert(tx, id, actor.userId, path, content);
     });
     await this.audit.record({ type: 'file.created', actorUserId: actor.userId, target: { type: 'file', id: file.id }, outcome: 'success', metadata: { projectId: id } }, m);
-    return meta(file);
+    return this.meta(file);
   }
 
   /**
@@ -108,7 +106,7 @@ export class FilesService {
       await tx.project.update({ where: { id }, data: { lastActivityAt: new Date() } });
       return updated;
     });
-    return meta(file);
+    return this.meta(file);
   }
 
   async rename(actor: Actor, projectId: string, fileId: string, rawPath: string, m: RequestMeta): Promise<FileMeta> {
@@ -116,25 +114,42 @@ export class FilesService {
     const path = SafeFilePath.of(rawPath);
     const result = await this.db.asUser(asUserId(actor.userId), async (tx) => {
       const current = await this.find(tx, id, fileId);
-      if (current.path === row.mainFile) throw new ConflictError('main_file', 'Es el documento principal: elige otro principal antes de renombrarlo.');
-      if (await tx.projectFile.findFirst({ where: { projectId: id, path: path.toString(), NOT: { id: current.id } }, select: { id: true } })) {
+      if (this.store.decryptPath(current.path) === row.mainFile) throw new ConflictError('main_file', 'Es el documento principal: elige otro principal antes de renombrarlo.');
+      if (await tx.projectFile.findFirst({ where: { projectId: id, pathIndex: this.store.pathIndex(id, path.toString()), NOT: { id: current.id } }, select: { id: true } })) {
         throw new ConflictError('file_exists', 'Ya existe un archivo con ese nombre.');
       }
       // La ruta no forma parte de la AAD: renombrar no obliga a recifrar.
-      return tx.projectFile.update({ where: { id: current.id }, data: { path: path.toString(), kind: path.extension, updatedBy: actor.userId } });
+      return tx.projectFile.update({ where: { id: current.id }, data: { path: this.store.encryptPath(path.toString()), pathIndex: this.store.pathIndex(id, path.toString()), kind: path.extension, updatedBy: actor.userId } });
     });
     await this.audit.record({ type: 'file.renamed', actorUserId: actor.userId, target: { type: 'file', id: result.id }, outcome: 'success', metadata: { projectId: id } }, m);
-    return meta(result);
+    return this.meta(result);
   }
 
   async remove(actor: Actor, projectId: string, fileId: string, m: RequestMeta): Promise<void> {
     const { id, row } = await this.projects.authorize(actor, projectId, 'edit_content', m);
     await this.db.asUser(asUserId(actor.userId), async (tx) => {
       const current = await this.find(tx, id, fileId);
-      if (current.path === row.mainFile) throw new ConflictError('main_file', 'No puedes eliminar el documento principal.');
+      if (this.store.decryptPath(current.path) === row.mainFile) throw new ConflictError('main_file', 'No puedes eliminar el documento principal.');
       await tx.projectFile.delete({ where: { id: current.id } });
     });
     await this.audit.record({ type: 'file.deleted', actorUserId: actor.userId, target: { type: 'file', id: fileId }, outcome: 'success', metadata: { projectId: id } }, m);
+  }
+
+  /**
+   * Persistencia desde la colaboración en tiempo real: el documento Yjs es la
+   * referencia mientras la sala está abierta, así que no hay versión base que
+   * comparar. RLS sigue exigiendo que `userId` sea propietario o editor.
+   */
+  async persistFromCollab(userId: string, projectId: string, fileId: string, content: string): Promise<FileMeta | null> {
+    assertSize(content);
+    return this.db.asUser(asUserId(userId), async (tx) => {
+      const current = await tx.projectFile.findFirst({ where: { id: fileId, projectId } });
+      if (!current) return null;
+      await this.assertQuota(tx, projectId, Buffer.byteLength(content, 'utf8') - current.size);
+      const updated = await this.store.rewrite(tx, current, userId, content);
+      await tx.project.update({ where: { id: projectId }, data: { lastActivityAt: new Date() } });
+      return this.meta(updated);
+    });
   }
 
   /**
@@ -158,6 +173,10 @@ export class FilesService {
       }, m);
     }
     return { verdict: blocked ? 'blocked' : findings.length ? 'warnings' : 'clean', findings, analyzedFiles: files.length };
+  }
+
+  private meta(f: ProjectFile): FileMeta {
+    return { id: f.id, path: this.store.decryptPath(f.path), kind: f.kind, size: f.size, version: f.version, updatedAt: f.updatedAt };
   }
 
   private async find(tx: AppTx, projectId: string, fileId: string): Promise<ProjectFile> {

@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
+import { CollabService } from '../../application/collab/collab.service';
 import { ProjectsService } from '../../application/projects/projects.service';
 import type { Actor, RequestMeta } from '../../application/request-meta';
 import {
@@ -20,7 +21,10 @@ const uuid = new ParseUUIDPipe();
 @ApiTags('Proyectos')
 @Controller({ path: 'projects', version: '1' })
 export class ProjectsController {
-  constructor(private readonly projects: ProjectsService) {}
+  constructor(
+    private readonly projects: ProjectsService,
+    private readonly collab: CollabService,
+  ) {}
 
   @Get()
   @Policy('authenticated')
@@ -66,7 +70,9 @@ export class ProjectsController {
   @Policy('authenticated')
   @ApiOperation({ summary: 'Archivar' })
   async archive(@Param('projectId', uuid) id: string, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<ProjectDto> {
-    return this.projects.setLifecycle(actor, id, 'archive', meta);
+    const project = await this.projects.setLifecycle(actor, id, 'archive', meta);
+    await this.collab.revalidate(id);
+    return project;
   }
 
   @Post(':projectId/unarchive')
@@ -74,7 +80,9 @@ export class ProjectsController {
   @Policy('authenticated')
   @ApiOperation({ summary: 'Desarchivar' })
   async unarchive(@Param('projectId', uuid) id: string, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<ProjectDto> {
-    return this.projects.setLifecycle(actor, id, 'unarchive', meta);
+    const project = await this.projects.setLifecycle(actor, id, 'unarchive', meta);
+    await this.collab.revalidate(id);
+    return project;
   }
 
   @Post(':projectId/trash')
@@ -82,7 +90,9 @@ export class ProjectsController {
   @Policy('authenticated')
   @ApiOperation({ summary: 'Mover a la papelera', description: 'Se purga a los 30 días.' })
   async trash(@Param('projectId', uuid) id: string, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<ProjectDto> {
-    return this.projects.setLifecycle(actor, id, 'trash', meta);
+    const project = await this.projects.setLifecycle(actor, id, 'trash', meta);
+    await this.collab.revalidate(id);
+    return project;
   }
 
   @Post(':projectId/restore')
@@ -90,7 +100,9 @@ export class ProjectsController {
   @Policy('authenticated')
   @ApiOperation({ summary: 'Restaurar desde la papelera' })
   async restore(@Param('projectId', uuid) id: string, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<ProjectDto> {
-    return this.projects.setLifecycle(actor, id, 'restore', meta);
+    const project = await this.projects.setLifecycle(actor, id, 'restore', meta);
+    await this.collab.revalidate(id);
+    return project;
   }
 
   @Delete(':projectId')
@@ -100,6 +112,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Eliminar definitivamente', description: 'Solo desde la papelera y por el propietario.' })
   async remove(@Param('projectId', uuid) id: string, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<StatusResponseDto> {
     await this.projects.deleteForever(actor, id, meta);
+    await this.collab.revalidate(id);
     return { status: 'deleted' };
   }
 
@@ -109,6 +122,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Abandonar un proyecto compartido' })
   async leave(@Param('projectId', uuid) id: string, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<StatusResponseDto> {
     await this.projects.leave(actor, id, meta);
+    await this.collab.revalidate(id);
     return { status: 'left' };
   }
 
@@ -142,6 +156,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Cambiar el rol de un colaborador' })
   async changeRole(@Param('projectId', uuid) id: string, @Param('userId', uuid) userId: string, @Body() dto: ChangeRoleDto, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<StatusResponseDto> {
     await this.projects.changeRole(actor, id, userId, dto.role, meta);
+    await this.collab.revalidate(id);
     return { status: 'updated' };
   }
 
@@ -151,6 +166,7 @@ export class ProjectsController {
   @ApiOperation({ summary: 'Revocar el acceso de un colaborador' })
   async revokeMember(@Param('projectId', uuid) id: string, @Param('userId', uuid) userId: string, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<StatusResponseDto> {
     await this.projects.revokeMember(actor, id, userId, meta);
+    await this.collab.revalidate(id);
     return { status: 'revoked' };
   }
 

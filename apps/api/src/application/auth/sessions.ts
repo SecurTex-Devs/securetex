@@ -5,6 +5,7 @@ import { UnauthorizedError } from '../../domain/errors';
 import { Databases } from '../../infrastructure/db/databases';
 import { AccessTokenService } from '../../infrastructure/security/access-tokens';
 import { anonymizeIp, deviceLabel, hashUserAgent } from '../../infrastructure/security/client-info';
+import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 import {
   formatCompositeToken,
   parseCompositeToken,
@@ -46,6 +47,7 @@ export class SessionService {
     private readonly db: Databases,
     private readonly tokens: AccessTokenService,
     private readonly audit: AuditLog,
+    private readonly cipher: FieldCipher,
   ) {}
 
   async create(user: Pick<User, 'id'>, authMethod: string, remember: boolean, meta: RequestMeta): Promise<IssuedSession> {
@@ -56,9 +58,9 @@ export class SessionService {
       data: {
         userId: user.id,
         csrfHash: sha256(csrfToken),
-        ipPrefix: anonymizeIp(meta.ip),
+        ipPrefix: this.cipher.encrypt(anonymizeIp(meta.ip), FIELD.sessionIp),
         userAgentHash: hashUserAgent(meta.userAgent),
-        deviceLabel: deviceLabel(meta.userAgent),
+        deviceLabel: this.cipher.encrypt(deviceLabel(meta.userAgent), FIELD.sessionDevice),
         authMethod,
         remember,
         // Acabar de autenticarse cuenta como reautenticación reciente (RS-006).
@@ -137,11 +139,22 @@ export class SessionService {
     return {
       userId: session.user.id,
       sessionId: session.id,
-      email: session.user.primaryEmail,
+      email: this.cipher.decrypt(session.user.primaryEmail, FIELD.userEmail),
       emailVerified: session.user.emailVerifiedAt !== null,
       isSystemAdmin: session.user.isSystemAdmin,
       elevatedUntil: session.elevatedUntil,
     };
+  }
+
+  /**
+   * Para conexiones de larga duración (WebSocket): la sesión sigue viva, no
+   * revocada ni caducada, y la cuenta no está suspendida. No exige el access
+   * token, que caduca a los 10 min aunque la sesión continúe.
+   */
+  async isActive(sessionId: string, userId: string): Promise<boolean> {
+    const s = await this.db.identity.session.findUnique({ where: { id: sessionId }, select: { userId: true, revokedAt: true, expiresAt: true, idleExpiresAt: true, user: { select: { status: true } } } });
+    const now = new Date();
+    return s !== null && s.userId === userId && !s.revokedAt && s.expiresAt > now && s.idleExpiresAt > now && s.user.status !== 'suspended' && s.user.status !== 'deleted';
   }
 
   async verifyCsrf(sessionId: string, token: string | undefined): Promise<boolean> {

@@ -80,3 +80,17 @@ export const FILES = {
   /** Solo texto en esta entrega: las subidas binarias requieren antimalware (F-263). */
   ALLOWED_EXTENSIONS: ['tex', 'bib', 'cls', 'sty', 'txt', 'bst'],
 } as const;
+
+/** Colaboración en tiempo real (F-090 … F-095). */
+export const COLLAB = {
+  /** Cada cuánto se revalida la sesión y el rol de cada conexión abierta. */
+  REVALIDATE_MS: 10_000,
+  PERSIST_DEBOUNCE_MS: 1_500,
+  MAX_PERSIST_DELAY_MS: 8_000,
+  MAX_UPDATE_BYTES: 1_000_000,
+  /** Tope de lo que una sala acepta en memoria hasta que se vacía (todas las conexiones cerradas). */
+  MAX_ROOM_BYTES: 40_000_000,
+  MAX_CONNECTIONS_PER_USER: 8,
+  HANDSHAKE_TIMEOUT_MS: 5_000,
+  MAX_FRAME_BYTES: 1_100_000,
+} as const;

@@ -5,7 +5,13 @@ import { AccountService } from './application/account/account.service';
 import { AdminUsersService } from './application/admin/admin-users.service';
 import { EncryptedFileStore } from './application/files/file-store';
 import { FilesService } from './application/files/files.service';
+import { CollabService } from './application/collab/collab.service';
 import { FileCrypto } from './infrastructure/security/envelope';
+import { FieldCipher } from './infrastructure/security/field-cipher';
+import { PersonalData } from './infrastructure/security/personal-data';
+import { TransportCrypto } from './infrastructure/security/transport';
+import { CryptoController } from './presentation/http/crypto.controller';
+import { CollabGateway } from './presentation/ws/collab.gateway';
 import { CompileController, FilesController } from './presentation/http/files.controller';
 import { AuditLog } from './application/audit/audit-log';
 import { AuthService } from './application/auth/auth.service';
@@ -34,12 +40,13 @@ import { AdminController, HealthController } from './presentation/http/system.co
     // Límite global por IP; los endpoints sensibles declaran el suyo con @Throttle.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
   ],
-  controllers: [AuthController, MeController, ProjectsController, InvitationsController, TagsController, FilesController, CompileController, AdminController, HealthController],
+  controllers: [AuthController, MeController, ProjectsController, InvitationsController, TagsController, FilesController, CompileController, CryptoController, AdminController, HealthController],
   providers: [
     Databases, Mailer, PasswordHasher, SecretBox, AccessTokenService, BreachedPasswordChecker,
     AuditLog, SessionService, LoginThrottle, MfaService, EmailTokenService, NewPasswordService,
     AuthService, OidcService, AccountService, ProjectsService,
-    FileCrypto, EncryptedFileStore, FilesService, AdminUsersService,
+    FileCrypto, FieldCipher, PersonalData, TransportCrypto, EncryptedFileStore, FilesService, AdminUsersService,
+    CollabService, CollabGateway,
     // Orden: primero el límite de tasa (antes de gastar CPU en Argon2id, T-A10),
     // después identidad + política + CSRF.
     { provide: APP_GUARD, useClass: ThrottlerGuard },

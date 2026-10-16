@@ -30,12 +30,16 @@
     "class-validator": "0.14.4",
     "fastify": "5.11.3",
     "jose": "6.2.12",
+    "lib0": "0.2.119",
     "nodemailer": "7.0.13",
     "openid-client": "6.8.8",
     "otplib": "12.0.1",
     "qrcode": "1.5.4",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
+    "ws": "8.22.0",
+    "y-protocols": "1.0.7",
+    "yjs": "13.6.33",
     "zod": "3.25.76"
   },
   "devDependencies": {
@@ -43,6 +47,7 @@
     "@types/node": "22.20.5",
     "@types/nodemailer": "7.0.12",
     "@types/qrcode": "1.5.6",
+    "@types/ws": "8.18.2",
     "prisma": "6.19.3",
     "typescript": "5.9.3",
     "vitest": "3.2.7"

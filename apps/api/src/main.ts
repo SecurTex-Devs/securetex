@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { buildOpenApi, createApp } from './bootstrap';
 import { loadEnv } from './config/env';
+import { CollabGateway } from './presentation/ws/collab.gateway';
 
 async function main(): Promise<void> {
   const env = loadEnv();
@@ -21,6 +22,9 @@ async function main(): Promise<void> {
       return payload;
     });
   }
+
+  // Colaboración en tiempo real: el WebSocket comparte el servidor HTTP y sus controles de origen y sesión.
+  app.get(CollabGateway).attach(app.getHttpServer());
 
   app.enableShutdownHooks();
   await app.listen({ port: env.PORT, host: '0.0.0.0' });
