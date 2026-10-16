@@ -5,7 +5,7 @@
 //
 //   <id>.req.json   petición escrita por la API (con rename atómico)
 //   <id>.claimed    el trabajador la ha reclamado y la está procesando
-//   <id>.res        resultado: u32be(longitud de la cabecera) ‖ cabecera JSON ‖ PDF
+//   <id>.res        resultado: u32be(longitud de la cabecera) ‖ cabecera JSON ‖ PDF ‖ mapa SyncTeX
 //
 // Cada trabajo se compila en un directorio propio de /work (tmpfs privado de
 // este contenedor) que se destruye SIEMPRE, también si TeX falla o se mata.
@@ -14,7 +14,8 @@
 import { spawn } from 'node:child_process';
 import { constants as fsc } from 'node:fs';
 import { mkdir, open, readdir, readFile, rename, rm, stat, unlink, utimes, writeFile } from 'node:fs/promises';
-import { dirname, join } from 'node:path';
+import { dirname, join, posix } from 'node:path';
+import { gunzipSync } from 'node:zlib';
 
 const JOBS_DIR = process.env.JOBS_DIR ?? '/jobs';
 const WORK_DIR = process.env.WORK_DIR ?? '/work';
@@ -30,6 +31,19 @@ const MAX_TEX_RUNS = 3;
 /** Un trabajo huérfano (la API se reinició o abandonó la espera) se barre pasado este tiempo. */
 const STALE_MS = 2 * 60_000;
 const HEARTBEAT = '/tmp/compiler-alive';
+/**
+ * SyncTeX. El .synctex.gz lo escribe TeX, pero el documento puede apagarlo
+ * (\synctex=0) y dejar en su lugar un archivo propio con ese nombre: se trata
+ * como salida hostil. Comprimido, descomprimido y el mapa resultante tienen
+ * tope; si se supera cualquiera, no hay mapa (la compilación no falla por eso).
+ */
+const MAX_SYNCTEX_GZ = 8 * 1024 * 1024;
+const MAX_SYNCTEX_TEXT = 64 * 1024 * 1024;
+const MAX_SYNCTEX_MAP = 4 * 1024 * 1024;
+const MAX_SYNCTEX_PAGES = 2000;
+const MAX_SYNCTEX_NUMBERS = 600_000;
+/** Puntos de TeX (sp) en un punto PostScript (bp): 65536 × 72,27 / 72. */
+const SP_PER_BP = 65781.76;
 
 const ENGINES = { pdflatex: 'pdflatex', xelatex: 'xelatex', lualatex: 'lualatex' };
 const BINARY_EXT = new Set(['png', 'jpg', 'jpeg', 'pdf']);
@@ -126,7 +140,8 @@ function runLimited(bin, args, cwd, deadline) {
  */
 const texArgs = (engine, mainFile) => [
   ...(engine === 'lualatex' ? ['--safer', '--nosocket'] : []),
-  '-no-shell-escape', '-interaction=nonstopmode', '-file-line-error', `-jobname=${JOBNAME}`, mainFile,
+  // -synctex=1: el mapa PDF ↔ fuente, comprimido (sin comprimir podría chocar con RLIMIT_FSIZE).
+  '-no-shell-escape', '-interaction=nonstopmode', '-file-line-error', '-synctex=1', `-jobname=${JOBNAME}`, mainFile,
 ];
 
 async function readCapped(path, max) {
@@ -168,6 +183,136 @@ async function compileInto(dir, { engine, mainFile }, deadline) {
   return { ...last, runs };
 }
 
+/**
+ * Mapa SyncTeX mínimo, calculado aquí para que ni el .synctex.gz ni las rutas
+ * absolutas del sandbox salgan del contenedor:
+ *
+ *   { v: 1, files: ["main.tex", "cap/intro.tex"],
+ *     pages: [{ b: [f, línea, x, y, ancho, alto, …], r: [f, línea, x1, x2, y, …] }, …] }
+ *
+ * `b` son las cajas de línea (hbox) y `r`, tramos de una misma línea de código
+ * dentro de una línea del PDF (caracteres, espacios, núcleos y fórmulas
+ * consecutivos). Coordenadas en décimas de bp desde la esquina superior
+ * izquierda de la página; la `y` de una caja es su borde superior y la de un
+ * tramo, su línea base. Solo entran los archivos del proyecto: el resto
+ * (clases de TeX Live, el .aux) se descarta con todos sus registros.
+ */
+function synctexMap(text, dir, projectPaths) {
+  const inputs = synctexInputs(dir, projectPaths);
+  const lines = text.split('\n');
+  const content = lines.indexOf('Content:');
+  if (content === -1) return null;
+  const scale = synctexScale(lines.slice(0, content), inputs);
+  const pages = [];
+  let page = null;
+  let numbers = 0;
+  for (const line of lines.slice(content + 1)) {
+    const c = line[0];
+    if (c === '{') {
+      const n = Number(line.slice(1));
+      if (!Number.isInteger(n) || n < 1 || n > MAX_SYNCTEX_PAGES) return null;
+      page = { b: [], r: [], last: null };
+      pages[n - 1] = page;
+    } else if (c === '}') {
+      page = null;
+    } else if (line.startsWith('Input:')) {
+      inputs.add(line);
+    } else if (page) {
+      numbers += synctexRecord(page, line, inputs.tags, scale);
+      if (numbers > MAX_SYNCTEX_NUMBERS) return null;
+    }
+  }
+  if (!inputs.files.length) return null;
+  const out = Buffer.from(JSON.stringify({
+    v: 1,
+    files: inputs.files,
+    pages: Array.from({ length: pages.length }, (_, n) => ({ b: pages[n]?.b ?? [], r: (pages[n]?.r ?? []).flat() })),
+  }), 'utf8');
+  return out.length <= MAX_SYNCTEX_MAP ? out : null;
+}
+
+/** Etiquetas «Input:» → índice en `files`. Solo archivos del proyecto; nada fuera de él. */
+function synctexInputs(dir, projectPaths) {
+  const prefix = `${dir}/`;
+  const files = [];
+  const index = new Map();
+  const tags = new Map();
+  const add = (line) => {
+    const m = /^Input:(\d+):(.+)$/.exec(line);
+    if (!m) return;
+    let path = m[2];
+    if (path.startsWith(prefix)) path = path.slice(prefix.length);
+    else if (path.startsWith('/')) return;
+    path = posix.normalize(path);
+    if (!projectPaths.has(path) || safeRelativePath(path) !== path) return;
+    if (!index.has(path)) { index.set(path, files.length); files.push(path); }
+    tags.set(Number(m[1]), index.get(path));
+  };
+  return { files, tags, add };
+}
+
+/** Preámbulo: unidades y desplazamientos. Devuelve conversores a décimas de bp. */
+function synctexScale(preamble, inputs) {
+  let unit = 1;
+  let mag = 1000;
+  let xOffset = 0;
+  let yOffset = 0;
+  for (const line of preamble) {
+    if (line.startsWith('Input:')) inputs.add(line);
+    else if (line.startsWith('Unit:')) unit = Number(line.slice(5)) || 1;
+    else if (line.startsWith('Magnification:')) mag = Number(line.slice(14)) || 1000;
+    else if (line.startsWith('X Offset:')) xOffset = Number(line.slice(9)) || 0;
+    else if (line.startsWith('Y Offset:')) yOffset = Number(line.slice(9)) || 0;
+  }
+  const k = ((unit * mag) / 1000 / SP_PER_BP) * 10;
+  return {
+    x: (h) => Math.round(h * k + ((xOffset * unit) / SP_PER_BP) * 10),
+    y: (v) => Math.round(v * k + ((yOffset * unit) / SP_PER_BP) * 10),
+    len: (d) => Math.round(d * k),
+  };
+}
+
+const SYNCTEX_RECORD = /^([(hxkg$])(\d+),(\d+):(-?\d+),(-?\d+)(?::(-?\d+),(-?\d+),(-?\d+))?/;
+
+/** Añade un registro a la página y devuelve cuántos números nuevos ocupa. */
+function synctexRecord(page, line, tags, scale) {
+  const m = SYNCTEX_RECORD.exec(line);
+  if (!m) return 0;
+  const f = tags.get(Number(m[2]));
+  const l = Number(m[3]);
+  if (f === undefined || !(l >= 1)) return 0;
+  const x = scale.x(Number(m[4]));
+  const y = scale.y(Number(m[5]));
+  if (m[1] === '(' && m[6] !== undefined) {
+    const w = scale.len(Number(m[6]));
+    const height = scale.len(Number(m[7]));
+    const depth = scale.len(Number(m[8]));
+    page.last = null;
+    if (w <= 0 || height + depth <= 0) return 0;
+    page.b.push(f, l, x, y - height, w, height + depth);
+    return 6;
+  }
+  const last = page.last;
+  if (last && last[0] === f && last[1] === l && last[4] === y) {
+    // Mismo archivo, misma línea de código y misma línea base: se alarga el tramo.
+    last[2] = Math.min(last[2], x);
+    last[3] = Math.max(last[3], x);
+    return 0;
+  }
+  page.last = [f, l, x, x, y];
+  page.r.push(page.last);
+  return 5;
+}
+
+async function readSynctex(dir, projectPaths) {
+  const gz = await readCapped(join(dir, `${JOBNAME}.synctex.gz`), MAX_SYNCTEX_GZ + 1);
+  if (!gz || gz.size > MAX_SYNCTEX_GZ) return null;
+  try {
+    // maxOutputLength: una bomba de descompresión se corta, no llena la memoria.
+    return synctexMap(gunzipSync(gz.buf, { maxOutputLength: MAX_SYNCTEX_TEXT }).toString('utf8'), dir, projectPaths);
+  } catch { return null; }
+}
+
 function statusOf(result, pdf) {
   if (result.timedOut) return 'timeout';
   if (result.signal === 'SIGXFSZ' || (pdf && pdf.size > MAX_PDF_BYTES)) return 'too_large';
@@ -194,6 +339,7 @@ async function compileJob(id, req) {
     const log = await readCapped(join(dir, `${JOBNAME}.log`), MAX_LOG_BYTES);
     const status = statusOf(result, pdf);
     const deliver = (status === 'success' || status === 'errors') && pdf;
+    const synctex = deliver ? await readSynctex(dir, new Set(req.files.map((f) => f.path))) : null;
     return {
       header: {
         status, engine: req.engine, runs: result.runs, exitCode: result.code, signal: result.signal,
@@ -201,6 +347,7 @@ async function compileJob(id, req) {
         log: log ? log.buf.toString('utf8') : '',
       },
       pdf: deliver ? pdf.buf : Buffer.alloc(0),
+      synctex: synctex ?? Buffer.alloc(0),
     };
   } finally {
     // El directorio efímero desaparece siempre: éxito, error, plazo vencido o excepción.
@@ -208,12 +355,13 @@ async function compileJob(id, req) {
   }
 }
 
-async function writeResult(id, { header, pdf }) {
-  const head = Buffer.from(JSON.stringify(header), 'utf8');
+async function writeResult(id, { header, pdf, synctex = Buffer.alloc(0) }) {
+  // Las longitudes delimitan cada parte: la API exige que sumen exactamente el resto.
+  const head = Buffer.from(JSON.stringify({ ...header, pdfBytes: pdf.length, synctexBytes: synctex.length }), 'utf8');
   const len = Buffer.alloc(4);
   len.writeUInt32BE(head.length);
   const tmp = join(JOBS_DIR, `${id}.res.tmp`);
-  await writeFile(tmp, Buffer.concat([len, head, pdf]), { mode: 0o600 });
+  await writeFile(tmp, Buffer.concat([len, head, pdf, synctex]), { mode: 0o600 });
   await rename(tmp, join(JOBS_DIR, `${id}.res`));
 }
 
