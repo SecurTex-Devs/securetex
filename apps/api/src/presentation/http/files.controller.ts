@@ -7,8 +7,9 @@ import { FilesService } from '../../application/files/files.service';
 import type { Actor, RequestMeta } from '../../application/request-meta';
 import { ValidationError } from '../../domain/errors';
 import { envelopeContext, TransportCrypto } from '../../infrastructure/security/transport';
-import { AnalysisDto, CreateFileDto, FileMetaDto, RenameFileDto, SealedResponseDto, WriteFileDto } from './files.dto';
-import { StatusResponseDto } from './responses.dto';
+import { AnalysisDto, CreateFileDto, FileMetaDto, FileVersionDto, RenameFileDto, SealedResponseDto, UploadFileDto, WriteFileDto } from './files.dto';
+import { DuplicateProjectDto } from './projects.dto';
+import { ProjectDto, StatusResponseDto } from './responses.dto';
 import { CurrentActor, Meta, Policy } from './security';
 
 const MINUTE = 60_000;
@@ -75,6 +76,17 @@ export class FilesController {
     return file;
   }
 
+  @Post('upload')
+  @Policy('authenticated')
+  @Throttle({ default: { limit: 30, ttl: MINUTE } })
+  @ApiOperation({ summary: 'Subir una imagen (PNG, JPG) o un PDF', description: 'Bytes en un sobre C1 + C2. Tipo real comprobado por magic bytes; máximo 5 MB; cifrado en reposo.' })
+  async upload(@Param('projectId', uuid) projectId: string, @Body() dto: UploadFileDto, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<FileMetaDto> {
+    const bytes = this.transport.open(dto.envelope, envelopeContext(projectId, 'file:upload'));
+    const file = await this.files.upload(actor, projectId, dto.path, bytes, meta);
+    await this.collab.treeChanged(projectId);
+    return file;
+  }
+
   @Put(':fileId/content')
   @Policy('authenticated')
   @Throttle({ default: { limit: 600, ttl: MINUTE } })
@@ -85,6 +97,44 @@ export class FilesController {
     const file = await this.files.write(actor, projectId, fileId, content, dto.baseVersion, meta);
     await this.collab.fileCreated(projectId, file.id, content);
     return file;
+  }
+
+  @Get(':fileId/versions')
+  @Policy('authenticated')
+  @ApiOperation({ summary: 'Historial de versiones de un archivo', description: 'Instantáneas cifradas con autor y fecha (F-150).' })
+  async versions(@Param('projectId', uuid) projectId: string, @Param('fileId', uuid) fileId: string, @CurrentActor() actor: Actor): Promise<FileVersionDto[]> {
+    return this.files.listVersions(actor, projectId, fileId);
+  }
+
+  @Get(':fileId/versions/:versionId')
+  @Policy('authenticated')
+  @replyKeyHeader
+  @ApiOperation({ summary: 'Contenido de una versión, sellado para el cliente' })
+  async version(
+    @Param('projectId', uuid) projectId: string, @Param('fileId', uuid) fileId: string, @Param('versionId', uuid) versionId: string,
+    @Headers(REPLY_KEY) replyKey: string | undefined, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta,
+  ): Promise<SealedResponseDto> {
+    const recipient = this.recipient(replyKey);
+    const content = await this.files.readVersion(actor, projectId, fileId, versionId, meta);
+    return { envelope: this.transport.seal(Buffer.from(content, 'utf8'), recipient, envelopeContext(projectId, `version:${versionId}`)) };
+  }
+
+  @Post(':fileId/versions/:versionId/restore')
+  @HttpCode(200)
+  @Policy('authenticated')
+  @Throttle({ default: { limit: 30, ttl: MINUTE } })
+  @ApiOperation({ summary: 'Restaurar una versión', description: 'Crea un cambio nuevo con el contenido antiguo; no borra el historial intermedio. Lo ven al instante quienes estén editando.' })
+  async restore(
+    @Param('projectId', uuid) projectId: string, @Param('fileId', uuid) fileId: string, @Param('versionId', uuid) versionId: string,
+    @CurrentActor() actor: Actor, @Meta() meta: RequestMeta,
+  ): Promise<StatusResponseDto> {
+    const content = await this.files.restoreVersion(actor, projectId, fileId, versionId, meta);
+    // Con la sala abierta, el cambio entra en el CRDT; si no, se escribe directamente (cifrado).
+    if (!(await this.collab.replaceFile(projectId, fileId, content, actor.userId))) {
+      await this.files.persistFromCollab(actor.userId, projectId, fileId, content);
+      await this.files.snapshotVersion(actor.userId, projectId, fileId, content);
+    }
+    return { status: 'restored' };
   }
 
   @Patch(':fileId')
@@ -135,6 +185,25 @@ function compileFrame(out: CompileOutput): Buffer {
   const length = Buffer.alloc(4);
   length.writeUInt32BE(header.length);
   return Buffer.concat([length, header, out.pdf ?? Buffer.alloc(0)]);
+}
+
+@ApiTags('Proyectos')
+@Controller({ path: 'projects/:projectId/duplicate', version: '1' })
+export class DuplicateController {
+  constructor(
+    private readonly files: FilesService,
+    private readonly collab: CollabService,
+  ) {}
+
+  @Post()
+  @Policy('authenticated')
+  @Throttle({ default: { limit: 10, ttl: 10 * MINUTE } })
+  @ApiOperation({ summary: 'Hacer una copia del proyecto', description: 'Proyecto nuevo con su propia clave; los archivos se recifran.' })
+  async duplicate(@Param('projectId', uuid) projectId: string, @Body() dto: DuplicateProjectDto, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<ProjectDto> {
+    // Se copia lo último que se haya escrito en la sala, no lo guardado hace unos segundos.
+    await this.collab.persistNow(projectId);
+    return this.files.duplicateProject(actor, projectId, dto.name, meta);
+  }
 }
 
 @ApiTags('Compilación')

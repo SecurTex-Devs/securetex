@@ -27,6 +27,11 @@ export class CreateProjectDto {
   readonly template?: TemplateId;
 }
 
+export class DuplicateProjectDto {
+  @IsString() @Length(1, 120, { message: 'Ponle un nombre de entre 1 y 120 caracteres.' })
+  readonly name!: string;
+}
+
 /**
  * No incluye ownerId, confidential ni ningún campo de acceso: el propietario
  * no se cambia con un PATCH y RLS además lo impide a nivel de columna.

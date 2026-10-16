@@ -1,14 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import type { ProjectFile } from '@prisma/client';
-import { FILES } from '../../domain/constants';
+import { FILES, HISTORY } from '../../domain/constants';
 import { ConflictError, IntegrityError, NotFoundError, ValidationError } from '../../domain/errors';
 import { analyzeLatex, type SecurityFinding } from '../../domain/latex-analyzer';
-import { asUserId, isUuid, SafeFilePath } from '../../domain/values';
+import { asUserId, isUuid, SafeFilePath, verifyBinaryType } from '../../domain/values';
 import { Databases, type AppTx } from '../../infrastructure/db/databases';
+import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 import { AuditLog } from '../audit/audit-log';
 import { ProjectsService } from '../projects/projects.service';
 import type { Actor, RequestMeta } from '../request-meta';
-import { EncryptedFileStore } from './file-store';
+import { EncryptedFileStore, type CollabState } from './file-store';
 
 export interface FileMeta {
   readonly id: string;
@@ -23,11 +24,23 @@ export interface FileWithContent extends FileMeta {
   readonly content: string;
 }
 
+export interface VersionMeta {
+  readonly id: string;
+  readonly size: number;
+  readonly createdAt: Date;
+  readonly path: string;
+  /** null si la persona ya no comparte el proyecto (RLS no deja ver su perfil). */
+  readonly author: string | null;
+}
+
 export interface AnalysisResult {
   readonly verdict: 'clean' | 'warnings' | 'blocked';
   readonly findings: readonly SecurityFinding[];
   readonly analyzedFiles: number;
 }
+
+/** Imágenes y PDF: se guardan en base64, no entran en la colaboración ni se editan como texto. */
+export const isBinaryKind = (kind: string) => (FILES.BINARY_EXTENSIONS as readonly string[]).includes(kind);
 
 const byPath = (a: { path: string }, b: { path: string }) => a.path.localeCompare(b.path, 'es');
 
@@ -49,6 +62,7 @@ export class FilesService {
     private readonly projects: ProjectsService,
     private readonly store: EncryptedFileStore,
     private readonly audit: AuditLog,
+    private readonly cipher: FieldCipher,
   ) {}
 
   async list(actor: Actor, projectId: string): Promise<FileMeta[]> {
@@ -79,6 +93,7 @@ export class FilesService {
   async create(actor: Actor, projectId: string, rawPath: string, content: string, m: RequestMeta): Promise<FileMeta> {
     const { id } = await this.projects.authorize(actor, projectId, 'edit_content', m);
     const path = SafeFilePath.of(rawPath);
+    if (path.isBinary) throw new ValidationError({ path: 'Las imágenes y los PDF se suben con «Subir archivo».' });
     assertSize(content);
     const file = await this.db.asUser(asUserId(actor.userId), async (tx) => {
       await this.assertQuota(tx, id, Buffer.byteLength(content, 'utf8'), true);
@@ -92,6 +107,30 @@ export class FilesService {
   }
 
   /**
+   * Subir una imagen o un PDF para las figuras. El tipo real se comprueba por
+   * sus primeros bytes (nunca se confía en la extensión ni en el MIME del
+   * cliente) y se guarda cifrado como cualquier archivo, en base64.
+   */
+  async upload(actor: Actor, projectId: string, rawPath: string, bytes: Buffer, m: RequestMeta): Promise<FileMeta> {
+    const { id } = await this.projects.authorize(actor, projectId, 'edit_content', m);
+    const path = SafeFilePath.of(rawPath);
+    if (!path.isBinary) throw new ValidationError({ path: 'Solo se suben imágenes PNG o JPG y archivos PDF.' });
+    if (bytes.length === 0 || bytes.length > FILES.MAX_BINARY_BYTES) {
+      throw new ValidationError({ file: 'El archivo debe ocupar como máximo 5 MB.' }, 'El archivo es demasiado grande.');
+    }
+    verifyBinaryType(bytes, path.extension);
+    const file = await this.db.asUser(asUserId(actor.userId), async (tx) => {
+      await this.assertQuota(tx, id, bytes.length, true);
+      if (await tx.projectFile.findFirst({ where: { projectId: id, pathIndex: this.store.pathIndex(id, path.toString()) }, select: { id: true } })) {
+        throw new ConflictError('file_exists', 'Ya existe un archivo con ese nombre.');
+      }
+      return this.store.insert(tx, id, actor.userId, path, bytes.toString('base64'), bytes.length);
+    });
+    await this.audit.record({ type: 'file.uploaded', actorUserId: actor.userId, target: { type: 'file', id: file.id }, outcome: 'success', metadata: { projectId: id, kind: path.extension, bytes: bytes.length } }, m);
+    return this.meta(file);
+  }
+
+  /**
    * Autoguardado con control de concurrencia optimista: si `baseVersion` no es
    * la actual, alguien escribió entre medias y se devuelve 409 en vez de pisarlo.
    */
@@ -100,6 +139,7 @@ export class FilesService {
     assertSize(content);
     const file = await this.db.asUser(asUserId(actor.userId), async (tx) => {
       const current = await this.find(tx, id, fileId);
+      if (isBinaryKind(current.kind)) throw new ValidationError({ content: 'Las imágenes y los PDF no se editan como texto.' });
       if (current.version !== baseVersion) throw new ConflictError('version_conflict', 'Este archivo ha cambiado en otra pestaña o dispositivo. Recarga para ver la última versión.');
       await this.assertQuota(tx, id, Buffer.byteLength(content, 'utf8') - current.size);
       const updated = await this.store.rewrite(tx, current, actor.userId, content);
@@ -114,6 +154,8 @@ export class FilesService {
     const path = SafeFilePath.of(rawPath);
     const result = await this.db.asUser(asUserId(actor.userId), async (tx) => {
       const current = await this.find(tx, id, fileId);
+      // Un binario sigue siendo binario y un texto sigue siendo texto: la extensión decide cómo se trata.
+      if (isBinaryKind(current.kind) !== path.isBinary) throw new ValidationError({ path: 'No puedes cambiar un archivo de texto a imagen ni al revés.' });
       if (this.store.decryptPath(current.path) === row.mainFile) throw new ConflictError('main_file', 'Es el documento principal: elige otro principal antes de renombrarlo.');
       if (await tx.projectFile.findFirst({ where: { projectId: id, pathIndex: this.store.pathIndex(id, path.toString()), NOT: { id: current.id } }, select: { id: true } })) {
         throw new ConflictError('file_exists', 'Ya existe un archivo con ese nombre.');
@@ -144,12 +186,83 @@ export class FilesService {
     assertSize(content);
     return this.db.asUser(asUserId(userId), async (tx) => {
       const current = await tx.projectFile.findFirst({ where: { id: fileId, projectId } });
-      if (!current) return null;
+      if (!current || isBinaryKind(current.kind)) return null;
       await this.assertQuota(tx, projectId, Buffer.byteLength(content, 'utf8') - current.size);
       const updated = await this.store.rewrite(tx, current, userId, content);
       await tx.project.update({ where: { id: projectId }, data: { lastActivityAt: new Date() } });
       return this.meta(updated);
     });
+  }
+
+  /** Copia del proyecto: se lee (C4 → C3) con permiso de lectura y se recifra con la clave del proyecto nuevo. */
+  async duplicateProject(actor: Actor, projectId: string, name: string, m: RequestMeta) {
+    const { row } = await this.projects.authorize(actor, projectId, 'view', m);
+    const files = await this.readAll(actor, projectId, m);
+    return this.projects.createCopy(actor, name, { compiler: row.compiler, mainFile: row.mainFile }, files.map((f) => ({ path: f.path, content: f.content, size: f.size })), m);
+  }
+
+  // ─────────────────────────── Colaboración e historial ───────────────────────────
+
+  /** Estado Yjs guardado de la sala, si existe. Lo lee quien abre la sala (cualquier miembro). */
+  async loadCollabState(actor: Actor, projectId: string): Promise<CollabState | null> {
+    return this.db.asUser(asUserId(actor.userId), (tx) => this.store.loadCollabState(tx, projectId));
+  }
+
+  async saveCollabState(userId: string, projectId: string, state: CollabState): Promise<void> {
+    await this.db.asUser(asUserId(userId), (tx) => this.store.saveCollabState(tx, projectId, userId, state));
+  }
+
+  /** Instantánea del historial y poda de las más antiguas, en nombre de quien editó. */
+  async snapshotVersion(userId: string, projectId: string, fileId: string, content: string): Promise<void> {
+    await this.db.asUser(asUserId(userId), async (tx) => {
+      const file = await tx.projectFile.findFirst({ where: { id: fileId, projectId }, select: { path: true } });
+      if (!file) return;
+      await this.store.snapshot(tx, projectId, fileId, this.store.decryptPath(file.path), userId, content);
+      const stale = await tx.projectFileVersion.findMany({
+        where: { projectId, fileId }, orderBy: { createdAt: 'desc' }, skip: HISTORY.MAX_VERSIONS_PER_FILE, select: { id: true },
+      });
+      if (stale.length) await tx.projectFileVersion.deleteMany({ where: { id: { in: stale.map((v) => v.id) } } });
+    });
+  }
+
+  async listVersions(actor: Actor, projectId: string, fileId: string): Promise<VersionMeta[]> {
+    const { id } = await this.projects.authorize(actor, projectId, 'view');
+    return this.db.asUser(asUserId(actor.userId), async (tx) => {
+      await this.find(tx, id, fileId);
+      const rows = await tx.projectFileVersion.findMany({
+        where: { projectId: id, fileId }, orderBy: { createdAt: 'desc' }, take: HISTORY.MAX_VERSIONS_PER_FILE,
+        select: { id: true, size: true, createdAt: true, createdBy: true, path: true },
+      });
+      const names = await this.authorNames(tx, [...new Set(rows.map((r) => r.createdBy))]);
+      return rows.map((r) => ({ id: r.id, size: r.size, createdAt: r.createdAt, path: this.store.decryptPath(r.path), author: names.get(r.createdBy) ?? null }));
+    });
+  }
+
+  async readVersion(actor: Actor, projectId: string, fileId: string, versionId: string, m: RequestMeta): Promise<string> {
+    const { id } = await this.projects.authorize(actor, projectId, 'view');
+    if (!isUuid(versionId)) throw new NotFoundError();
+    return this.withIntegrity(actor, id, m, async (tx) => {
+      const row = await tx.projectFileVersion.findFirst({ where: { id: versionId, projectId: id, fileId } });
+      if (!row) throw new NotFoundError();
+      return this.store.readVersion(tx, row);
+    });
+  }
+
+  /**
+   * Restaurar NO borra el historial intermedio: guarda la versión actual como
+   * instantánea y escribe la antigua como contenido nuevo (versión + 1).
+   */
+  async restoreVersion(actor: Actor, projectId: string, fileId: string, versionId: string, m: RequestMeta): Promise<string> {
+    await this.projects.authorize(actor, projectId, 'edit_content', m);
+    const content = await this.readVersion(actor, projectId, fileId, versionId, m);
+    await this.audit.record({ type: 'file.version_restored', actorUserId: actor.userId, target: { type: 'file', id: fileId }, outcome: 'success', metadata: { projectId, versionId } }, m);
+    return content;
+  }
+
+  private async authorNames(tx: AppTx, ids: readonly string[]): Promise<Map<string, string>> {
+    if (ids.length === 0) return new Map();
+    const users = await tx.user.findMany({ where: { id: { in: [...ids] } }, select: { id: true, firstName: true, lastName: true } });
+    return new Map(users.map((u) => [u.id, `${this.cipher.decrypt(u.firstName, FIELD.userFirstName)} ${this.cipher.decrypt(u.lastName, FIELD.userLastName)}`.trim()]));
   }
 
   /**

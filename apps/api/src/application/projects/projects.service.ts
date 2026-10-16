@@ -120,6 +120,36 @@ export class ProjectsService {
     return this.toDto(this.decryptRow(project), actor.userId);
   }
 
+  /**
+   * «Hacer una copia» (F-043): proyecto nuevo de quien copia, con su PROPIA
+   * clave; los archivos se recifran con ella (nunca se comparte la KEK del
+   * original). Basta con poder ver el proyecto, como en Overleaf.
+   */
+  async createCopy(
+    actor: Actor, rawName: string, source: { compiler: CompilerEngine; mainFile: string },
+    files: ReadonlyArray<{ path: string; content: string; size: number }>, meta: RequestMeta,
+  ) {
+    if (!actor.emailVerified) throw new ForbiddenError('email_not_verified', 'Verifica tu correo para crear proyectos.');
+    const name = ProjectName.of(rawName);
+    const project = await this.db.asUser(asUserId(actor.userId), async (tx) => {
+      const created = await tx.project.create({
+        data: {
+          ownerId: actor.userId,
+          name: this.cipher.encrypt(name.toString(), FIELD.projectName),
+          mainFile: this.cipher.encrypt(source.mainFile, FIELD.projectMainFile),
+          compiler: source.compiler,
+        },
+        select: { id: true },
+      });
+      await tx.projectMember.create({ data: { projectId: created.id, userId: actor.userId, role: 'owner' } });
+      await this.store.createProjectKey(tx, created.id);
+      for (const f of files) await this.store.insert(tx, created.id, actor.userId, SafeFilePath.of(f.path), f.content, f.size);
+      return tx.project.findUniqueOrThrow({ where: { id: created.id }, select: PROJECT_SELECT });
+    });
+    await this.audit.record({ type: 'project.created', actorUserId: actor.userId, target: { type: 'project', id: project.id }, outcome: 'success', metadata: { copy: true } }, meta);
+    return this.toDto(this.decryptRow(project), actor.userId);
+  }
+
   async update(actor: Actor, rawId: string, patch: ProjectPatch, meta: RequestMeta) {
     const action: ProjectAction = patch.name !== undefined ? 'rename' : 'change_settings';
     const { id } = await this.load(actor, rawId, action, meta);

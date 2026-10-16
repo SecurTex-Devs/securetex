@@ -15,7 +15,7 @@ import { PersonalData } from './infrastructure/security/personal-data';
 import { TransportCrypto } from './infrastructure/security/transport';
 import { CryptoController } from './presentation/http/crypto.controller';
 import { CollabGateway } from './presentation/ws/collab.gateway';
-import { CompileController, FilesController } from './presentation/http/files.controller';
+import { CompileController, DuplicateController, FilesController } from './presentation/http/files.controller';
 import { AuditLog } from './application/audit/audit-log';
 import { AuthService } from './application/auth/auth.service';
 import { NewPasswordService } from './application/auth/credentials';
@@ -43,7 +43,7 @@ import { AdminController, HealthController } from './presentation/http/system.co
     // Límite global por IP; los endpoints sensibles declaran el suyo con @Throttle.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
   ],
-  controllers: [AuthController, MeController, ProjectsController, InvitationsController, TagsController, FilesController, CompileController, CryptoController, AdminController, HealthController],
+  controllers: [AuthController, MeController, ProjectsController, InvitationsController, TagsController, FilesController, CompileController, DuplicateController, CryptoController, AdminController, HealthController],
   providers: [
     Databases, Mailer, PasswordHasher, SecretBox, AccessTokenService, BreachedPasswordChecker,
     AuditLog, SessionService, LoginThrottle, MfaService, EmailTokenService, NewPasswordService,

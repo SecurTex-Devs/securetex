@@ -17,6 +17,25 @@ export class EnvelopeDto {
   @IsString() @Matches(B64URL) @MaxLength(1_400_000) readonly body!: string;
 }
 
+/** Sobre de una imagen o un PDF: hasta 5 MB, en base64url algo menos de 7 MB. */
+export class BinaryEnvelopeDto {
+  @IsIn([1]) readonly v!: 1;
+  @IsString() @Matches(B64URL) @MaxLength(64) readonly epk!: string;
+  @IsString() @Matches(B64URL) @MaxLength(32) readonly n1!: string;
+  @IsString() @Matches(B64URL) @MaxLength(128) readonly wdek!: string;
+  @IsString() @Matches(B64URL) @MaxLength(32) readonly n2!: string;
+  @IsString() @Matches(B64URL) @MaxLength(6_800_000) readonly body!: string;
+}
+
+export class UploadFileDto {
+  /** Ruta relativa, p. ej. «figuras/arquitectura.png». */
+  @IsString() @MaxLength(200)
+  readonly path!: string;
+
+  @ValidateNested() @Type(() => BinaryEnvelopeDto)
+  readonly envelope!: BinaryEnvelopeDto;
+}
+
 /** La ruta y el contenido los valida además el dominio (SafeFilePath, cuotas). */
 export class CreateFileDto {
   /** Ruta relativa, p. ej. «capitulos/intro.tex». */
@@ -104,4 +123,14 @@ export class TransportKeyDto {
   /** Clave pública de 32 bytes en base64url. */
   readonly key!: string;
   readonly contexts!: string[];
+}
+
+export class FileVersionDto {
+  readonly id!: string;
+  readonly size!: number;
+  readonly createdAt!: Date;
+  /** Ruta que tenía el archivo en ese momento. */
+  readonly path!: string;
+  /** null si la persona ya no comparte el proyecto. */
+  readonly author!: string | null;
 }
