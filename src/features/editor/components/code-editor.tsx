@@ -82,7 +82,7 @@ export function CodeEditor({ readOnly, onSave, viewRef }: {
           readOnly,
           prefs,
           collab: yCollab(ytext, collab.awareness, { undoManager: manager }),
-          onCompile: () => void useEditor.getState().compile(),
+          onCompile: () => void useEditor.getState().build(),
           onSave,
           completion: {
             citeKeys: () => allBibEntries(useEditor.getState().files).map((b) => ({ key: b.key, detail: `${b.author.split(',')[0] ?? ''} ${b.year}` })),

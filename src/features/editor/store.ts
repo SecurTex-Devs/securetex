@@ -1,8 +1,11 @@
 'use client';
 
 import { create } from 'zustand';
-import { isApiError } from '@/shared/api/errors';
-import { filesApi, type FileMeta, type ServerFinding } from './api';
+import { humanWait, isApiError } from '@/shared/api/errors';
+import { getT } from '@/shared/i18n';
+import { IntegrityFailure } from '@/shared/crypto/transport';
+import { compileApi, filesApi, type FileMeta, type ServerFinding } from './api';
+import type { ServerCompile } from './lib/compile-frame';
 import { CollabClient, type CollabStatus } from './collab';
 import { diagnose, type Diagnostic } from './lib/diagnostics';
 import { buildDocument, paginate, type Block, type DocumentModel, type Src } from './lib/latex-blocks';
@@ -15,6 +18,10 @@ import { buildDocument, paginate, type Block, type DocumentModel, type Src } fro
 
 export type ViewMode = 'code' | 'split' | 'pdf';
 export type CompileStatus = 'idle' | 'analyzing' | 'running' | 'success' | 'failed' | 'blocked';
+/** Compilación real en el sandbox del servidor, independiente de la vista previa rápida. */
+export type PdfStatus = 'idle' | 'running' | 'done' | 'failed';
+/** `pdf`: el PDF real y firmado. `quick`: la vista previa compuesta en el navegador. */
+export type PreviewMode = 'pdf' | 'quick';
 export type SaveState = 'saved' | 'saving' | 'offline';
 export type FileKind = 'tex' | 'bib' | 'cls' | 'sty' | 'bst' | 'txt';
 export type SecurityFinding = ServerFinding;
@@ -57,6 +64,14 @@ interface EditorState {
   cursor: { line: number; col: number };
   jump: { file: string; line: number; at: number } | null;
   highlight: Src | null;
+  /** Resultado del último análisis del servidor: solo con 'ok' se pide la compilación real. */
+  analysis: 'ok' | 'blocked' | 'error' | null;
+  pdfStatus: PdfStatus;
+  pdfError: string | null;
+  /** PDF verificado con Ed25519 (C4b); null si la última compilación no produjo uno. */
+  pdf: Uint8Array | null;
+  server: ServerCompile | null;
+  previewMode: PreviewMode;
   /** Último aviso del servidor (cuota, acceso) para mostrarlo una vez. */
   notice: { code: string; message: string; at: number } | null;
   start: (projectId: string, url: string, entries: readonly FileMeta[], mainFile: string, readOnly: boolean) => void;
@@ -76,6 +91,10 @@ interface EditorState {
   setAutoCompile: (v: boolean) => void;
   setLogOpen: (v: boolean) => void;
   compile: () => Promise<void>;
+  compilePdf: () => Promise<void>;
+  /** Botón «Compilar» y Ctrl+Enter: análisis + vista rápida y, si nada bloquea, compilación real. */
+  build: () => Promise<void>;
+  setPreviewMode: (m: PreviewMode) => void;
 }
 
 const KINDS: readonly FileKind[] = ['tex', 'bib', 'cls', 'sty', 'bst', 'txt'];
@@ -117,6 +136,12 @@ export const useEditor = create<EditorState>((set, get) => ({
   jump: null,
   highlight: null,
   notice: null,
+  analysis: null,
+  pdfStatus: 'idle',
+  pdfError: null,
+  pdf: null,
+  server: null,
+  previewMode: 'pdf',
 
   start: (projectId, url, list, mainFile, readOnly) => {
     get().stop();
@@ -141,6 +166,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     set({
       projectId, collab, entries, readOnly, synced: false, connection: 'connecting', saveState: 'saved', files: {},
       mainFile: main, activeFile: main, openTabs: [main], status: 'idle', compileError: null, result: null, highlight: null, notice: null,
+      analysis: null, pdfStatus: 'idle', pdfError: null, pdf: null, server: null, previewMode: 'pdf',
     });
     collab.connect();
   },
@@ -216,6 +242,44 @@ export const useEditor = create<EditorState>((set, get) => ({
   setHighlight: (highlight) => set({ highlight }),
   setAutoCompile: (autoCompile) => set({ autoCompile }),
   setLogOpen: (logOpen) => set({ logOpen }),
+  setPreviewMode: (previewMode) => set({ previewMode }),
+
+  build: async () => {
+    await get().compile();
+    // Si había un análisis en vuelo (autocompilación), se espera a su veredicto.
+    for (let i = 0; i < 100 && (get().status === 'analyzing' || get().status === 'running'); i += 1) await new Promise((r) => setTimeout(r, 50));
+    // Lo que el análisis bloquea no llega al servidor de compilación; sin análisis, tampoco.
+    if (get().analysis === 'ok') await get().compilePdf();
+  },
+
+  /**
+   * Compilación real en el sandbox. Mientras dura (hasta 30 s), la vista
+   * previa rápida del navegador sigue disponible como respaldo.
+   */
+  compilePdf: async () => {
+    const { projectId, pdfStatus } = get();
+    if (!projectId || pdfStatus === 'running') return;
+    set({ pdfStatus: 'running', pdfError: null });
+    try {
+      const { header, pdf } = await compileApi.run(projectId);
+      if (get().projectId !== projectId) return;
+      const failed = !pdf;
+      set((s) => ({
+        server: header,
+        pdf: pdf ?? s.pdf,
+        pdfStatus: failed ? 'failed' : 'done',
+        pdfError: failed ? pdfFailure(header.status) : null,
+        // Sin PDF nuevo, se vuelve a la vista rápida; con errores, se abre el registro real.
+        previewMode: failed && !s.pdf ? 'quick' : s.previewMode,
+        logOpen: header.status !== 'success' ? true : s.logOpen,
+      }));
+    } catch (e) {
+      if (get().projectId !== projectId) return;
+      set({ pdfStatus: 'failed', pdfError: pdfErrorMessage(e) });
+      // Un 422 es una carrera con un colaborador: el análisis vuelve a mostrar el bloqueo.
+      if (isApiError(e) && e.status === 422) void get().compile();
+    }
+  },
 
   /**
    * 1) El SERVIDOR guarda lo que hay en la sala y analiza el proyecto (P-47):
@@ -231,14 +295,14 @@ export const useEditor = create<EditorState>((set, get) => ({
     try {
       findings = (await filesApi.analyze(projectId)).findings;
     } catch (e) {
-      set({ status: 'failed', compileError: isApiError(e) ? e.message : null });
+      set({ status: 'failed', analysis: 'error', compileError: isApiError(e) ? e.message : null });
       return;
     }
     if (findings.some((f) => f.severity === 'blocking')) {
-      set({ status: 'blocked', result: { ...emptyResult(get().result), findings, durationMs: performance.now() - started, finishedAt: Date.now() } });
+      set({ status: 'blocked', analysis: 'blocked', result: { ...emptyResult(get().result), findings, durationMs: performance.now() - started, finishedAt: Date.now() } });
       return;
     }
-    set({ status: 'running' });
+    set({ status: 'running', analysis: 'ok' });
     const { mainFile, entries } = get();
     const files = project(collab, entries);
     const diagnostics = diagnose(mainFile, files);
@@ -255,4 +319,21 @@ export const useEditor = create<EditorState>((set, get) => ({
 
 function emptyResult(previous: CompileResult | null): Omit<CompileResult, 'findings' | 'durationMs' | 'finishedAt'> {
   return previous ?? { model: { blocks: [], labels: new Map(), citations: new Map() }, pages: [], diagnostics: [] };
+}
+
+function pdfFailure(status: ServerCompile['status']): string {
+  const t = getT('editor');
+  if (status === 'timeout') return t('pdf.timeout');
+  if (status === 'too_large') return t('pdf.tooLarge');
+  if (status === 'rejected') return t('pdf.rejected');
+  return t('pdf.noOutput');
+}
+
+function pdfErrorMessage(e: unknown): string {
+  const t = getT('editor');
+  // Firma Ed25519, Poly1305 o GCM inválidas: no se muestra nada que no sea auténtico.
+  if (e instanceof IntegrityFailure) return t('pdf.integrity');
+  if (isApiError(e) && e.kind === 'rate_limited') return t('pdf.busy', { wait: humanWait(e.retryAfterSeconds ?? 5) });
+  if (isApiError(e)) return e.message;
+  return t('pdf.unreachable');
 }

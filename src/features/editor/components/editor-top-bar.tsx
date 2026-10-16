@@ -25,8 +25,9 @@ export function EditorTopBar({ project, online, onShare, onSettings }: {
   const view = useEditor((s) => s.view);
   const setView = useEditor((s) => s.setView);
   const status = useEditor((s) => s.status);
-  const compile = useEditor((s) => s.compile);
-  const busy = status === 'analyzing' || status === 'running';
+  const build = useEditor((s) => s.build);
+  const compilingPdf = useEditor((s) => s.pdfStatus === 'running');
+  const busy = status === 'analyzing' || status === 'running' || compilingPdf;
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-3 border-b border-line bg-surface px-3">
@@ -50,7 +51,7 @@ export function EditorTopBar({ project, online, onShare, onSettings }: {
         <span className="mx-0.5 hidden h-5 w-px bg-line md:block" aria-hidden="true" />
         <IconButton size="sm" label={t('settings')} icon={<Settings2 className="size-4" strokeWidth={1.5} />} onClick={onSettings} />
         <Button size="sm" leading={<Share2 className="size-3.5" strokeWidth={1.75} />} onClick={onShare}>{t('share')}</Button>
-        <CompileButton busy={busy} onCompile={() => void compile()} />
+        <CompileButton busy={busy} onCompile={() => void build()} />
         <ThemeToggle />
       </div>
     </header>

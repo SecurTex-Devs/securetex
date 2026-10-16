@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, CloudOff, FileSearch, Minus, Plus, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CloudOff, FileSearch, Minus, Plus } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getT } from '@/shared/i18n';
 import { cn } from '@/shared/lib/cn';
@@ -11,14 +11,17 @@ import type { Src } from '../lib/latex-blocks';
 import { useEditor } from '../store';
 import { BlockedPanel } from './blocked-panel';
 import { DocumentPages } from './document-pages';
+import { PdfControls, PdfNotice } from './pdf-controls';
+import { PdfViewer } from './pdf-viewer';
 
 const ZOOMS = [0.5, 0.6, 0.75, 0.9, 1, 1.15, 1.3] as const;
 const PAGE_WIDTH = 640;
 
 /**
- * P-19 · vista previa tipográfica compuesta en el navegador, solo después de
- * que el servidor analice el proyecto y no encuentre nada bloqueante (P-47).
- * La compilación real con TeX en un sandbox queda fuera de esta entrega.
+ * P-19 · el PDF real compilado en el sandbox y verificado con Ed25519 o, como
+ * respaldo mientras llega (o si falla), la vista previa rápida compuesta en
+ * el navegador. Las dos solo después de que el servidor analice el proyecto y
+ * no encuentre nada bloqueante (P-47).
  */
 export function PreviewPane() {
   const t = getT('editor');
@@ -44,7 +47,10 @@ export function PreviewPane() {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  const total = result?.pages.length ?? 0;
+  const pdf = useEditor((s) => s.pdf);
+  const showPdf = useEditor((s) => s.previewMode === 'pdf') && pdf !== null;
+  const [pdfPages, setPdfPages] = useState(0);
+  const total = showPdf ? pdfPages : (result?.pages.length ?? 0);
   const busy = status === 'analyzing' || status === 'running';
   const compileError = useEditor((s) => s.compileError);
 
@@ -61,7 +67,7 @@ export function PreviewPane() {
     }, { root, threshold: [0.3, 0.6] });
     root.querySelectorAll('[data-page]').forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, [total, zoom, result]);
+  }, [total, zoom, result, showPdf]);
 
   // SyncTeX directo: llevar a la vista el bloque resaltado.
   useEffect(() => {
@@ -88,17 +94,14 @@ export function PreviewPane() {
         <IconButton size="sm" label={t('pdf.prev')} disabled={page <= 1} onClick={() => goPage(page - 1)} icon={<ChevronLeft className="size-4" strokeWidth={1.5} />} />
         <span className="text-xs text-fg-2 tabular">{total ? t('pdf.page', { n: page, total }) : '—'}</span>
         <IconButton size="sm" label={t('pdf.next')} disabled={page >= total} onClick={() => goPage(page + 1)} icon={<ChevronRight className="size-4" strokeWidth={1.5} />} />
-        <div className="ml-auto flex items-center gap-1">
-          {result && status !== 'blocked' && (
-            <span className="mr-1 hidden items-center gap-1 text-[11px] text-ok xl:flex">
-              <ShieldCheck className="size-3.5" strokeWidth={1.75} aria-hidden="true" />{t('compile.verified')}
-            </span>
-          )}
-        </div>
+        <PdfControls />
       </div>
+      {status !== 'blocked' && <PdfNotice />}
 
       <div ref={scroller} className="relative min-h-0 flex-1 overflow-auto px-4 pt-5">
-        {status === 'blocked' && result ? <BlockedPanel findings={result.findings} /> : result && total > 0 ? (
+        {status === 'blocked' && result ? <BlockedPanel findings={result.findings} /> : showPdf && pdf ? (
+          <PdfViewer data={pdf} zoom={zoom} onPages={setPdfPages} />
+        ) : result && total > 0 ? (
           <div className={cn('transition-opacity duration-300', busy && 'opacity-60')}>
             <DocumentPages model={result.model} pages={result.pages} zoom={zoom} highlight={highlight} onInverseSync={onInverseSync} />
           </div>
@@ -122,7 +125,7 @@ export function PreviewPane() {
         ) : null}
         {busy && <CompileProgress status={status} />}
       </div>
-      {result && total > 0 && status !== 'blocked' && (
+      {!showPdf && result && total > 0 && status !== 'blocked' && (
         <p className="pointer-events-none absolute bottom-3 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full xl:block bg-surface/90 px-3 py-1 text-[11px] text-fg-3 shadow-[var(--shadow-card),inset_0_0_0_1px_var(--border)] backdrop-blur">{t('pdf.syncHint')}</p>
       )}
     </section>

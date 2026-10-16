@@ -121,7 +121,8 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
     if (!ready) return;
     const w = container.current?.clientWidth ?? 1200;
     setEditorWidth(Math.round((w - (w >= 1024 ? 244 : 0)) / 2));
-    if (useEditor.getState().status === 'idle') void useEditor.getState().compile();
+    // Al abrir: vista rápida y PDF real; después, la autocompilación solo refresca la vista rápida.
+    if (useEditor.getState().status === 'idle') void useEditor.getState().build();
   }, [ready]);
 
   // Autocompilación: 1,5 s después de dejar de escribir (F-121), también ante cambios de los demás.

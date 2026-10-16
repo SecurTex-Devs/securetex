@@ -6,8 +6,9 @@ import { getT } from '@/shared/i18n';
 import { cn } from '@/shared/lib/cn';
 import { Badge } from '@/shared/ui/badge';
 import { IconButton } from '@/shared/ui/button';
+import type { ServerCompile } from '../lib/compile-frame';
 import type { Diagnostic } from '../lib/diagnostics';
-import { useEditor, type CompileResult } from '../store';
+import { useEditor } from '../store';
 
 const LEVEL = {
   error: { tone: 'danger', Icon: CircleX },
@@ -15,30 +16,27 @@ const LEVEL = {
   typesetting: { tone: 'neutral', Icon: Info },
 } as const;
 
-/** Registro sintético en el formato de pdfTeX, ya saneado (RS-036: sin rutas absolutas ni host). */
-function rawLog(result: CompileResult, engine: string): string {
-  const lines = [
-    `This is ${engine === 'xelatex' ? 'XeTeX' : engine === 'lualatex' ? 'LuaHBTeX' : 'pdfTeX'}, Version 3.141592653 (TeX Live 2025) (preloaded format=${engine})`,
-    ' \\write18 disabled.',
-    ' openin_any=p  openout_any=p',
-    'entering extended mode',
-    '(./main.tex',
-    'LaTeX2e <2024-11-01> patch level 2',
-    ...result.diagnostics.map((d) => (d.level === 'error' ? `./${d.file}:${d.line}: ${d.message}.\nl.${d.line} ${d.snippet}` : `LaTeX Warning: ${d.message} on input line ${d.line}.`)),
-    `Output written on main.pdf (${result.pages.length} pages).`,
-    'Transcript written on main.log.',
-  ];
-  return lines.join('\n');
+const ENGINE_NAME: Readonly<Record<string, string>> = { pdflatex: 'pdfLaTeX', xelatex: 'XeLaTeX', lualatex: 'LuaLaTeX' };
+
+/** Diagnósticos del registro REAL (servidor) en la forma de la lista; sin compilación real, los del navegador. */
+function diagnosticsOf(server: ServerCompile | null, quick: readonly Diagnostic[], mainFile: string, inProject: (f: string) => boolean): readonly Diagnostic[] {
+  if (!server) return quick;
+  // Un error dentro de una clase de TeX Live (article.cls) no es un archivo del proyecto: se lleva al principal.
+  return server.diagnostics.map((d) => ({ level: d.level, message: d.message, file: d.file && inProject(d.file) ? d.file : mainFile, line: d.line ?? 1, snippet: '' }));
 }
 
 export function CompileLog({ engine }: { readonly engine: string }) {
   const t = getT('editor');
   const result = useEditor((s) => s.result);
+  const server = useEditor((s) => s.server);
+  const mainFile = useEditor((s) => s.mainFile);
+  const entries = useEditor((s) => s.entries);
   const setLogOpen = useEditor((s) => s.setLogOpen);
   const jumpTo = useEditor((s) => s.jumpTo);
-  if (!result) return null;
+  if (!result && !server) return null;
+  const diagnostics = diagnosticsOf(server, result?.diagnostics ?? [], mainFile, (f) => f in entries);
   const counts = { error: 0, warning: 0, typesetting: 0 };
-  for (const d of result.diagnostics) counts[d.level] += 1;
+  for (const d of diagnostics) counts[d.level] += 1;
 
   return (
     <section aria-label={t('log.title')} className="flex h-full flex-col border-t border-line bg-surface">
@@ -57,16 +55,21 @@ export function CompileLog({ engine }: { readonly engine: string }) {
           </div>
         </div>
         <Tabs.Content value="summary" className="min-h-0 flex-1 overflow-y-auto p-2.5">
-          {result.diagnostics.length === 0 ? <p className="px-2 py-3 text-[13px] text-fg-2">{t('log.clean')}</p> : (
+          {diagnostics.length === 0 ? <p className="px-2 py-3 text-[13px] text-fg-2">{t('log.clean')}</p> : (
             <ul className="grid gap-1.5">
-              {result.diagnostics.map((d, i) => <DiagnosticRow key={i} d={d} onGo={() => jumpTo(d.file, d.line)} />)}
+              {diagnostics.map((d, i) => <DiagnosticRow key={i} d={d} onGo={() => jumpTo(d.file, d.line)} />)}
             </ul>
           )}
         </Tabs.Content>
         <Tabs.Content value="raw" className="min-h-0 flex-1 overflow-y-auto">
-          {/* Texto plano siempre: el registro contiene texto que el usuario controla. */}
-          <pre className="whitespace-pre-wrap p-4 font-mono text-[11.5px] leading-relaxed text-fg-2">{rawLog(result, engine)}</pre>
-          <p className="px-4 pb-4 text-xs text-fg-3">{t('log.sanitized')}</p>
+          {server ? (
+            <>
+              <p className="px-4 pt-3 text-xs text-fg-3">{t('log.real', { engine: ENGINE_NAME[server.engine] ?? engine, runs: server.runs, time: (server.durationMs / 1000).toFixed(1).replace('.', ',') })}</p>
+              {/* Texto plano siempre: el registro contiene texto que el usuario controla. */}
+              <pre className="whitespace-pre-wrap break-all p-4 font-mono text-[11.5px] leading-relaxed text-fg-2">{server.log}</pre>
+              <p className="px-4 pb-4 text-xs text-fg-3">{t('log.sanitized')}</p>
+            </>
+          ) : <p className="p-4 text-[13px] text-fg-2">{t('log.notCompiled')}</p>}
         </Tabs.Content>
       </Tabs.Root>
     </section>
