@@ -3,7 +3,55 @@
 Backend de **SecurTex**, editor LaTeX colaborativo seguro: API REST, servicios de dominio, colaboración en tiempo real y orquestador de compilación aislada.
 
 > Proyecto final de la asignatura *Seguridad de Software* · Universidad Técnica de Ambato
-> **Estado: planificación aprobada, implementación pendiente (Sprint 0).**
+> **Estado: primera entrega funcional.** Lo implementado y lo que queda fuera está en [Estado de esta entrega](#estado-de-esta-entrega); el resto del documento describe la arquitectura objetivo.
+
+---
+
+## Estado de esta entrega
+
+### Arrancar todo con Docker
+
+```bash
+node infra/generate-env.mjs        # crea infra/.env con secretos aleatorios (gitignored)
+docker compose -f infra/docker-compose.yml up --build -d
+```
+
+| Servicio | URL | Nota |
+|---|---|---|
+| Aplicación web | http://localhost:3000 | Imagen de `../securtex-frontend` |
+| API + documentación | http://localhost:4000/api/docs | OpenAPI generado desde el código |
+| Correo de pruebas (Mailpit) | http://localhost:8025 | Enlaces de verificación y recuperación |
+
+El servicio `migrate` aplica las migraciones y siembra el escenario sintético: 4 usuarios `*@securtex.test` (Ana Torres es administradora) y 6 proyectos con sus archivos ya cifrados. La contraseña de esas cuentas es `SEED_DEMO_PASSWORD` de `infra/.env`. Es el único servicio con las credenciales del propietario de la base de datos; la API se conecta con tres roles de mínimo privilegio. Para empezar de cero: `docker compose -f infra/docker-compose.yml down -v`.
+
+### Implementado
+
+| Área | Qué hay |
+|---|---|
+| Identidad | Registro con verificación por correo, Argon2id + comprobación HIBP (k-anonimato), bloqueo por cuenta, recuperación de contraseña, OIDC (Google/Microsoft con PKCE, sin vincular por correo), TOTP con códigos de recuperación y antirreplay, reautenticación para acciones sensibles |
+| Sesiones | JWT Ed25519 de 10 min en cookie, refresh opaco rotatorio con detección de reutilización (revoca la familia), CSRF por Origin + token sincronizado, sesiones visibles y revocables |
+| Autorización | Guard global que deniega por defecto (`@Policy`), matriz de roles owner/editor/reviewer/viewer, 404 uniforme para no miembros y **Row Level Security forzada** en PostgreSQL |
+| Proyectos | Crear (en blanco o desde plantilla), renombrar, archivar, papelera, borrado definitivo, invitaciones por correo, cambio de rol, revocación, etiquetas privadas |
+| **Archivos cifrados (C3 + C4)** | Cada guardado se cifra con AES-256-GCM y una DEK nueva envuelta con la KEK del proyecto (AES-256-KW), AAD = `proyecto ‖ archivo ‖ versión`. El HMAC-SHA-256 se verifica en tiempo constante **antes** de descifrar; un fallo responde 409 `integrity_violation` y se audita como crítico. Borrar el proyecto destruye su clave |
+| Edición | Árbol de archivos (crear, renombrar/mover, eliminar, documento principal) con rutas validadas (`SafeFilePath`: sin `..`, absolutas, ocultas ni extensiones fuera de lista), cuotas (1 MB por archivo, 20 MB y 200 archivos por proyecto) y autoguardado con concurrencia optimista (409 `version_conflict`) |
+| Compilación segura | `POST /projects/:id/compile/analyze`: el servidor decide antes de compilar. Bloquea `\write18`, `\input{|…}`, lecturas fuera del proyecto, Lua y E/S directa; avisa de paquetes con shell-escape y `\catcode`. Los bloqueos se auditan |
+| Plantillas | 5 plantillas del equipo (`blank`, `tesis-uta`, `articulo`, `informe-lab`, `presentacion`) generadas en el servidor y cifradas desde el primer byte |
+| Administración | Listado de cuentas, suspender (cierra sus sesiones al instante) y reactivar; auditoría global con verificación de la cadena de hashes |
+| Auditoría | Registro append-only encadenado por hash, escrito por un rol de base de datos que solo puede insertar |
+
+### Fuera del alcance de esta entrega
+
+Se retiraron de la interfaz y del backend porque su complejidad no cabe en esta fase: chat del proyecto, comentarios y control de cambios, historial de versiones, presencia y colaboración en tiempo real (Yjs), modo confidencial / cifrado en el navegador (C1, C2, C5), importación desde .zip o GitHub, subida de binarios (imágenes, PDF), tokens de aplicación, passkeys, SAML, métricas de servicio y moderación de plantillas. **La compilación real con TeX Live en un sandbox gVisor tampoco está**: la vista previa tipográfica se compone en el navegador, pero solo después de que el análisis del servidor no encuentre nada bloqueante.
+
+### Pruebas
+
+```bash
+cd apps/api
+npx vitest run                              # 73 unitarias: dominio, primitivas, cifrado (bit-flip, AAD, KEK ajena), rutas, analizador
+node --test "test/security/*.test.mjs"     # 39 casos de abuso contra la pila en marcha (Docker arriba)
+```
+
+Los casos de abuso cubren acceso cruzado e IDOR, rol insuficiente, recorrido de rutas, conflictos de versión, cuotas, el bloqueo de `\write18`, reutilización de refresh tokens, CSRF, fuerza bruta y MFA.
 
 ---
 
@@ -25,7 +73,7 @@ Compilar LaTeX **es ejecutar código arbitrario suministrado por un usuario anó
 
 ---
 
-## Stack
+## Stack objetivo
 
 | Capa | Tecnología | Motivo |
 |---|---|---|
@@ -63,7 +111,7 @@ pnpm docs:serve           # http://localhost:3000/api/docs
 
 ---
 
-## Puesta en marcha
+## Puesta en marcha (arquitectura objetivo)
 
 ```bash
 git clone https://github.com/SecurTex-Devs/securtex-backend.git
