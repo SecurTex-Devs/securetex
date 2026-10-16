@@ -5,7 +5,7 @@ import { applyAwarenessUpdate, Awareness, encodeAwarenessUpdate, removeAwareness
 import { ClientChannel, IntegrityFailure } from '@/shared/crypto/transport';
 
 /** Mismos valores que el servidor (application/collab/collab.service.ts). */
-export const MSG = { SYNC1: 1, SYNC2: 2, UPDATE: 3, AWARENESS: 4, FLUSH: 5, SAVED: 6, TREE: 7, ERROR: 8, ACCESS: 9 } as const;
+export const MSG = { SYNC1: 1, SYNC2: 2, UPDATE: 3, AWARENESS: 4, FLUSH: 5, SAVED: 6, TREE: 7, ERROR: 8, ACCESS: 9, ROOM: 10 } as const;
 
 export type CollabStatus = 'connecting' | 'synced' | 'offline' | 'unauthenticated' | 'denied' | 'integrity';
 
@@ -17,6 +17,12 @@ export interface CollabEvents {
   readonly onAccess: (readOnly: boolean) => void;
   readonly onError: (code: string, message: string) => void;
   readonly onSynced: () => void;
+  /**
+   * La sala se reconstruyó en el servidor con otra historia (época distinta):
+   * esta copia no debe fusionarse con ella o duplicaría el texto. Quien la
+   * usa crea un cliente nuevo y vuelve a aplicar lo que no estaba guardado.
+   */
+  readonly onReset: () => void;
 }
 
 const encode = (type: number, payload: Uint8Array) => {
@@ -43,6 +49,9 @@ export class CollabClient {
   private retryTimer: number | null = null;
   private destroyed = false;
   private synced = false;
+  private epoch: string | null = null;
+  /** La época de esta conexión ya se confirmó: hasta entonces no se envía historia local. */
+  private confirmed = false;
 
   constructor(
     private readonly projectId: string,
@@ -76,6 +85,7 @@ export class CollabClient {
     this.ws = ws;
     this.channel = channel;
     this.sent = 0;
+    this.confirmed = false;
     ws.onopen = () => ws.send(channel.hello());
     ws.onmessage = (ev: MessageEvent<string | ArrayBuffer>) => {
       const data = ev.data;
@@ -106,10 +116,15 @@ export class CollabClient {
   }
 
   private isOpen(): boolean {
-    return this.ws?.readyState === WebSocket.OPEN && this.channel?.ready === true;
+    return this.ws?.readyState === WebSocket.OPEN && this.channel?.ready === true && this.confirmed;
   }
 
   private send(type: number, payload: Uint8Array): void {
+    if (this.confirmed) this.sendRaw(type, payload);
+  }
+
+  /** Pedir el estado (SYNC1) y anunciar presencia no comparten historia: se pueden enviar antes de la época. */
+  private sendRaw(type: number, payload: Uint8Array): void {
     if (this.ws && this.channel) this.ws.send(this.channel.encrypt(encode(type, payload)));
   }
 
@@ -128,14 +143,27 @@ export class CollabClient {
     if (!channel.ready) {
       ws.send(channel.acceptKeyFrame(frame));
       this.retries = 0;
-      this.send(MSG.SYNC1, Y.encodeStateVector(this.doc));
+      this.sendRaw(MSG.SYNC1, Y.encodeStateVector(this.doc));
       const local = this.awareness.getLocalState();
-      if (local) this.send(MSG.AWARENESS, encodeAwarenessUpdate(this.awareness, [this.doc.clientID]));
+      if (local) this.sendRaw(MSG.AWARENESS, encodeAwarenessUpdate(this.awareness, [this.doc.clientID]));
       return;
     }
     const message = channel.decrypt(frame);
     const type = message[0];
     const payload = message.subarray(1);
+    if (type === MSG.ROOM) {
+      const { epoch } = readJson<{ epoch: string }>(payload);
+      if (this.epoch !== null && this.epoch !== epoch) {
+        this.destroyed = true;
+        ws.close(1000, 'reset');
+        this.events.onReset();
+        return;
+      }
+      this.epoch = epoch;
+      this.confirmed = true;
+      return;
+    }
+    if (!this.confirmed) return;
     switch (type) {
       case MSG.SYNC1: {
         // Lo que tengamos y el servidor no (ediciones sin conexión) se envía ahora.
