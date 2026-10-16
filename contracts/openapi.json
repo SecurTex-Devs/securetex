@@ -1894,6 +1894,48 @@
         ]
       }
     },
+    "/api/v1/projects/{projectId}/files/upload": {
+      "post": {
+        "description": "Bytes en un sobre C1 + C2. Tipo real comprobado por magic bytes; máximo 5 MB; cifrado en reposo.",
+        "operationId": "Files_upload",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMetaDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Subir una imagen (PNG, JPG) o un PDF",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
     "/api/v1/projects/{projectId}/files/{fileId}/content": {
       "put": {
         "description": "Sobre C1 + C2. Concurrencia optimista: 409 si `baseVersion` no es la actual. El editor usa la colaboración en tiempo real; esta ruta es para clientes de la API.",
@@ -1939,6 +1981,153 @@
           }
         },
         "summary": "Guardar el contenido",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/{fileId}/versions": {
+      "get": {
+        "description": "Instantáneas cifradas con autor y fecha (F-150).",
+        "operationId": "Files_versions",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FileVersionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Historial de versiones de un archivo",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/{fileId}/versions/{versionId}": {
+      "get": {
+        "operationId": "Files_version",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-SecurTex-Reply-Key",
+            "in": "header",
+            "description": "Clave pública X25519 efímera del cliente (base64url): la respuesta se sella para ella (C2).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SealedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Contenido de una versión, sellado para el cliente",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/{fileId}/versions/{versionId}/restore": {
+      "post": {
+        "description": "Crea un cambio nuevo con el contenido antiguo; no borra el historial intermedio. Lo ven al instante quienes estén editando.",
+        "operationId": "Files_restore",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Restaurar una versión",
         "tags": [
           "Archivos"
         ]
@@ -2014,6 +2203,48 @@
         "summary": "Análisis de seguridad previo a la compilación",
         "tags": [
           "Compilación"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/duplicate": {
+      "post": {
+        "description": "Proyecto nuevo con su propia clave; los archivos se recifran.",
+        "operationId": "Duplicate_duplicate",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuplicateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Hacer una copia del proyecto",
+        "tags": [
+          "Proyectos"
         ]
       }
     },
@@ -3449,6 +3680,62 @@
           "envelope"
         ]
       },
+      "BinaryEnvelopeDto": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "epk": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "n1": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "wdek": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "n2": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 6800000
+          }
+        },
+        "required": [
+          "v",
+          "epk",
+          "n1",
+          "wdek",
+          "n2",
+          "body"
+        ]
+      },
+      "UploadFileDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Ruta relativa, p. ej. «figuras/arquitectura.png».",
+            "maxLength": 200
+          },
+          "envelope": {
+            "$ref": "#/components/schemas/BinaryEnvelopeDto"
+          }
+        },
+        "required": [
+          "path",
+          "envelope"
+        ]
+      },
       "WriteFileDto": {
         "type": "object",
         "properties": {
@@ -3464,6 +3751,37 @@
         "required": [
           "envelope",
           "baseVersion"
+        ]
+      },
+      "FileVersionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "Ruta que tenía el archivo en ese momento."
+          },
+          "author": {
+            "type": "string",
+            "nullable": true,
+            "description": "null si la persona ya no comparte el proyecto."
+          }
+        },
+        "required": [
+          "id",
+          "size",
+          "createdAt",
+          "path",
+          "author"
         ]
       },
       "RenameFileDto": {
@@ -3543,6 +3861,19 @@
           "verdict",
           "findings",
           "analyzedFiles"
+        ]
+      },
+      "DuplicateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "name"
         ]
       },
       "TransportKeyDto": {
