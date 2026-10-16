@@ -38,7 +38,7 @@ export function ProjectTable({ items, tags, trash }: { readonly items: readonly 
   const t = getT('projects');
   const c = getT('common');
   return (
-    <div className="card overflow-hidden">
+    <div className="card relative overflow-x-auto">
       <table className="w-full border-collapse text-left">
         <thead>
           <tr className="border-b border-line text-[11px] font-semibold uppercase tracking-[0.1em] text-fg-3">
