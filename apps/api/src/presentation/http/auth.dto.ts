@@ -100,7 +100,7 @@ export class DeleteAccountDto {
 }
 
 export class SavePreferencesDto {
-  /** Objeto plano de hasta 4 KB: tema, tipografía, atajos… */
+  /** Objeto plano de hasta 32 KB: tipografía, comandos personalizados… */
   @IsObject()
   readonly prefs!: Record<string, unknown>;
 }

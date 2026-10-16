@@ -99,4 +99,5 @@ export const FIELD = {
   invitationEmail: 'invitations.email',
   tagName: 'tags.name',
   filePath: 'project_files.path',
+  preferences: 'editor_preferences.prefs',
 } as const;

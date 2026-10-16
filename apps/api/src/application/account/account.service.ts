@@ -123,16 +123,24 @@ export class AccountService {
 
   async preferences(actor: Actor): Promise<Prisma.JsonValue> {
     const row = await this.db.identity.editorPreferences.findUnique({ where: { userId: actor.userId } });
-    return row?.prefs ?? {};
+    return this.openPrefs(row?.prefs);
   }
 
   async savePreferences(actor: Actor, prefs: Prisma.InputJsonObject): Promise<Prisma.JsonValue> {
-    const row = await this.db.identity.editorPreferences.upsert({
+    // Se guardan cifradas (C3c) dentro del JSON: la base solo ve un criptograma.
+    const sealed = { c3c: this.cipher.encrypt(JSON.stringify(prefs), FIELD.preferences) };
+    await this.db.identity.editorPreferences.upsert({
       where: { userId: actor.userId },
-      create: { userId: actor.userId, prefs },
-      update: { prefs },
+      create: { userId: actor.userId, prefs: sealed },
+      update: { prefs: sealed },
     });
-    return row.prefs;
+    return prefs as Prisma.JsonValue;
+  }
+
+  private openPrefs(stored: Prisma.JsonValue | undefined): Prisma.JsonValue {
+    if (!stored || typeof stored !== 'object' || Array.isArray(stored)) return {};
+    const c3c = (stored as Record<string, unknown>)['c3c'];
+    return typeof c3c === 'string' ? (JSON.parse(this.cipher.decrypt(c3c, FIELD.preferences)) as Prisma.JsonValue) : {};
   }
 
   async deletionImpact(actor: Actor): Promise<{ readonly ownedProjects: number; readonly sharedOwnedProjects: number }> {

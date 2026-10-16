@@ -12,7 +12,8 @@ import { ActivityDto, DeletionImpactDto, IdentityDto, PreferencesDto, ProfileDto
 import { CurrentActor, Meta, Policy } from './security';
 
 const HOUR = 3_600_000;
-const MAX_PREFS_BYTES = 4_096;
+// Incluye los comandos LaTeX personalizados de la paleta del editor.
+const MAX_PREFS_BYTES = 32_768;
 
 @ApiTags('Cuenta')
 @Controller({ path: 'me', version: '1' })
@@ -74,7 +75,7 @@ export class MeController {
 
   @Put('preferences')
   @Policy('authenticated')
-  @Throttle({ default: { limit: 60, ttl: HOUR } })
+  @Throttle({ default: { limit: 300, ttl: HOUR } })
   @ApiOperation({ summary: 'Guardar las preferencias del editor' })
   async savePreferences(@Body() dto: SavePreferencesDto, @CurrentActor() actor: Actor): Promise<PreferencesDto> {
     const prefs = dto.prefs as unknown;
