@@ -1,0 +1,41 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Build
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+
+# Entorno y secretos — NUNCA se versionan
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Tipos generados desde el contrato del backend
+src/shared/api/generated.ts
+
+# Pruebas
+coverage/
+playwright-report/
+test-results/
+e2e/.auth/
+storybook-static/
+
+# Registros y temporales
+*.log
+npm-debug.log*
+.cache/
+
+# Editores y sistema operativo
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SecurTex · 8 · Cifrado</title>
+<link rel="stylesheet" href="assets/mockup.css">
+</head>
+<body>
+<div class="wrap">
+<h1 style="font-size:22px;margin:0 0 4px">8 · Cifrado</h1>
+<p class="mut mb">Pantallas P-48 a P-50 · Requisitos RS-070 … RS-081, RF-150 · Documento 14 · Criptografía multicapa</p>
+
+<div class="alert sec mb">
+  <span class="ic">🔐</span>
+  <div><strong>Principio de diseño de estas pantallas</strong>
+    El cifrado <b>no pide permiso ni interrumpe</b>: ocurre siempre, en silencio, y solo se hace visible con un indicador discreto. La única excepción es la activación del modo confidencial (P-49), que sí exige confirmación explícita porque <b>es irreversible</b>.</div>
+</div>
+
+<!-- ============ P-48 ============ -->
+<section class="screen" id="p48">
+  <header>
+    <h2><span class="id">P-48</span> Guardado cifrado (<kbd>Ctrl</kbd>+<kbd>S</kbd>)</h2>
+    <p class="desc">Indicador del estado de cifrado en la barra de estado del editor. Al pulsarlo se despliega el detalle de las capas aplicadas al último guardado. Es informativo: el usuario no tiene que hacer nada.</p>
+    <div class="meta"><span class="tag sec">RS-070</span><span class="tag sec">RS-072</span><span class="tag">Capa C1 · C2</span></div>
+  </header>
+  <div class="frame">
+    <div class="appbar">
+      <span class="brand">Tex<b>Guard</b></span>
+      <span class="sm b">Tesis · Detección de intrusiones</span>
+      <span class="tag ok">🔒 Guardado y cifrado</span>
+      <span class="spacer"></span>
+      <span class="avatars"><span class="avatar sm">AT</span><span class="avatar sm u2">MR</span></span>
+      <button class="btn sm primary">▶ Recompilar</button>
+    </div>
+
+    <div class="layout editor" style="grid-template-columns:1fr 1fr">
+      <div class="pane">
+        <div class="pane-head">📄 main.tex <span class="spacer"></span><span class="xs mut3">guardado hace 2 s</span></div>
+        <div class="code">
+          <div class="l"><span class="k">\section</span>{Resultados}</div>
+          <div class="l">La tasa de falsos positivos se reduce</div>
+          <div class="l">un 38 % respecto a la línea base.<span class="caret" data-user="tú" style="background:var(--u1)"></span></div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head">🔐 Detalle del cifrado <span class="spacer"></span><span class="x mut3">✕</span></div>
+        <div class="pane-body">
+          <p class="xs mut mb">Lo que ha ocurrido al pulsar <kbd>Ctrl</kbd>+<kbd>S</kbd>, hace 2 segundos:</p>
+
+          <div class="col" style="gap:9px">
+            <div class="card" style="padding:10px;border-left:3px solid var(--danger)">
+              <div class="row between"><b class="sm">C1 · En este navegador</b><span class="tag ok">✓ 2 ms</span></div>
+              <p class="xs mut" style="margin-top:4px"><code>AES-256-GCM</code> · nonce único de 96 bits · el contenido salió cifrado de tu equipo</p>
+            </div>
+            <div class="card" style="padding:10px;border-left:3px solid var(--sec)">
+              <div class="row between"><b class="sm">C2 · Al enviarlo</b><span class="tag ok">✓ 1 ms</span></div>
+              <p class="xs mut" style="margin-top:4px"><code>X25519 + HKDF-SHA-256 + ChaCha20-Poly1305</code> · clave efímera destruida tras el envío</p>
+            </div>
+            <div class="card" style="padding:10px;border-left:3px solid var(--ok)">
+              <div class="row between"><b class="sm">C3 · Al almacenarlo</b><span class="tag ok">✓</span></div>
+              <p class="xs mut" style="margin-top:4px"><code>AES-256-KW</code> para la clave · <code>AES-256-GCM</code> para el contenido · clave maestra en Vault</p>
+            </div>
+            <div class="card" style="padding:10px;border-left:3px solid var(--warn)">
+              <div class="row between"><b class="sm">C4 · Al recuperarlo</b><span class="tag">pendiente</span></div>
+              <p class="xs mut" style="margin-top:4px"><code>HMAC-SHA-256</code> se verifica <b>antes</b> de descifrar · artefactos firmados con <code>Ed25519</code></p>
+            </div>
+            <div class="card" style="padding:10px;border-left:3px solid var(--danger)">
+              <div class="row between"><b class="sm">C5 · Al volver aquí</b><span class="tag">pendiente</span></div>
+              <p class="xs mut" style="margin-top:4px"><code>AES-256-GCM</code> con verificación de etiqueta y contexto · si algo no cuadra, no se muestra nada</p>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <table class="tbl">
+            <tbody>
+              <tr><td class="muted">Clave del documento</td><td><span class="tag brand">solo en memoria</span></td></tr>
+              <tr><td class="muted">Con acceso a la clave</td><td>Tú · María Rodríguez · el compilador</td></tr>
+              <tr><td class="muted">Modo del proyecto</td><td><span class="tag">Estándar</span></td></tr>
+            </tbody>
+          </table>
+          <button class="btn sm block mt">Activar el modo confidencial…</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row between" style="padding:6px 13px;border-top:1px solid var(--border);background:var(--surface-2)">
+      <span class="row sm"><span class="tag ok">🔒 Cifrado</span><span class="mut3 xs">C1 + C2 aplicadas · 3 ms</span></span>
+      <span class="row sm mut3 xs"><span>pdfLaTeX · TeX Live 2025</span></span>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>La clave del documento es un <code>CryptoKey</code> <b>no exportable</b>: ni un XSS puede extraer su material (RS-078).</li>
+      <li>El nonce se genera con prefijo aleatorio por sesión más contador monotónico: reutilizar un nonce en GCM rompería el cifrado por completo (RS-071).</li>
+      <li>La clave efímera de X25519 se destruye tras cada envío: comprometer mañana la clave del servidor no descifra lo enviado hoy (RS-072).</li>
+      <li>El panel muestra <b>quién tiene acceso a la clave</b>. En modo Estándar el compilador está en la lista, y se dice explícitamente.</li>
+    </ul>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — el indicador de la barra es un botón con nombre accesible («Estado del cifrado: cifrado, hace 2 segundos»); el cambio de estado se anuncia con <code>role="status"</code> sin robar el foco; el estado no depende solo del color del icono.</div>
+</section>
+
+<!-- ============ P-49 ============ -->
+<section class="screen" id="p49">
+  <header>
+    <h2><span class="id">P-49</span> Modo confidencial y claves de recuperación</h2>
+    <p class="desc">Activación del cifrado extremo a extremo real. Es la única pantalla del producto donde una decisión del usuario es <b>irreversible</b>, y el diseño lo refleja: la advertencia es explícita y la confirmación, escrita.</p>
+    <div class="meta"><span class="tag sec">RS-079</span><span class="tag">RF-150</span><span class="tag">F-268</span></div>
+  </header>
+  <div class="frame">
+    <div class="modal-bg">
+      <div class="modal" style="max-width:580px">
+        <div class="modal-head"><h3>🔐 Activar el modo confidencial</h3><span class="x">✕</span></div>
+        <div class="modal-body">
+          <p class="sm mut">En modo confidencial, la clave de este proyecto <b>nunca sale de tu navegador</b>. Ni siquiera nosotros podemos leer tu documento: para el servidor son bytes sin sentido.</p>
+
+          <div class="grid c2 mt mb">
+            <div class="card" style="border-color:var(--ok)">
+              <b class="sm" style="color:var(--ok)">✓ Lo que ganas</b>
+              <ul class="xs mut" style="padding-left:16px;margin:6px 0 0">
+                <li>Nadie del equipo de SecurTex puede leer tu documento</li>
+                <li>Un compromiso total del servidor no expone el contenido</li>
+                <li>Ni siquiera un requerimiento legal puede obtenerlo</li>
+              </ul>
+            </div>
+            <div class="card" style="border-color:var(--warn)">
+              <b class="sm" style="color:var(--warn)">✕ Lo que pierdes</b>
+              <ul class="xs mut" style="padding-left:16px;margin:6px 0 0">
+                <li>La compilación ocurre en tu navegador: más lenta y con menos paquetes</li>
+                <li>Sin búsqueda en el servidor ni vista previa en la galería</li>
+                <li>Sin GitHub, Zotero ni Dropbox en este proyecto</li>
+                <li>Descarga inicial de ~30 MB del motor de compilación</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="alert danger">
+            <span class="ic">⚠️</span>
+            <div>
+              <strong>Si pierdes tu contraseña y tus códigos de recuperación, tu documento se pierde para siempre</strong>
+              No hay «recuperar cuenta» posible: sin la clave, el contenido son bytes aleatorios. Esto es exactamente lo que significa el cifrado extremo a extremo. <b>No se puede desactivar</b> una vez activado.
+            </div>
+          </div>
+
+          <div class="divider"></div>
+          <b class="sm">Tus códigos de recuperación</b>
+          <p class="xs mut">Guárdalos fuera de este dispositivo, en papel o en un gestor de contraseñas. Se muestran una sola vez.</p>
+          <div class="card mt" style="font-family:var(--mono);font-size:12px;background:var(--surface-2)">
+            <div class="grid c2" style="gap:4px 18px">
+              <span>7HXQ-2M4K-9PWZ</span><span>4RTB-8NJC-1VGD</span>
+              <span>K3ML-6QSA-7YFE</span><span>2WPN-5XHR-3TBU</span>
+              <span>9DCV-1KZM-4JQL</span><span>6FGT-7BXN-8SRA</span>
+            </div>
+          </div>
+          <div class="row mt"><button class="btn sm">📋 Copiar</button><button class="btn sm">⬇ Descargar .txt</button><button class="btn sm">🖨️ Imprimir</button></div>
+
+          <div class="divider"></div>
+          <div class="check mb"><i class="on"></i><span class="sm">He guardado mis códigos de recuperación en un lugar seguro</span></div>
+          <div class="check mb"><i class="on"></i><span class="sm">Entiendo que <b>no podré desactivar</b> este modo</span></div>
+          <div class="check mb"><i></i><span class="sm">Entiendo que <b>perder mi contraseña significa perder el documento</b></span></div>
+          <div class="field"><label for="cf-conf">Escribe <b>ACTIVAR MODO CONFIDENCIAL</b> para confirmar</label><input class="input" id="cf-conf" value=""></div>
+        </div>
+        <div class="modal-foot"><button class="btn">Cancelar</button><button class="btn danger">Activar definitivamente</button></div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="font-size:14px;margin:22px 0 8px">Estado de un proyecto ya en modo confidencial</h3>
+  <div class="frame">
+    <div class="appbar">
+      <span class="brand">Tex<b>Guard</b></span>
+      <span class="sm b">Datos clínicos · Estudio piloto</span>
+      <span class="tag sec">🔐 Confidencial</span>
+      <span class="spacer"></span>
+      <button class="btn sm primary">▶ Compilar aquí</button>
+    </div>
+    <div class="pane-body">
+      <div class="alert sec mb">
+        <span class="ic">🔐</span>
+        <div><strong>Cifrado extremo a extremo activo</strong>La clave de este proyecto no ha salido de tu navegador. La compilación se ejecuta localmente con un motor TeX en WebAssembly.</div>
+      </div>
+      <div class="grid c3">
+        <div class="card"><b class="sm">Motor local</b><p class="xs mut">pdfTeX · WebAssembly</p><span class="tag ok mt">✓ Descargado (31 MB)</span></div>
+        <div class="card"><b class="sm">Última compilación</b><p class="xs mut">11,4 s · 24 páginas</p><span class="tag warn mt">más lenta que en servidor</span></div>
+        <div class="card"><b class="sm">Lo que ve el servidor</b><p class="xs mut">Bloques cifrados sin metadatos legibles</p><span class="tag sec mt">🔒 opaco</span></div>
+      </div>
+      <div class="divider"></div>
+      <b class="sm">Funcionalidades desactivadas en este proyecto</b>
+      <div class="row wrap mt" style="gap:6px">
+        <span class="tag">Búsqueda en servidor</span><span class="tag">Vista previa en galería</span><span class="tag">GitHub</span><span class="tag">Zotero</span><span class="tag">Dropbox</span><span class="tag">Enlace público del PDF</span>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>En este modo la DEK <b>no se envuelve para ninguna clave del servidor</b> (RS-079): el sandbox del servidor deja de ser superficie de ataque para este proyecto.</li>
+      <li>Los códigos de recuperación se guardan <b>hasheados con Argon2id</b> y son de un solo uso; no permiten recuperar la clave, sino volver a derivarla.</li>
+      <li>No se puede desactivar: hacerlo implicaría entregar retroactivamente la clave al servidor, y el contenido ya escrito quedaría expuesto.</li>
+      <li>La caché local en IndexedDB se desactiva: al perder la conexión el editor pasa a solo lectura para no dejar contenido sensible en el dispositivo.</li>
+    </ul>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — las tres casillas de confirmación son obligatorias y su estado se anuncia; el botón destructivo permanece habilitado y explica al pulsarlo qué falta, en lugar de quedarse mudo; los códigos son texto seleccionable, no una imagen.</div>
+</section>
+
+<!-- ============ P-50 ============ -->
+<section class="screen" id="p50">
+  <header>
+    <h2><span class="id">P-50</span> Contenido no verificable</h2>
+    <p class="desc">Qué ocurre cuando una etiqueta de autenticación o una firma no valida. El sistema <b>no muestra nada</b>: no existe una ruta que renderice contenido parcialmente autenticado.</p>
+    <div class="meta"><span class="tag sec">RS-077</span><span class="tag sec">RS-076</span><span class="tag">Capa C4 · C5</span></div>
+  </header>
+  <div class="frame">
+    <div class="appbar">
+      <span class="brand">Tex<b>Guard</b></span>
+      <span class="sm b">Tesis · Detección de intrusiones</span>
+      <span class="tag danger">⚠ Verificación fallida</span>
+      <span class="spacer"></span>
+      <span class="avatar">AT</span>
+    </div>
+    <div class="pane-body">
+      <div class="alert danger mb">
+        <span class="ic">🛡️</span>
+        <div>
+          <strong>No hemos podido verificar la autenticidad de este contenido</strong>
+          El documento llegó con una firma que no coincide con lo esperado. Por seguridad <b>no lo mostramos</b>: podría haber sido alterado en tránsito o en el almacenamiento. Tu trabajo original no se ha perdido.
+        </div>
+      </div>
+
+      <div class="grid c2 mb">
+        <div class="card">
+          <b class="sm">Qué hemos comprobado</b>
+          <div class="col mt" style="gap:5px">
+            <div class="row sm"><span class="tag ok">✓</span> Firma Ed25519 del artefacto</div>
+            <div class="row sm"><span class="tag ok">✓</span> Etiqueta Poly1305 del sobre de transporte</div>
+            <div class="row sm"><span class="tag danger">✕</span> <b>Etiqueta AES-GCM del contenido</b></div>
+            <div class="row sm"><span class="tag danger">✕</span> Contexto (proyecto · archivo · versión)</div>
+          </div>
+        </div>
+        <div class="card">
+          <b class="sm">Qué puedes hacer</b>
+          <div class="col mt" style="gap:7px">
+            <button class="btn sm block">🔄 Volver a cargar desde el servidor</button>
+            <button class="btn sm block">🕘 Restaurar la última versión verificada</button>
+            <button class="btn sm block">💾 Recuperar mi copia local sin enviar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb">
+        <b class="sm">Última versión verificada correctamente</b>
+        <div class="row between mt"><span class="sm">Hoy a las 10:32 · 42 cambios · Ana Torres y María Rodríguez</span><button class="btn sm primary">Restaurar</button></div>
+      </div>
+
+      <div class="card" style="background:var(--surface-2)">
+        <p class="xs mut">Si necesitas contactar con soporte, incluye esta referencia:</p>
+        <code class="sm" style="display:block;background:var(--surface);padding:7px;border-radius:4px;margin-top:5px">4bf92f3577b34da6a3ce929d0e0e4736</code>
+        <p class="xs mut3 mt">El incidente ya ha quedado registrado. No se ha enviado ningún contenido de tu documento.</p>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li><b>No se muestra contenido parcial.</b> WebCrypto lanza una excepción si la etiqueta no valida; no existe una ruta de código que devuelva texto plano a medias (RS-077).</li>
+      <li>El fallo del contexto (AAD) indica que el bloque procede de otro documento o de otra versión: un intento de reubicación de bloque cifrado.</li>
+      <li>El evento se envía a auditoría con el <code>traceId</code> y el identificador del bloque, <b>nunca con el contenido</b> (RS-052).</li>
+      <li>Se ofrece siempre una salida: la última versión verificada o la copia local. Un mensaje de seguridad que deja al usuario sin opciones es un mensaje mal diseñado.</li>
+      <li>El texto <b>no acusa</b> a nadie: la causa más probable es un fallo de red o de almacenamiento, no un ataque.</li>
+    </ul>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — el aviso tiene <code>role="alert"</code> y recibe el foco; la lista de comprobaciones usa iconos <b>y</b> texto («correcto» / «fallido»), no solo color; las tres acciones son botones reales, alcanzables por teclado en orden lógico.</div>
+</section>
+
+</div>
+<script src="assets/mockup.js"></script>
+</body>
+</html>

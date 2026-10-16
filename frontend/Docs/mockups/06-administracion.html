@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SecurTex · 6 · Administración</title>
+<link rel="stylesheet" href="assets/mockup.css">
+</head>
+<body>
+<div class="wrap">
+<h1 style="font-size:22px;margin:0 0 4px">6 · Administración</h1>
+<p class="mut mb">Pantallas P-38 a P-41 · Requisitos RF-130 … RF-133 · Casos de uso CU-60, CU-65</p>
+
+<div class="alert danger mb">
+  <span class="ic">🛡️</span>
+  <div><strong>Zona de acceso restringido</strong>
+    El panel de administración exige MFA obligatoria y acceso desde una red permitida. <b>Toda acción genera un evento de auditoría reforzado</b>, y las que afectan al contenido de un proyecto exigen justificación escrita y notifican al propietario. El administrador <b>no puede leer documentos de forma silenciosa</b> (T-O01).</div>
+</div>
+
+<!-- ============ P-38 ============ -->
+<section class="screen" id="p38">
+  <header>
+    <h2><span class="id">P-38</span> Panel de métricas</h2>
+    <p class="desc">Estado operativo y de seguridad de la plataforma en una sola vista.</p>
+    <div class="meta"><span class="tag">RF-133</span><span class="tag">CU-60</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://admin.securtex.app/metricas</div></div>
+    <div class="appbar"><span class="brand">Tex<b>Guard</b> <span class="tag danger">admin</span></span><span class="spacer"></span><span class="tag ok">MFA verificada</span><span class="avatar u3">SA</span></div>
+    <div class="layout side">
+      <div class="pane sidebar">
+        <div class="group">Operación</div>
+        <div class="item active">📊 Métricas</div>
+        <div class="item">👥 Usuarios</div>
+        <div class="item">📁 Proyectos</div>
+        <div class="item">⚙️ Compilaciones</div>
+        <div class="group">Contenido</div>
+        <div class="item">📚 Moderar plantillas <span class="count">4</span></div>
+        <div class="group">Seguridad</div>
+        <div class="item">📜 Auditoría</div>
+        <div class="item">🚨 Alertas <span class="count">2</span></div>
+        <div class="group">Sistema</div>
+        <div class="item">🔧 Mantenimiento</div>
+      </div>
+      <div class="pane">
+        <div class="pane-body">
+          <div class="grid c4 mb">
+            <div class="card"><p class="xs mut">Usuarios activos (7 d)</p><b style="font-size:21px">1 284</b><p class="xs" style="color:var(--ok)">▲ 8,2 %</p></div>
+            <div class="card"><p class="xs mut">Proyectos</p><b style="font-size:21px">6 917</b><p class="xs" style="color:var(--ok)">▲ 3,1 %</p></div>
+            <div class="card"><p class="xs mut">Compilaciones (24 h)</p><b style="font-size:21px">4 103</b><p class="xs mut3">p95: 6,8 s</p></div>
+            <div class="card"><p class="xs mut">Almacenamiento</p><b style="font-size:21px">612 GB</b><div class="bar mt"><i style="width:61%"></i></div></div>
+          </div>
+
+          <div class="grid c2 mb">
+            <div class="card">
+              <b class="sm">Seguridad · últimas 24 h</b>
+              <table class="tbl mt">
+                <tbody>
+                  <tr><td>Compilaciones bloqueadas por análisis</td><td><span class="tag danger">7</span></td></tr>
+                  <tr><td>Intentos de acceso denegados (403)</td><td><span class="tag warn">142</span></td></tr>
+                  <tr><td>Bloqueos por fuerza bruta</td><td><span class="tag warn">3</span></td></tr>
+                  <tr><td>Archivos en cuarentena por malware</td><td><span class="tag danger">1</span></td></tr>
+                  <tr><td>Alertas de Falco en el sandbox</td><td><span class="tag ok">0</span></td></tr>
+                  <tr><td>Integridad de la cadena de auditoría</td><td><span class="tag ok">✓ válida</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card">
+              <b class="sm">Servicios</b>
+              <table class="tbl mt">
+                <tbody>
+                  <tr><td>API Gateway</td><td><span class="tag ok">✓ 6/6</span></td><td class="muted">p95 118 ms</td></tr>
+                  <tr><td>Colaboración</td><td><span class="tag ok">✓ 4/4</span></td><td class="muted">1 042 sockets</td></tr>
+                  <tr><td>Compilación</td><td><span class="tag warn">! 5/6</span></td><td class="muted">cola: 12</td></tr>
+                  <tr><td>PostgreSQL</td><td><span class="tag ok">✓ HA</span></td><td class="muted">lag 0,4 s</td></tr>
+                  <tr><td>Vault</td><td><span class="tag ok">✓ unsealed</span></td><td class="muted">—</td></tr>
+                  <tr><td>Última copia verificada</td><td><span class="tag ok">✓</span></td><td class="muted">hoy 03:14</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="alert warn"><span class="ic">⚠</span><div><strong>Un nodo de compilación está degradado</strong>El nodo <code>compile-03</code> no acepta trabajos nuevos desde hace 12 min. La cola se está redistribuyendo automáticamente.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P-39 ============ -->
+<section class="screen" id="p39">
+  <header>
+    <h2><span class="id">P-39</span> Gestión de usuarios</h2>
+    <p class="desc">Búsqueda, suspensión y desbloqueo de cuentas. Sin acceso al contenido de los proyectos.</p>
+    <div class="meta"><span class="tag">RF-133</span></div>
+  </header>
+  <div class="frame">
+    <div class="pane-body">
+      <div class="row mb"><input class="input" style="max-width:280px" value="🔍 Buscar por correo o identificador"><div class="select"><input class="input sm" style="width:150px" value="Todos los estados"></div></div>
+      <table class="tbl">
+        <thead><tr><th>Usuario</th><th>Estado</th><th>MFA</th><th>Proyectos</th><th>Último acceso</th><th></th></tr></thead>
+        <tbody>
+          <tr><td><span class="row"><span class="avatar sm">AT</span> ana.torres@uta.edu.ec</span></td><td><span class="tag ok">Activa</span></td><td><span class="tag ok">✓ Passkey</span></td><td class="muted">7</td><td class="muted">hace 4 min</td><td><button class="btn sm ghost">Ver</button></td></tr>
+          <tr><td><span class="row"><span class="avatar sm u2">MR</span> m.rodriguez@example.edu</span></td><td><span class="tag ok">Activa</span></td><td><span class="tag ok">✓ TOTP</span></td><td class="muted">3</td><td class="muted">hace 1 h</td><td><button class="btn sm ghost">Ver</button></td></tr>
+          <tr><td><span class="row"><span class="avatar sm u4">??</span> nuevo@example.com</span></td><td><span class="tag warn">Sin verificar</span></td><td><span class="tag">—</span></td><td class="muted">0</td><td class="muted">nunca</td><td><button class="btn sm ghost">Ver</button></td></tr>
+          <tr><td><span class="row"><span class="avatar sm u3">!!</span> abuso@example.net</span></td><td><span class="tag danger">Bloqueada</span></td><td><span class="tag">—</span></td><td class="muted">14</td><td class="muted">hace 2 días</td><td><button class="btn sm ghost">Ver</button></td></tr>
+        </tbody>
+      </table>
+
+      <div class="card mt" style="max-width:520px;border-color:var(--danger)">
+        <b class="sm">Suspender «abuso@example.net»</b>
+        <p class="xs mut">Motivo del bloqueo: 148 compilaciones bloqueadas por el análisis de seguridad en 6 horas. Patrón compatible con intentos sistemáticos de escape del sandbox.</p>
+        <div class="field mt"><label for="ad-j">Justificación (obligatoria, queda registrada)</label><input class="input" id="ad-j" value="Abuso reiterado del compilador · incidente SEC-2026-0184"></div>
+        <div class="row"><button class="btn danger sm">Suspender cuenta</button><button class="btn sm">Solo limitar compilaciones</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — la justificación es obligatoria y se almacena en el registro de auditoría junto al identificador del administrador. El acceso al panel exige MFA y red permitida. El administrador ve <b>metadatos</b>, nunca el contenido de los documentos.</div>
+</section>
+
+<!-- ============ P-40 ============ -->
+<section class="screen" id="p40">
+  <header>
+    <h2><span class="id">P-40</span> Moderación de plantillas</h2>
+    <p class="desc">Cola de plantillas pendientes de aprobación, con el resultado del análisis automático como apoyo a la decisión humana.</p>
+    <div class="meta"><span class="tag">RF-112</span><span class="tag sec">T-C12</span></div>
+  </header>
+  <div class="frame">
+    <div class="layout side" style="grid-template-columns:280px 1fr">
+      <div class="pane sidebar">
+        <div class="pane-head">Pendientes <span class="tag warn">4</span></div>
+        <div class="pane-body col" style="padding:9px">
+          <div class="card" style="padding:9px;border-color:var(--brand)"><b class="sm">Tesis · UTA</b><p class="xs mut">Ana Torres · hace 2 h</p><span class="tag ok xs mt">Análisis limpio</span></div>
+          <div class="card" style="padding:9px"><b class="sm">Póster de congreso</b><p class="xs mut">L. Pérez · ayer</p><span class="tag ok xs mt">Análisis limpio</span></div>
+          <div class="card" style="padding:9px;border-color:var(--danger)"><b class="sm">Informe automatizado</b><p class="xs mut">anónimo · ayer</p><span class="tag danger xs mt">⚠ Sospechosa</span></div>
+          <div class="card" style="padding:9px"><b class="sm">Carta de motivación</b><p class="xs mut">M. Salazar · 12 ago</p><span class="tag ok xs mt">Análisis limpio</span></div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head">Informe automatizado <span class="tag danger">Sospechosa</span><span class="spacer"></span><button class="btn sm danger">Rechazar</button><button class="btn sm">Aprobar de todos modos</button></div>
+        <div class="pane-body">
+          <div class="alert danger mb"><span class="ic">🚫</span><div><strong>El análisis estático ha marcado 3 hallazgos</strong>Revisa manualmente antes de decidir. Aprobar una plantilla marcada requiere justificación escrita.</div></div>
+          <div class="col" style="gap:6px">
+            <div class="logline"><span class="badge e">crítico</span><div><b>Uso de <code>\directlua</code> con acceso a <code>os</code></b><br><span class="mut">informe.tex, línea 34</span></div></div>
+            <div class="logline"><span class="badge w">alto</span><div><b>Ruta absoluta en <code>\input</code></b><br><span class="mut">informe.tex, línea 51 · <code>\input{/usr/share/texmf/...}</code></span></div></div>
+            <div class="logline"><span class="badge w">medio</span><div><b>Profundidad de inclusión inusual (8 niveles)</b><br><span class="mut">capitulos/…</span></div></div>
+          </div>
+          <div class="card mt">
+            <b class="sm">Fragmento señalado</b>
+            <div class="code mt" style="border:1px solid var(--border);border-radius:var(--radius-s);padding:7px 0">
+              <div class="l"><span class="c">% Genera el índice automáticamente</span></div>
+              <div class="l" style="background:var(--danger-bg)"><span class="k">\directlua</span>{ <span class="s">os.execute("ls -la /")</span> }</div>
+              <div class="l"><span class="k">\input</span>{<span class="s">/usr/share/texmf/tex/latex/base/article.cls</span>}</div>
+            </div>
+          </div>
+          <div class="field mt"><label for="mod-n">Nota para el autor</label><input class="input" id="mod-n" value="La plantilla intenta ejecutar comandos del sistema. No se puede publicar."></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P-41 ============ -->
+<section class="screen" id="p41">
+  <header>
+    <h2><span class="id">P-41</span> Registro de auditoría</h2>
+    <p class="desc">Consulta forense de los eventos de seguridad, con verificación de la integridad de la cadena de hashes.</p>
+    <div class="meta"><span class="tag sec">RS-050</span><span class="tag sec">RS-051</span><span class="tag">CU-65</span></div>
+  </header>
+  <div class="frame">
+    <div class="pane-body">
+      <div class="row wrap mb">
+        <input class="input" style="max-width:230px" value="🔍 Actor, objetivo o traceId">
+        <div class="select"><input class="input sm" style="width:160px" value="Todos los tipos"></div>
+        <div class="select"><input class="input sm" style="width:140px" value="Últimas 24 h"></div>
+        <span class="spacer"></span>
+        <span class="tag ok">🔗 Cadena de hashes válida · 4 128 471 eventos</span>
+        <button class="btn sm">Verificar integridad</button>
+        <button class="btn sm">⬇ Exportar</button>
+      </div>
+      <table class="tbl">
+        <thead><tr><th>Momento</th><th>Evento</th><th>Actor</th><th>Objetivo</th><th>Resultado</th><th>traceId</th></tr></thead>
+        <tbody>
+          <tr><td class="muted">10:32:11</td><td><span class="tag danger">compile.blocked</span></td><td class="muted">usr_01J9…</td><td class="muted">prj_01J9…</td><td><span class="tag danger">bloqueado</span></td><td class="muted"><code class="xs">4bf92f35…</code></td></tr>
+          <tr><td class="muted">10:31:48</td><td><span class="tag warn">authz.denied</span></td><td class="muted">usr_01JA…</td><td class="muted">prj_01J8…</td><td><span class="tag warn">403</span></td><td class="muted"><code class="xs">a71c3e90…</code></td></tr>
+          <tr><td class="muted">10:30:02</td><td><span class="tag">project.member.revoked</span></td><td class="muted">usr_01J9…</td><td class="muted">usr_01JB…</td><td><span class="tag ok">ok</span></td><td class="muted"><code class="xs">c02b78d1…</code></td></tr>
+          <tr><td class="muted">10:28:55</td><td><span class="tag warn">auth.refresh.reuse</span></td><td class="muted">usr_01JC…</td><td class="muted">ses_01JD…</td><td><span class="tag danger">familia invalidada</span></td><td class="muted"><code class="xs">e9f4a2b7…</code></td></tr>
+          <tr><td class="muted">10:24:17</td><td><span class="tag">auth.login.success</span></td><td class="muted">usr_01J9…</td><td class="muted">—</td><td><span class="tag ok">ok</span></td><td class="muted"><code class="xs">1d5e8c33…</code></td></tr>
+          <tr><td class="muted">10:19:04</td><td><span class="tag danger">file.malware.detected</span></td><td class="muted">usr_01JE…</td><td class="muted">fil_01JF…</td><td><span class="tag danger">cuarentena</span></td><td class="muted"><code class="xs">77a0b914…</code></td></tr>
+        </tbody>
+      </table>
+
+      <div class="card mt" style="max-width:640px">
+        <b class="sm">Detalle del evento seleccionado</b>
+        <div class="code mt" style="border:1px solid var(--border);border-radius:var(--radius-s);padding:7px 0">
+          <div class="l">{</div>
+          <div class="l">  <span class="k">"type"</span>: <span class="s">"compile.blocked"</span>,</div>
+          <div class="l">  <span class="k">"severity"</span>: <span class="s">"warning"</span>,</div>
+          <div class="l">  <span class="k">"actor"</span>: { <span class="k">"userId"</span>: <span class="s">"usr_01J9…"</span>, <span class="k">"ip"</span>: <span class="s">"203.0.113.0/24"</span> },</div>
+          <div class="l">  <span class="k">"reason"</span>: <span class="s">"latex.shell_escape_detected"</span>,</div>
+          <div class="l">  <span class="k">"findings"</span>: [<span class="s">"\\immediate\\write18 en main.tex:12"</span>],</div>
+          <div class="l">  <span class="k">"prevHash"</span>: <span class="s">"sha256:9c2f…"</span>,</div>
+          <div class="l">  <span class="k">"hash"</span>: <span class="s">"sha256:4a7e…"</span></div>
+          <div class="l">}</div>
+        </div>
+        <p class="xs mut3 mt">La IP se almacena anonimizada por red /24. El registro nunca contiene contenido de documentos, contraseñas ni tokens (RS-052).</p>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — la tabla es <b>append-only</b>: reglas de PostgreSQL impiden <code>UPDATE</code> y <code>DELETE</code>, y existe una réplica en almacenamiento inmutable (Object Lock). Cada evento encadena el hash del anterior; una ruptura de la cadena dispara un incidente <b>SEV-1</b> automático (RS-051).</div>
+</section>
+
+</div>
+<script src="assets/mockup.js"></script>
+</body>
+</html>

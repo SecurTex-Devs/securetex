@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SecurTex · 5 · Plantillas</title>
+<link rel="stylesheet" href="assets/mockup.css">
+</head>
+<body>
+<div class="wrap">
+<h1 style="font-size:22px;margin:0 0 4px">5 · Plantillas</h1>
+<p class="mut mb">Pantallas P-35 a P-37 · Requisitos RF-110 … RF-113 · Casos de uso CU-11, CU-45</p>
+
+<!-- ============ P-35 ============ -->
+<section class="screen" id="p35">
+  <header>
+    <h2><span class="id">P-35</span> Galería de plantillas</h2>
+    <p class="desc">Catálogo público navegable sin necesidad de cuenta, con categorías, búsqueda y vista previa. Incluye las plantillas privadas de la institución del usuario cuando está autenticado.</p>
+    <div class="meta"><span class="tag">RF-110</span><span class="tag">RF-113</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://securtex.app/plantillas</div></div>
+    <div class="appbar"><span class="brand">Tex<b>Guard</b></span><input class="input" style="max-width:300px" value="🔍 Buscar plantillas…"><span class="spacer"></span><button class="btn sm">Publicar la mía</button><span class="avatar">AT</span></div>
+    <div class="layout side">
+      <div class="pane sidebar">
+        <div class="group">Categorías</div>
+        <div class="item active">📚 Todas <span class="count">248</span></div>
+        <div class="item">📄 Artículos de revista <span class="count">64</span></div>
+        <div class="item">🎓 Tesis y disertaciones <span class="count">41</span></div>
+        <div class="item">📊 Presentaciones <span class="count">33</span></div>
+        <div class="item">🖼️ Pósteres <span class="count">18</span></div>
+        <div class="item">📋 CV y cartas <span class="count">27</span></div>
+        <div class="item">📝 Tareas e informes <span class="count">36</span></div>
+        <div class="item">📖 Libros <span class="count">12</span></div>
+        <div class="item">🧪 Informes de laboratorio <span class="count">17</span></div>
+        <div class="group">Origen</div>
+        <div class="item">🌍 Públicas <span class="count">241</span></div>
+        <div class="item">🏛️ Mi institución <span class="count">7</span></div>
+      </div>
+      <div class="pane">
+        <div class="pane-head">248 plantillas <span class="spacer"></span><div class="select"><input class="input sm" style="width:150px;padding:2px 9px" value="Más usadas"></div></div>
+        <div class="pane-body">
+          <div class="grid c3">
+            <div class="card" style="padding:0;overflow:hidden">
+              <div class="pdf" style="padding:11px"><div class="page" style="max-width:100%;padding:12px;font-size:5px"><h1 style="font-size:7px">IEEE Conference Paper</h1><div class="aut" style="font-size:5px">Author Name</div><p>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor.</p><p>Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi.</p></div></div>
+              <div style="padding:11px"><h4>IEEE Conference</h4><p class="xs mut">Formato oficial de dos columnas para congresos IEEE.</p><div class="row mt"><span class="tag ok">✓ Verificada</span><span class="xs mut3">4 812 usos</span></div></div>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden">
+              <div class="pdf" style="padding:11px"><div class="page" style="max-width:100%;padding:12px;font-size:5px"><h1 style="font-size:7px">Tesis UTA</h1><div class="aut" style="font-size:5px">Universidad Técnica de Ambato</div><div class="fig" style="height:26px">Escudo</div><p>Portada oficial, índices y bibliografía preconfigurados.</p></div></div>
+              <div style="padding:11px"><h4>Tesis · UTA</h4><p class="xs mut">Plantilla institucional con la normativa de titulación vigente.</p><div class="row mt"><span class="tag brand">🏛️ Institucional</span><span class="xs mut3">316 usos</span></div></div>
+            </div>
+            <div class="card" style="padding:0;overflow:hidden">
+              <div class="pdf" style="padding:11px"><div class="page" style="max-width:100%;padding:12px;font-size:5px"><h1 style="font-size:7px">Beamer Metropolis</h1><p>Diapositiva de título</p><div class="fig" style="height:22px">Gráfico</div><p>Tema minimalista para presentaciones académicas.</p></div></div>
+              <div style="padding:11px"><h4>Beamer · Metropolis</h4><p class="xs mut">Presentaciones limpias con tema Metropolis.</p><div class="row mt"><span class="tag ok">✓ Verificada</span><span class="xs mut3">2 044 usos</span></div></div>
+            </div>
+          </div>
+          <div class="grid c3 mt">
+            <div class="card"><h4>Springer LNCS</h4><p class="xs mut">Lecture Notes in Computer Science.</p><div class="row mt"><span class="tag ok">✓ Verificada</span><span class="xs mut3">1 903</span></div></div>
+            <div class="card"><h4>Póster A0 · tikzposter</h4><p class="xs mut">Póster científico a una o tres columnas.</p><div class="row mt"><span class="tag">Comunidad</span><span class="xs mut3">712</span></div></div>
+            <div class="card"><h4>CV académico · moderncv</h4><p class="xs mut">Currículum con publicaciones y docencia.</p><div class="row mt"><span class="tag">Comunidad</span><span class="xs mut3">1 288</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — toda plantilla publicada ha superado el <b>análisis estático de LaTeX</b> y la moderación humana antes de aparecer aquí. Una plantilla es código que otros ejecutarán (T-C12). La insignia «Verificada» indica revisión adicional del equipo.</div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — las tarjetas son enlaces con nombre accesible completo; la vista previa lleva texto alternativo descriptivo; el filtro activo se anuncia con <code>aria-current</code>.</div>
+</section>
+
+<!-- ============ P-36 ============ -->
+<section class="screen" id="p36">
+  <header>
+    <h2><span class="id">P-36</span> Ficha de plantilla</h2>
+    <p class="desc">Detalle con vista previa navegable, licencia, autoría y el botón que crea un proyecto nuevo a partir de ella.</p>
+    <div class="meta"><span class="tag">RF-110</span><span class="tag">RF-111</span><span class="tag">CU-11</span></div>
+  </header>
+  <div class="frame">
+    <div class="layout side" style="grid-template-columns:1fr 320px">
+      <div class="pane">
+        <div class="pane-head">Vista previa <span class="spacer"></span><span class="xs mut3">1 / 8</span><span class="seg"><span>−</span><span class="on">100 %</span><span>＋</span></span></div>
+        <div class="pdf" style="padding:22px">
+          <div class="page">
+            <h1>Real-Time Intrusion Detection Using Bayesian Inference</h1>
+            <div class="aut">First Author, Second Author · Department of Computer Science</div>
+            <h2>Abstract</h2>
+            <p>This template follows the official IEEE conference format, including two-column layout, IEEEtran class configuration and bibliography style.</p>
+            <h2>I. Introduction</h2>
+            <p>Replace this text with your own introduction. The template already configures fonts, margins, headers and the citation style required by the conference.</p>
+            <div class="fig">Fig. 1 · Example figure placeholder</div>
+          </div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-body">
+          <h3 style="margin:0 0 4px;font-size:17px">IEEE Conference Paper</h3>
+          <div class="row mb"><span class="tag ok">✓ Verificada</span><span class="tag">Artículos de revista</span></div>
+          <p class="sm mut">Formato oficial de dos columnas para congresos IEEE. Incluye <code>IEEEtran.cls</code>, configuración de bibliografía y ejemplos de figuras, tablas y ecuaciones.</p>
+          <button class="btn primary block mt">📄 Abrir como plantilla</button>
+          <button class="btn block mt" style="margin-top:8px">⬇ Descargar .zip</button>
+          <div class="divider"></div>
+          <table class="tbl">
+            <tbody>
+              <tr><td class="muted">Autor</td><td>IEEE (oficial)</td></tr>
+              <tr><td class="muted">Licencia</td><td>LPPL 1.3c</td></tr>
+              <tr><td class="muted">Compilador</td><td>pdfLaTeX</td></tr>
+              <tr><td class="muted">TeX Live</td><td>2023 o superior</td></tr>
+              <tr><td class="muted">Archivos</td><td>6</td></tr>
+              <tr><td class="muted">Actualizada</td><td>2 jul 2026</td></tr>
+              <tr><td class="muted">Usos</td><td>4 812</td></tr>
+            </tbody>
+          </table>
+          <div class="alert ok mt"><span class="ic">🛡️</span><div class="xs"><strong>Análisis de seguridad superado</strong>Sin shell-escape, sin rutas absolutas, sin código Lua. Revisada el 2 jul 2026.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P-37 ============ -->
+<section class="screen" id="p37">
+  <header>
+    <h2><span class="id">P-37</span> Publicar plantilla</h2>
+    <p class="desc">Flujo de publicación de un proyecto propio como plantilla. El análisis de seguridad es obligatorio y bloqueante.</p>
+    <div class="meta"><span class="tag">RF-112</span><span class="tag sec">RS-041</span><span class="tag">CU-45</span></div>
+  </header>
+  <div class="frame">
+    <div class="modal-bg">
+      <div class="modal" style="max-width:540px">
+        <div class="modal-head"><h3>Publicar como plantilla</h3><span class="x">✕</span></div>
+        <div class="modal-body">
+          <div class="field"><label for="tp-t">Título</label><input class="input" id="tp-t" value="Tesis · Universidad Técnica de Ambato"></div>
+          <div class="field"><label for="tp-d">Descripción</label><input class="input" id="tp-d" value="Plantilla con la normativa de titulación vigente: portada, índices…"></div>
+          <div class="grid c2">
+            <div class="field"><label for="tp-c">Categoría</label><div class="select"><input class="input" id="tp-c" value="Tesis y disertaciones"></div></div>
+            <div class="field"><label for="tp-l">Licencia</label><div class="select"><input class="input" id="tp-l" value="CC BY 4.0"></div></div>
+          </div>
+          <div class="field"><label for="tp-v">Visibilidad</label><div class="seg"><span>Pública</span><span class="on">Mi institución</span><span>Mi grupo</span></div></div>
+
+          <div class="divider"></div>
+          <b class="sm">Verificaciones automáticas</b>
+          <div class="col mt" style="gap:6px">
+            <div class="row sm"><span class="tag ok">✓</span> Sin <code>\write18</code> ni paquetes de shell-escape</div>
+            <div class="row sm"><span class="tag ok">✓</span> Sin rutas absolutas ni <code>..</code> en <code>\input</code></div>
+            <div class="row sm"><span class="tag ok">✓</span> Sin código Lua con acceso a <code>os</code> o <code>io</code></div>
+            <div class="row sm"><span class="tag ok">✓</span> Compila correctamente en el entorno aislado (3,1 s)</div>
+            <div class="row sm"><span class="tag warn">!</span> 1 archivo binario incluido: <code>escudo-uta.pdf</code> (aceptable)</div>
+          </div>
+
+          <div class="alert sec mt"><span class="ic">🛡️</span><div class="xs"><strong>Una plantilla es código que otras personas ejecutarán</strong>Tras publicarla, un moderador la revisará antes de que aparezca en la galería. El proceso suele tardar menos de 24 horas.</div></div>
+        </div>
+        <div class="modal-foot"><button class="btn">Cancelar</button><button class="btn primary">Enviar a revisión</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el análisis estático (RS-041) es <b>bloqueante</b>: un veredicto de bloqueo impide la publicación y genera un evento de auditoría de severidad alta. La compilación de la vista previa se ejecuta en el mismo sandbox que cualquier otra, sin privilegios adicionales (T-C12).</div>
+</section>
+
+</div>
+<script src="assets/mockup.js"></script>
+</body>
+</html>

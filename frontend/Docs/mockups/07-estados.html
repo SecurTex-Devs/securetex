@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SecurTex · 7 · Estados transversales</title>
+<link rel="stylesheet" href="assets/mockup.css">
+</head>
+<body>
+<div class="wrap">
+<h1 style="font-size:22px;margin:0 0 4px">7 · Estados transversales</h1>
+<p class="mut mb">Pantallas P-42 a P-47 · Requisitos RNF-031, RF-054, RF-072 · Aplicables a toda la aplicación</p>
+
+<div class="alert info mb"><span class="ic">💡</span><div><strong>Por qué estas pantallas están especificadas</strong>Los estados de error son parte del producto, no un accidente. Un mensaje mal escrito filtra información al atacante (RNF-031) o deja al usuario sin saber qué hacer. Cada estado define <b>qué se dice, qué no se dice y qué acción se ofrece</b>.</div></div>
+
+<!-- ============ P-42 ============ -->
+<section class="screen" id="p42">
+  <header>
+    <h2><span class="id">P-42</span> Carga</h2>
+    <p class="desc">Esqueletos de contenido en lugar de indicadores giratorios: comunican la estructura que va a aparecer y reducen el salto de diseño.</p>
+    <div class="meta"><span class="tag">RNF-001</span></div>
+  </header>
+  <div class="frame">
+    <div class="appbar"><span class="brand">Tex<b>Guard</b></span><span class="spacer"></span><span class="avatar">AT</span></div>
+    <div class="layout side">
+      <div class="pane sidebar">
+        <div class="pane-body col" style="gap:9px">
+          <div class="skeleton" style="width:70%"></div>
+          <div class="skeleton" style="width:85%"></div>
+          <div class="skeleton" style="width:60%"></div>
+          <div class="skeleton" style="width:75%"></div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-body col" style="gap:13px">
+          <div class="row"><div class="skeleton" style="width:180px;height:15px"></div><span class="spacer"></span><div class="skeleton" style="width:90px"></div></div>
+          <div class="row"><div class="skeleton" style="width:26px;height:26px;border-radius:50%"></div><div class="col" style="flex:1;gap:5px"><div class="skeleton" style="width:45%"></div><div class="skeleton" style="width:25%"></div></div></div>
+          <div class="row"><div class="skeleton" style="width:26px;height:26px;border-radius:50%"></div><div class="col" style="flex:1;gap:5px"><div class="skeleton" style="width:60%"></div><div class="skeleton" style="width:30%"></div></div></div>
+          <div class="row"><div class="skeleton" style="width:26px;height:26px;border-radius:50%"></div><div class="col" style="flex:1;gap:5px"><div class="skeleton" style="width:38%"></div><div class="skeleton" style="width:22%"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — la región de carga expone <code>aria-busy="true"</code> y se anuncia «Cargando proyectos». La animación respeta <code>prefers-reduced-motion</code>: si está activa, el esqueleto se muestra estático.</div>
+</section>
+
+<!-- ============ P-43 ============ -->
+<section class="screen" id="p43">
+  <header>
+    <h2><span class="id">P-43</span> Error del servidor</h2>
+    <p class="desc">Mensaje genérico y accionable. Muestra el identificador de traza para que el usuario pueda reportarlo, sin revelar nada del sistema.</p>
+    <div class="meta"><span class="tag">RNF-031</span></div>
+  </header>
+  <div class="frame">
+    <div class="center" style="text-align:center;padding:44px 0">
+      <div style="font-size:38px">⚠️</div>
+      <h2 style="margin:10px 0 6px;font-size:19px">Algo ha salido mal</h2>
+      <p class="mut sm" style="max-width:46ch;margin:0 auto">No hemos podido completar la operación. El equipo ya tiene constancia del problema.</p>
+      <div class="row mt" style="justify-content:center"><button class="btn primary">Reintentar</button><button class="btn">Volver a mis proyectos</button></div>
+      <div class="card mt2" style="max-width:340px;margin:22px auto 0;text-align:left">
+        <p class="xs mut">Si necesitas contactar con soporte, incluye este identificador:</p>
+        <code class="sm" style="display:block;background:var(--surface-2);padding:7px;border-radius:4px;margin-top:5px">4bf92f3577b34da6a3ce929d0e0e4736</code>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — la pantalla <b>no muestra</b> trazas de pila, rutas del sistema, versiones de software, consultas SQL ni nombres de servicio. Solo el <code>traceId</code>, que permite al equipo localizar el detalle completo en los registros internos sin exponer nada al usuario (RNF-031).</div>
+</section>
+
+<!-- ============ P-44 ============ -->
+<section class="screen" id="p44">
+  <header>
+    <h2><span class="id">P-44</span> Sin permisos / no encontrado</h2>
+    <p class="desc">Una única pantalla para «no existe» y «no tienes acceso». La indistinción es deliberada.</p>
+    <div class="meta"><span class="tag sec">T-P07</span><span class="tag">RF-025</span></div>
+  </header>
+  <div class="frame">
+    <div class="center" style="text-align:center;padding:44px 0">
+      <div style="font-size:38px">🔒</div>
+      <h2 style="margin:10px 0 6px;font-size:19px">No hemos encontrado ese proyecto</h2>
+      <p class="mut sm" style="max-width:48ch;margin:0 auto">Puede que no exista, que se haya eliminado o que no tengas acceso. Si crees que deberías tenerlo, pide a su propietario que te invite.</p>
+      <div class="row mt" style="justify-content:center"><button class="btn primary">Volver a mis proyectos</button></div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — responder «no autorizado» revelaría que el recurso <b>existe</b>, permitiendo enumerar proyectos ajenos. Por eso ambos casos devuelven el mismo 404 y el mismo texto (T-P07). El intento denegado sí queda registrado en auditoría con severidad de aviso.</div>
+</section>
+
+<!-- ============ P-45 ============ -->
+<section class="screen" id="p45">
+  <header>
+    <h2><span class="id">P-45</span> Sin conexión</h2>
+    <p class="desc">La edición continúa contra el almacenamiento local del navegador. Al recuperar la conexión, los cambios se sincronizan sin pérdida.</p>
+    <div class="meta"><span class="tag">RF-072</span><span class="tag">CU-25</span></div>
+  </header>
+  <div class="frame">
+    <div class="appbar">
+      <span class="brand">Tex<b>Guard</b></span>
+      <span class="sm b">Tesis · Detección de intrusiones</span>
+      <span class="tag warn">⚠ Sin conexión</span>
+      <span class="spacer"></span>
+      <span class="avatars"><span class="avatar sm">AT</span></span>
+      <button class="btn sm" disabled style="opacity:.5">▶ Recompilar</button>
+    </div>
+    <div style="padding:11px 14px;background:var(--warn-bg);border-bottom:1px solid var(--warn)">
+      <div class="row"><span>📡</span><div class="sm"><b>Sigue escribiendo: tus cambios se guardan en este dispositivo.</b> Se sincronizarán en cuanto vuelva la conexión. La compilación y la colaboración están pausadas.</div><span class="spacer"></span><span class="tag warn">17 cambios pendientes</span></div>
+    </div>
+    <div class="layout editor">
+      <div class="pane sidebar"><div class="pane-head">Archivos</div><div class="tree"><div class="n on"><span class="ic">📄</span> main.tex</div><div class="n mut3"><span class="ic">📄</span> introduccion.tex</div></div></div>
+      <div class="pane">
+        <div class="code">
+          <div class="l">El modelo propuesto reduce la tasa</div>
+          <div class="l">de falsos positivos un 38 %<span class="caret" data-user="tú" style="background:var(--u1)"></span></div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pdf"><div class="page" style="opacity:.55"><h1>Detección de intrusiones</h1><p class="aut">Última compilación: hace 6 min</p><p>El PDF mostrado corresponde a la última compilación con conexión.</p></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — los cambios locales se guardan en IndexedDB del navegador. En un proyecto en <b>modo confidencial</b> esta caché local se desactiva y el editor pasa a solo lectura al perder la conexión, para no dejar contenido sensible en el dispositivo.</div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — el cambio de estado se anuncia con <code>role="status"</code>; los botones deshabilitados explican el motivo con <code>aria-describedby</code> en vez de quedarse mudos.</div>
+</section>
+
+<!-- ============ P-46 ============ -->
+<section class="screen" id="p46">
+  <header>
+    <h2><span class="id">P-46</span> Mantenimiento</h2>
+    <p class="desc">Modo de solo lectura o corte planificado, activable desde el panel de administración.</p>
+    <div class="meta"><span class="tag">RF-133</span></div>
+  </header>
+  <div class="frame">
+    <div class="center" style="text-align:center;padding:44px 0">
+      <div style="font-size:38px">🔧</div>
+      <h2 style="margin:10px 0 6px;font-size:19px">Mantenimiento programado</h2>
+      <p class="mut sm" style="max-width:50ch;margin:0 auto">Estamos aplicando una actualización de seguridad. El servicio volverá a estar disponible aproximadamente a las <b>03:30 (UTC−5)</b>.</p>
+      <div class="alert info mt" style="max-width:400px;margin:18px auto 0;text-align:left"><span class="ic">💾</span><div>Tus documentos están a salvo. Los cambios guardados antes del inicio del mantenimiento se han conservado.</div></div>
+      <p class="xs mut3 mt">Estado del servicio: <u>status.securtex.app</u></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P-47 ============ -->
+<section class="screen" id="p47">
+  <header>
+    <h2><span class="id">P-47</span> Compilación bloqueada por seguridad</h2>
+    <p class="desc">El estado más específico del producto: el análisis estático ha detectado construcciones que no se permiten compilar. El mensaje es concreto y educativo, sin culpar al usuario.</p>
+    <div class="meta"><span class="tag sec">RS-041</span><span class="tag sec">T-C01</span><span class="tag">CU-21 · E1</span></div>
+  </header>
+  <div class="frame">
+    <div class="appbar">
+      <span class="brand">Tex<b>Guard</b></span>
+      <span class="sm b">Informe de laboratorio</span>
+      <span class="tag danger">✕ Bloqueado</span>
+      <span class="spacer"></span>
+      <button class="btn sm primary">▶ Recompilar</button>
+    </div>
+    <div class="pane-body">
+      <div class="alert danger mb">
+        <span class="ic">🛡️</span>
+        <div>
+          <strong>No hemos compilado este documento</strong>
+          Contiene construcciones de LaTeX que permiten ejecutar comandos del sistema o leer archivos fuera del proyecto. Están deshabilitadas en SecurTex para todos los usuarios, sin excepción.
+        </div>
+      </div>
+
+      <b class="sm">Qué hemos encontrado</b>
+      <div class="col mt mb" style="gap:6px">
+        <div class="logline"><span class="badge e">bloqueante</span><div><b>Ejecución de comandos del sistema</b><br><span class="mut">informe.tex, línea 12 · <code>\immediate\write18{...}</code></span><br><span class="xs" style="color:var(--brand)">Alternativa: precalcula el resultado y súbelo como archivo del proyecto.</span></div></div>
+        <div class="logline"><span class="badge e">bloqueante</span><div><b>Lectura fuera del proyecto</b><br><span class="mut">informe.tex, línea 34 · <code>\input{/etc/passwd}</code></span><br><span class="xs" style="color:var(--brand)">Alternativa: usa rutas relativas dentro de tu proyecto.</span></div></div>
+        <div class="logline"><span class="badge w">aviso</span><div><b>Paquete con capacidad de shell-escape</b><br><span class="mut">informe.tex, línea 4 · <code>\usepackage{shellesc}</code></span></div></div>
+      </div>
+
+      <div class="card mb">
+        <b class="sm">Por qué está bloqueado</b>
+        <p class="xs mut">LaTeX puede ejecutar programas del sistema y leer cualquier archivo al que tenga acceso. En una plataforma compartida eso permitiría a un documento leer el trabajo de otras personas o comprometer el servidor. Por eso la compilación se ejecuta en un entorno aislado y estas construcciones están desactivadas de forma permanente.</p>
+        <p class="xs mut mt">Si tu flujo de trabajo depende de ellas, ejecuta esa parte en tu equipo y sube el resultado.</p>
+      </div>
+
+      <div class="row"><button class="btn primary">Ir a la línea 12</button><button class="btn">Leer la documentación</button><button class="btn ghost">Reportar un falso positivo</button></div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>El bloqueo ocurre <b>antes</b> de lanzar el sandbox: no se ejecuta nada (RS-041).</li>
+      <li>Genera un evento de auditoría de severidad alta con los hallazgos concretos; una repetición sistemática dispara una alerta de abuso.</li>
+      <li>El análisis estático es una capa <b>adicional</b>: aunque se evadiera, el sandbox seguiría conteniendo el impacto (defensa en profundidad).</li>
+      <li>El mensaje explica el motivo y ofrece alternativa: un usuario legítimo no debe quedarse bloqueado sin saber qué hacer.</li>
+    </ul>
+  </div>
+</section>
+
+</div>
+<script src="assets/mockup.js"></script>
+</body>
+</html>

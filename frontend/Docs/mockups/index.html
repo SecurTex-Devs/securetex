@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SecurTex · Mockups de todas las pantallas</title>
+<link rel="stylesheet" href="assets/mockup.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header style="margin-bottom:26px">
+    <h1 style="margin:0 0 6px;font-size:26px;letter-spacing:-.02em">Prototipo de interfaz · SecurTex</h1>
+    <p class="mut" style="max-width:80ch;margin:0">
+      Mockups navegables de las <b>50 pantallas</b> del editor LaTeX colaborativo seguro.
+      Prototipo estático, sin dependencias externas: se abre con doble clic en cualquier navegador.
+      Cada pantalla incluye sus anotaciones de <b>seguridad</b> y de <b>accesibilidad</b>, que puedes
+      ocultar con el botón «Anotaciones» de la barra superior.
+    </p>
+    <div class="row wrap mt">
+      <span class="tag brand">50 pantallas</span>
+      <span class="tag">8 grupos</span>
+      <span class="tag ok">Modo claro y oscuro</span>
+      <span class="tag sec">Anotado con controles de seguridad</span>
+      <span class="tag">WCAG 2.2 AA</span>
+    </div>
+  </header>
+
+  <div class="alert info mb">
+    <span class="ic">ℹ</span>
+    <div>
+      <strong>Qué es y qué no es este prototipo</strong>
+      Define <b>estructura, jerarquía de información, estados y comportamiento</b> de cada pantalla.
+      No es el diseño visual final: la tipografía, el espaciado fino y la ilustración se cerrarán en el
+      sistema de diseño implementado con Tailwind y Radix UI. Los textos son representativos, no definitivos.
+    </div>
+  </div>
+
+  <h2 style="font-size:16px;margin:26px 0 12px">Grupos de pantallas</h2>
+  <div class="toc">
+    <a href="01-acceso.html">
+      <span class="n">P-01 … P-07</span>
+      <h3>1 · Acceso e identidad</h3>
+      <p>Portada, registro, verificación, inicio de sesión con Google y Microsoft, segundo factor y recuperación de contraseña.</p>
+    </a>
+    <a href="02-panel.html">
+      <span class="n">P-08 … P-13</span>
+      <h3>2 · Panel de proyectos</h3>
+      <p>Listado, estado vacío, creación, importación, etiquetas, archivados y papelera.</p>
+    </a>
+    <a href="03-editor.html">
+      <span class="n">P-14 … P-26</span>
+      <h3>3 · Editor</h3>
+      <p>Vista dividida, árbol de archivos, autocompletado, modo visual, compilación, visor PDF, comentarios, control de cambios, historial, chat, compartición y ajustes.</p>
+    </a>
+    <a href="04-cuenta.html">
+      <span class="n">P-27 … P-34</span>
+      <h3>4 · Cuenta y seguridad</h3>
+      <p>Perfil, sesiones activas, MFA y passkeys, proveedores vinculados, tokens, preferencias, suscripción y eliminación de cuenta.</p>
+    </a>
+    <a href="05-plantillas.html">
+      <span class="n">P-35 … P-37</span>
+      <h3>5 · Plantillas</h3>
+      <p>Galería, ficha de plantilla y publicación con análisis de seguridad.</p>
+    </a>
+    <a href="06-administracion.html">
+      <span class="n">P-38 … P-41</span>
+      <h3>6 · Administración</h3>
+      <p>Métricas, gestión de usuarios, moderación de plantillas y registro de auditoría.</p>
+    </a>
+    <a href="07-estados.html">
+      <span class="n">P-42 … P-47</span>
+      <h3>7 · Estados transversales</h3>
+      <p>Carga, error, sin permisos, sin conexión, mantenimiento y compilación bloqueada por seguridad.</p>
+    </a>
+    <a href="08-cifrado.html" style="border-color:var(--sec)">
+      <span class="n">P-48 … P-50</span>
+      <h3>8 · Cifrado 🔐</h3>
+      <p>Guardado cifrado con <kbd>Ctrl</kbd>+<kbd>S</kbd>, modo confidencial con cifrado extremo a extremo, y contenido no verificable.</p>
+    </a>
+  </div>
+
+  <h2 style="font-size:16px;margin:34px 0 12px">Leyenda de las anotaciones</h2>
+  <div class="grid c2">
+    <div>
+      <div class="note"><b>🔒 Seguridad</b> — control aplicado en esta pantalla y amenaza que mitiga, con su identificador del modelo STRIDE (<code>T-xxx</code>) y del catálogo de requisitos (<code>RS-xxx</code>).</div>
+      <div class="note a11y"><b>♿ Accesibilidad</b> — requisitos WCAG 2.2 AA concretos: foco, etiquetas, roles ARIA, contraste y navegación por teclado.</div>
+    </div>
+    <div class="card">
+      <h4>Convenciones visuales</h4>
+      <div class="row wrap mt" style="gap:8px">
+        <span class="tag brand">acción principal</span>
+        <span class="tag ok">estado correcto</span>
+        <span class="tag warn">advertencia</span>
+        <span class="tag danger">error o bloqueo</span>
+        <span class="tag sec">control de seguridad</span>
+      </div>
+      <p class="mt sm mut">Los colores de colaborador (azul, verde, rojo, ámbar) identifican a cada usuario en cursores, selecciones, comentarios y cambios rastreados.</p>
+    </div>
+  </div>
+
+  <h2 style="font-size:16px;margin:34px 0 12px">Trazabilidad</h2>
+  <table class="tbl card" style="padding:0;overflow:hidden">
+    <thead><tr><th>Grupo</th><th>Pantallas</th><th>Requisitos</th><th>Casos de uso</th></tr></thead>
+    <tbody>
+      <tr><td>1 · Acceso</td><td>7</td><td>RF-001 … RF-013</td><td>CU-01, CU-02, CU-03</td></tr>
+      <tr><td>2 · Panel</td><td>6</td><td>RF-020 … RF-028</td><td>CU-10 … CU-19</td></tr>
+      <tr><td>3 · Editor</td><td>13</td><td>RF-030 … RF-093</td><td>CU-17, CU-20, CU-21, CU-25, CU-30, CU-35</td></tr>
+      <tr><td>4 · Cuenta</td><td>8</td><td>RF-006 … RF-013, RF-045</td><td>CU-03 … CU-09</td></tr>
+      <tr><td>5 · Plantillas</td><td>3</td><td>RF-110 … RF-113</td><td>CU-11, CU-45</td></tr>
+      <tr><td>6 · Administración</td><td>4</td><td>RF-130 … RF-133</td><td>CU-60, CU-65</td></tr>
+      <tr><td>7 · Estados</td><td>6</td><td>RNF-031, RF-054, RF-072</td><td>Transversal</td></tr>
+      <tr><td>8 · Cifrado</td><td>3</td><td>RS-070 … RS-081, RF-150</td><td>Transversal</td></tr>
+    </tbody>
+  </table>
+
+  <p class="mut sm mt2">
+    Documentación relacionada:
+    <a href="../04-Interfaces-y-Mockups.md">04-Interfaces-y-Mockups.md</a> ·
+    <a href="../03-Sistema-de-Diseno.md">03-Sistema-de-Diseno.md</a> ·
+    <a href="../06-Accesibilidad-e-i18n.md">06-Accesibilidad-e-i18n.md</a>
+  </p>
+
+</div>
+<script src="assets/mockup.js"></script>
+</body>
+</html>

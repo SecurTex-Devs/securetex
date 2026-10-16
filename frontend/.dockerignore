@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+Docs
+.env
+.env.*
+!.env.example
+src/shared/api/generated.ts

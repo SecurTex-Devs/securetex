@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SecurTex · 3 · Editor</title>
+<link rel="stylesheet" href="assets/mockup.css">
+</head>
+<body>
+<div class="wrap">
+<h1 style="font-size:22px;margin:0 0 4px">3 · Editor</h1>
+<p class="mut mb">Pantallas P-14 a P-26 · Requisitos RF-030 … RF-093 · Casos de uso CU-17, CU-20, CU-21, CU-25, CU-30, CU-35</p>
+
+<!-- ============ P-14 ============ -->
+<section class="screen" id="p14">
+  <header>
+    <h2><span class="id">P-14</span> Editor · vista dividida</h2>
+    <p class="desc">Pantalla central del producto: árbol de archivos, editor de código y visor PDF. Muestra la colaboración en vivo con los cursores de otros usuarios y el estado de la última compilación.</p>
+    <div class="meta"><span class="tag">RF-040</span><span class="tag">RF-050</span><span class="tag">RF-070</span><span class="tag">CU-20</span><span class="tag">CU-25</span></div>
+  </header>
+  <div class="frame">
+    <div class="chrome"><div class="dots"><i></i><i></i><i></i></div><div class="url"><span class="lock">🔒</span> https://securtex.app/proyecto/01j9x7k2m4/editor</div></div>
+    <div class="appbar">
+      <span class="brand">Tex<b>Guard</b></span>
+      <span class="sm b">Tesis · Detección de intrusiones</span>
+      <span class="tag ok">Guardado</span>
+      <span class="spacer"></span>
+      <span class="avatars"><span class="avatar sm">AT</span><span class="avatar sm u2">MR</span><span class="avatar sm u3">JC</span></span>
+      <span class="seg"><span>Código</span><span class="on">Dividido</span><span>PDF</span></span>
+      <button class="btn sm">💬</button>
+      <button class="btn sm">Compartir</button>
+      <button class="btn sm primary">▶ Recompilar</button>
+    </div>
+    <div class="layout editor">
+      <!-- Árbol -->
+      <div class="pane sidebar">
+        <div class="pane-head">Archivos <span class="spacer"></span> ＋ ⬆</div>
+        <div class="tree">
+          <div class="n"><span class="ic">📁</span> capitulos</div>
+          <div class="n d1"><span class="ic">📄</span> introduccion.tex</div>
+          <div class="n d1"><span class="ic">📄</span> metodologia.tex</div>
+          <div class="n d1"><span class="ic">📄</span> resultados.tex</div>
+          <div class="n"><span class="ic">📁</span> figuras</div>
+          <div class="n d1"><span class="ic">🖼️</span> arquitectura.pdf</div>
+          <div class="n d1"><span class="ic">🖼️</span> matriz.png</div>
+          <div class="n on"><span class="ic">📄</span> main.tex <span class="main tag brand xs">principal</span></div>
+          <div class="n"><span class="ic">📚</span> referencias.bib</div>
+          <div class="n"><span class="ic">⚙️</span> uta-tesis.cls</div>
+        </div>
+      </div>
+      <!-- Código -->
+      <div class="pane">
+        <div class="pane-head">📄 main.tex <span class="spacer"></span> <span class="xs mut3">línea 42 · UTF-8</span></div>
+        <div class="code">
+          <div class="l"><span class="k">\documentclass</span>[12pt]{uta-tesis}</div>
+          <div class="l"><span class="k">\usepackage</span>[utf8]{inputenc}</div>
+          <div class="l"><span class="k">\usepackage</span>[spanish]{babel}</div>
+          <div class="l"><span class="k">\usepackage</span>{amsmath,graphicx,hyperref}</div>
+          <div class="l"><span class="k">\addbibresource</span>{referencias.bib}</div>
+          <div class="l"></div>
+          <div class="l"><span class="k">\title</span>{Detección de intrusiones en tiempo real}</div>
+          <div class="l"><span class="k">\author</span>{Ana Torres<span class="caret" data-user="María"></span>}</div>
+          <div class="l"></div>
+          <div class="l"><span class="k">\begin</span>{document}</div>
+          <div class="l"><span class="k">\maketitle</span></div>
+          <div class="l"></div>
+          <div class="l"><span class="c">% Capítulo 1</span></div>
+          <div class="l hl"><span class="k">\input</span>{capitulos/introduccion}</div>
+          <div class="l"><span class="k">\input</span>{capitulos/metodologia}</div>
+          <div class="l"><span class="sel"><span class="k">\input</span>{capitulos/resultados}</span></div>
+          <div class="l"></div>
+          <div class="l"><span class="k">\begin</span>{equation}</div>
+          <div class="l">  <span class="m">P(a|d) = \frac{P(d|a)\,P(a)}{P(d)}</span></div>
+          <div class="l"><span class="k">\end</span>{equation}</div>
+          <div class="l"></div>
+          <div class="l"><span class="k">\printbibliography</span></div>
+          <div class="l"><span class="k">\end</span>{document}</div>
+        </div>
+      </div>
+      <!-- PDF -->
+      <div class="pane">
+        <div class="pane-head">
+          <span class="seg"><span>−</span><span class="on">100 %</span><span>＋</span></span>
+          <span class="xs mut3">1 / 87</span>
+          <span class="spacer"></span>
+          <span class="xs">🔍</span><span class="xs">⬇</span>
+        </div>
+        <div class="pdf">
+          <div class="page">
+            <h1>Detección de intrusiones en tiempo real</h1>
+            <div class="aut">Ana Torres · Universidad Técnica de Ambato</div>
+            <h2>1. Introducción</h2>
+            <p>La detección de intrusiones en entornos distribuidos plantea un compromiso entre la latencia de la respuesta y la tasa de falsos positivos admisible en operación.</p>
+            <p>Este trabajo propone un modelo probabilístico que actualiza la verosimilitud de intrusión a partir de la evidencia observada en cada ventana temporal.</p>
+            <div class="eq">P(a|d) = P(d|a) P(a) / P(d)</div>
+            <div class="fig">Figura 1 · Arquitectura del sistema</div>
+            <p>Los resultados experimentales, descritos en el capítulo 4, muestran una reducción del 38 % en la tasa de falsos positivos frente a la línea base.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row between" style="padding:6px 13px;border-top:1px solid var(--border);background:var(--surface-2)">
+      <span class="row sm"><span class="tag ok">✓ Compilado</span><span class="mut3 xs">3,8 s · 87 páginas · 2 avisos</span></span>
+      <span class="row sm mut3 xs"><span>pdfLaTeX · TeX Live 2025</span><span>Autocompilar <span class="toggle on" style="display:inline-block;vertical-align:-4px"></span></span></span>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>El WebSocket de colaboración se autentica con un token Ed25519 <b>de vida corta y limitado a este documento</b>: si se filtra, no da acceso a nada más (T-R01).</li>
+      <li>Los permisos se revalidan cada 60 s; si el propietario revoca el acceso, la conexión se cierra en menos de 5 s (T-P04).</li>
+      <li>El PDF se renderiza con PDF.js con <code>enableScripting:false</code>: un PDF con JavaScript embebido no se ejecuta (T-C11).</li>
+      <li>Los nombres de archivo, de proyecto y de usuario se escapan siempre en el render; no hay <code>innerHTML</code> (T-R06).</li>
+    </ul>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — los tres paneles son regiones con <code>aria-label</code>; <kbd>F6</kbd> rota entre ellos; el editor expone <code>role="textbox"</code> con <code>aria-multiline</code>; el estado de compilación se anuncia con <code>aria-live="polite"</code>; el redimensionado de paneles funciona con teclado.</div>
+</section>
+
+<!-- ============ P-15 ============ -->
+<section class="screen" id="p15">
+  <header>
+    <h2><span class="id">P-15</span> Árbol de archivos · menú contextual</h2>
+    <p class="desc">Operaciones sobre un archivo. Las acciones no permitidas por el rol se ocultan, pero la comprobación real es del servidor.</p>
+    <div class="meta"><span class="tag">RF-030</span><span class="tag">RF-035</span><span class="tag">CU-17</span></div>
+  </header>
+  <div class="frame" style="max-width:640px">
+    <div class="layout side">
+      <div class="pane sidebar">
+        <div class="pane-head">Archivos <span class="spacer"></span> ＋ 📁 ⬆</div>
+        <div class="tree">
+          <div class="n"><span class="ic">📁</span> capitulos</div>
+          <div class="n on"><span class="ic">📄</span> main.tex</div>
+          <div class="n"><span class="ic">📚</span> referencias.bib</div>
+          <div class="n"><span class="ic">🖼️</span> logo.png <span class="main tag warn xs">en análisis</span></div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-body">
+          <div class="card" style="max-width:250px">
+            <div class="col" style="gap:2px">
+              <span class="sm">Abrir</span>
+              <span class="sm">Marcar como documento principal</span>
+              <span class="sm">Renombrar…</span>
+              <span class="sm">Descargar</span>
+              <span class="sm">Duplicar</span>
+              <div class="divider" style="margin:6px 0"></div>
+              <span class="sm" style="color:var(--danger)">Eliminar</span>
+            </div>
+          </div>
+          <div class="col mt" style="max-width:280px;gap:8px">
+            <button class="btn sm block">📄 Nuevo archivo</button>
+            <button class="btn sm block">📁 Nueva carpeta</button>
+            <button class="btn sm block">⬆ Subir archivos</button>
+            <button class="btn sm block">🔗 Crear desde una URL</button>
+            <button class="btn sm block">📋 Copiar de otro proyecto</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>Todo nombre pasa por el tipo <code>SafeFileName</code>: normalización NFC y rechazo de <code>..</code>, <code>/</code>, <code>\</code>, caracteres de control y nombres reservados (T-F01).</li>
+      <li>«Crear desde una URL» pasa por el servicio <code>url-fetcher</code>, que bloquea IP privadas, <i>loopback</i>, <i>link-local</i> y el endpoint de metadatos de nube, y conecta a la IP ya resuelta para evitar DNS-rebinding (T-F07).</li>
+      <li>Un archivo en análisis antivirus no se puede abrir, descargar ni compilar (T-F05).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ P-16 ============ -->
+<section class="screen" id="p16">
+  <header>
+    <h2><span class="id">P-16</span> Autocompletado y corrección</h2>
+    <p class="desc">Autocompletado de comandos, entornos, referencias y citas, alimentado por la distribución TeX Live instalada y por los archivos del propio proyecto.</p>
+    <div class="meta"><span class="tag">RF-041</span><span class="tag">RF-044</span><span class="tag">RF-048</span></div>
+  </header>
+  <div class="frame" style="max-width:760px">
+    <div class="pane-head">📄 metodologia.tex</div>
+    <div class="code">
+      <div class="l">Como se demuestra en <span class="k">\cite</span>{<span class="s">tor</span><span class="caret" data-user="tú" style="background:var(--u1)"></span></div>
+      <div class="l"></div>
+    </div>
+    <div style="padding:0 34px 12px">
+      <div class="card" style="padding:0;max-width:430px;overflow:hidden">
+        <div style="padding:6px 11px;background:var(--brand-bg);border-bottom:1px solid var(--border)">
+          <b class="sm">torres2025ids</b><div class="xs mut">Torres, A. — <i>Real-time intrusion detection…</i> (2025)</div>
+        </div>
+        <div style="padding:6px 11px;border-bottom:1px solid var(--border)">
+          <b class="sm">torresmendez2024</b><div class="xs mut">Torres & Méndez — <i>Sandbox escape taxonomy</i> (2024)</div>
+        </div>
+        <div style="padding:6px 11px">
+          <b class="sm">tortuga2023survey</b><div class="xs mut">Tortuga, L. — <i>A survey on CRDTs</i> (2023)</div>
+        </div>
+      </div>
+      <div class="row mt xs mut3"><span>↑↓ navegar</span><span>⏎ insertar</span><span>Esc cerrar</span><span class="spacer"></span><span>3 de 47 entradas de referencias.bib</span></div>
+    </div>
+    <div class="divider" style="margin:0"></div>
+    <div class="pane-body">
+      <b class="sm">Avisos en el margen</b>
+      <div class="col mt" style="gap:6px">
+        <div class="logline"><span class="badge w">chktex</span><span>línea 18 · Espacio antes de la puntuación</span></div>
+        <div class="logline"><span class="badge w">ortografía</span><span>línea 24 · «metodologia» → ¿metodología?</span> <button class="btn sm ghost">Añadir a mi diccionario</button></div>
+        <div class="logline"><span class="badge i">info</span><span>línea 31 · Referencia <code>\ref{fig:arq}</code> definida en figuras/arquitectura.tex</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el diccionario personal se almacena cifrado y <b>nunca se envía a servicios de terceros</b> (RF-044). El índice de comandos se genera desde la distribución instalada, no se descarga en tiempo de ejecución.</div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — patrón <i>combobox</i> de WAI-ARIA: <code>aria-expanded</code>, <code>aria-activedescendant</code> y anuncio del número de resultados.</div>
+</section>
+
+<!-- ============ P-17 ============ -->
+<section class="screen" id="p17">
+  <header>
+    <h2><span class="id">P-17</span> Modo visual</h2>
+    <p class="desc">Edición con formato enriquecido y matemáticas renderizadas en línea. La conversión visual ↔ fuente es idempotente: ir y volver no altera el <code>.tex</code>.</p>
+    <div class="meta"><span class="tag">RF-046</span><span class="tag">RF-047</span></div>
+  </header>
+  <div class="frame" style="max-width:820px">
+    <div class="pane-head">
+      <span class="seg"><span>Código</span><span class="on">Visual</span></span>
+      <span class="spacer"></span>
+      <span class="row xs"><b>B</b><i>I</i><span>H1</span><span>H2</span><span>•—</span><span>1.</span><span>🔗</span><span>Σ</span><span>⊞</span><span>🖼️</span></span>
+    </div>
+    <div class="pane-body" style="padding:20px 26px;font-family:Georgia,serif">
+      <h2 style="font-size:19px;margin:0 0 8px">1. Introducción</h2>
+      <p style="margin:0 0 10px">La detección de intrusiones en entornos distribuidos plantea un compromiso entre <b>latencia</b> de respuesta y tasa de <i>falsos positivos</i> admisible.</p>
+      <div style="text-align:center;margin:14px 0;font-style:italic">P(a | d) = P(d | a) · P(a) ⁄ P(d)</div>
+      <p style="margin:0 0 10px">Como se demuestra en <span style="color:var(--brand)">[Torres, 2025]</span>, el modelo converge en menos de 40 ms.</p>
+      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;text-align:center;color:var(--text-3);font-family:var(--sans)" class="sm">🖼️ figuras/arquitectura.pdf — Figura 1 · Arquitectura del sistema</div>
+      <table class="tbl mt" style="font-family:var(--sans)">
+        <thead><tr><th>Modelo</th><th>Precisión</th><th>Latencia</th></tr></thead>
+        <tbody><tr><td>Línea base</td><td>0,81</td><td>62 ms</td></tr><tr><td>Propuesto</td><td><b>0,94</b></td><td><b>38 ms</b></td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — las matemáticas se renderizan con MathML accesible y texto alternativo; las figuras exigen descripción; la barra de formato es una <code>toolbar</code> ARIA navegable con flechas.</div>
+</section>
+
+<!-- ============ P-18 ============ -->
+<section class="screen" id="p18">
+  <header>
+    <h2><span class="id">P-18</span> Panel de compilación</h2>
+    <p class="desc">Resultado estructurado de la última compilación: errores y avisos con enlace a la línea de origen, y acceso al registro crudo.</p>
+    <div class="meta"><span class="tag">RF-053</span><span class="tag">RF-058</span><span class="tag">CU-21</span></div>
+  </header>
+  <div class="frame" style="max-width:820px">
+    <div class="pane-head">
+      <span class="tag danger">✕ Falló</span>
+      <span class="xs mut3">2,1 s · 1 error · 3 avisos</span>
+      <span class="spacer"></span>
+      <span class="seg"><span class="on">Resumen</span><span>Registro crudo</span><span>Archivos</span></span>
+      <button class="btn sm primary">▶ Recompilar</button>
+    </div>
+    <div>
+      <div class="logline"><span class="badge e">error</span><div><b>Undefined control sequence</b><br><span class="mut">capitulos/metodologia.tex, línea 87 · <code>\includegrafics{figuras/matriz.png}</code></span><br><span class="xs" style="color:var(--brand)">Sugerencia: ¿querías escribir <code>\includegraphics</code>?</span></div></div>
+      <div class="logline"><span class="badge w">aviso</span><div><b>Reference `fig:matriz' undefined</b><br><span class="mut">main.tex, línea 42 · se resolverá en la siguiente pasada</span></div></div>
+      <div class="logline"><span class="badge w">aviso</span><div><b>Overfull \hbox (12.4pt too wide)</b><br><span class="mut">capitulos/resultados.tex, línea 210</span></div></div>
+      <div class="logline"><span class="badge i">tipografía</span><div><b>Underfull \vbox</b> en la página 34</div></div>
+    </div>
+    <div class="pane-body row between" style="border-top:1px solid var(--border)">
+      <span class="row"><button class="btn sm">⬇ main.log</button><button class="btn sm">⬇ main.blg</button><button class="btn sm">⬇ main.synctex.gz</button></span>
+      <span class="row"><button class="btn sm">Vaciar caché</button><span class="check sm"><i class="on"></i> Detener en el primer error</span></span>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el registro se <b>sanea antes de mostrarse</b>: contiene texto que el usuario controla y rutas del contenedor. Se eliminan rutas absolutas, variables de entorno y nombres de host (T-C09, RS-036). El tamaño del registro está limitado.</div>
+</section>
+
+<!-- ============ P-19 ============ -->
+<section class="screen" id="p19">
+  <header>
+    <h2><span class="id">P-19</span> Visor PDF y SyncTeX</h2>
+    <p class="desc">Visor a pantalla completa con búsqueda de texto, navegación y salto bidireccional entre el código y el PDF.</p>
+    <div class="meta"><span class="tag">RF-060</span><span class="tag">RF-061</span><span class="tag">RF-062</span></div>
+  </header>
+  <div class="frame" style="max-width:760px">
+    <div class="pane-head">
+      <span class="seg"><span>−</span><span class="on">Ajustar al ancho</span><span>＋</span></span>
+      <span class="row xs"><span>◀</span><input class="input" style="width:46px;padding:2px 6px;text-align:center" value="34"><span>/ 87</span><span>▶</span></span>
+      <span class="spacer"></span>
+      <input class="input" style="max-width:180px;padding:3px 9px" value="🔍 intrusión (12)">
+      <button class="btn sm">⬇ PDF</button>
+      <button class="btn sm">⛶</button>
+    </div>
+    <div class="pdf" style="padding:22px">
+      <div class="page" style="max-width:400px">
+        <h2>4. Resultados experimentales</h2>
+        <p>El conjunto de evaluación incluye 1,2 millones de eventos etiquetados, distribuidos en tres escenarios de tráfico.</p>
+        <p style="background:#ffe98a">La tasa de falsos positivos se reduce un 38 % respecto a la línea base, manteniendo la latencia por debajo de 40 ms.</p>
+        <div class="fig">Figura 7 · Curva ROC comparativa</div>
+        <p>La <span style="background:#ffe98a">detección de intrusión</span> temprana permite activar la contención antes de que el atacante alcance la fase de movimiento lateral.</p>
+        <p style="text-align:right;font-size:7px;color:#888;margin-top:16px">34</p>
+      </div>
+    </div>
+    <div class="row between" style="padding:7px 13px;border-top:1px solid var(--border);background:var(--surface-2)">
+      <span class="sm mut">Doble clic en el PDF salta a la línea del código</span>
+      <span class="row"><button class="btn sm">⇄ Ir al código (línea 210)</button></span>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — PDF.js con <code>enableScripting:false</code> e <code>isEvalSupported:false</code>, renderizando en un <i>Web Worker</i>. El PDF se sirve desde un <b>origen distinto</b> al de la aplicación, con <code>X-Content-Type-Options: nosniff</code> (RS-025).</div>
+</section>
+
+<!-- ============ P-20 ============ -->
+<section class="screen" id="p20">
+  <header>
+    <h2><span class="id">P-20</span> Comentarios</h2>
+    <p class="desc">Comentarios anclados a una selección de texto, con hilos de respuesta y resolución. El ancla usa posiciones relativas del CRDT, por lo que sobrevive a ediciones concurrentes del texto de alrededor.</p>
+    <div class="meta"><span class="tag">RF-080</span><span class="tag">CU-30</span></div>
+  </header>
+  <div class="frame">
+    <div class="layout editor-3" style="grid-template-columns:1fr 300px">
+      <div class="pane">
+        <div class="pane-head">📄 resultados.tex</div>
+        <div class="code">
+          <div class="l">La tasa de falsos positivos se reduce</div>
+          <div class="l"><span class="sel">un 38 % respecto a la línea base,</span> 💬</div>
+          <div class="l">manteniendo la latencia por debajo</div>
+          <div class="l">de los 40 ms exigidos.</div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head">Comentarios <span class="spacer"></span><span class="seg"><span class="on">Abiertos 2</span><span>Resueltos 5</span></span></div>
+        <div class="pane-body col">
+          <div class="card" style="padding:11px;border-color:var(--brand)">
+            <div class="row"><span class="avatar sm u2">MR</span><b class="sm">María Rodríguez</b><span class="spacer"></span><span class="xs mut3">hace 2 h</span></div>
+            <p class="xs mut3 mt" style="border-left:2px solid var(--border);padding-left:7px;margin-top:7px">«un 38 % respecto a la línea base»</p>
+            <p class="sm mt">¿Puedes añadir el intervalo de confianza? Sin él, el revisor lo va a pedir seguro.</p>
+            <div class="row mt"><span class="avatar sm">AT</span><input class="input sm" style="padding:5px 9px" value="Responder…"></div>
+            <div class="row mt"><button class="btn sm">Resolver</button><button class="btn sm ghost">Eliminar</button></div>
+          </div>
+          <div class="card" style="padding:11px">
+            <div class="row"><span class="avatar sm u3">JC</span><b class="sm">Jorge Cárdenas</b><span class="tag warn">Revisor</span><span class="spacer"></span><span class="xs mut3">ayer</span></div>
+            <p class="sm mt">La figura 7 no se referencia en el texto.</p>
+            <div class="row mt"><button class="btn sm">Resolver</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el cuerpo del comentario se escapa siempre al renderizar; no se interpreta HTML ni Markdown con etiquetas (T-R06). El rol Revisor puede comentar pero no editar: la restricción se aplica en el servidor, no ocultando botones (T-P03).</div>
+</section>
+
+<!-- ============ P-21 ============ -->
+<section class="screen" id="p21">
+  <header>
+    <h2><span class="id">P-21</span> Control de cambios</h2>
+    <p class="desc">Las modificaciones se registran como sugerencias con autoría y fecha. Un editor las acepta o rechaza individualmente o en bloque.</p>
+    <div class="meta"><span class="tag">RF-081</span><span class="tag">RF-082</span><span class="tag">CU-30</span></div>
+  </header>
+  <div class="frame">
+    <div class="pane-head">
+      <span class="row"><span>Control de cambios</span><span class="toggle on"></span></span>
+      <span class="spacer"></span>
+      <div class="select"><input class="input sm" style="width:150px;padding:3px 9px" value="Todos los autores"></div>
+      <button class="btn sm">✓ Aceptar todos</button>
+      <button class="btn sm">✕ Rechazar todos</button>
+    </div>
+    <div class="layout editor-3" style="grid-template-columns:1fr 300px">
+      <div class="pane">
+        <div class="code">
+          <div class="l">El modelo propuesto alcanza una</div>
+          <div class="l del">precisión aceptable en los tres</div>
+          <div class="l ins">precisión de 0,94 en los tres</div>
+          <div class="l">escenarios evaluados.</div>
+          <div class="l"></div>
+          <div class="l ins"><span class="k">\begin</span>{table}[h]</div>
+          <div class="l ins">  <span class="c">% tabla comparativa añadida por MR</span></div>
+          <div class="l ins"><span class="k">\end</span>{table}</div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head">Cambios pendientes <span class="tag warn">4</span></div>
+        <div class="pane-body col">
+          <div class="card" style="padding:10px;border-left:3px solid var(--u2)">
+            <div class="row"><span class="avatar sm u2">MR</span><b class="xs">María Rodríguez</b><span class="spacer"></span><span class="xs mut3">10:14</span></div>
+            <p class="xs mt"><span style="text-decoration:line-through;opacity:.7">aceptable</span> → <b style="color:var(--ok)">de 0,94</b></p>
+            <div class="row mt"><button class="btn sm primary">✓ Aceptar</button><button class="btn sm">✕ Rechazar</button></div>
+          </div>
+          <div class="card" style="padding:10px;border-left:3px solid var(--u2)">
+            <div class="row"><span class="avatar sm u2">MR</span><b class="xs">María Rodríguez</b><span class="spacer"></span><span class="xs mut3">10:16</span></div>
+            <p class="xs mt"><b style="color:var(--ok)">+ 3 líneas</b> · entorno <code>table</code></p>
+            <div class="row mt"><button class="btn sm primary">✓ Aceptar</button><button class="btn sm">✕ Rechazar</button></div>
+          </div>
+          <div class="alert warn" style="padding:9px"><span class="ic">👤</span><div class="xs">Jorge Cárdenas es <b>Revisor</b>: sus ediciones siempre se registran como sugerencias.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el rol Revisor se impone en el servidor: cualquier operación de escritura directa que llegue por REST o por WebSocket se convierte en sugerencia o se rechaza. No se confía en que el cliente respete el modo (T-P03).</div>
+</section>
+
+<!-- ============ P-22 ============ -->
+<section class="screen" id="p22">
+  <header>
+    <h2><span class="id">P-22</span> Historial de versiones</h2>
+    <p class="desc">Línea de tiempo agrupada por sesión de edición y autor, con comparación entre dos puntos y restauración no destructiva.</p>
+    <div class="meta"><span class="tag">RF-090</span><span class="tag">RF-091</span><span class="tag">RF-092</span><span class="tag">CU-35</span></div>
+  </header>
+  <div class="frame">
+    <div class="layout side" style="grid-template-columns:250px 1fr">
+      <div class="pane sidebar">
+        <div class="pane-head">Historial</div>
+        <div class="pane-body" style="padding:9px">
+          <div class="seg mb"><span class="on">Todo</span><span>Etiquetas</span></div>
+          <div class="col" style="gap:9px">
+            <div class="card" style="padding:9px;border-color:var(--brand)">
+              <div class="row"><span class="avatars"><span class="avatar sm">AT</span><span class="avatar sm u2">MR</span></span><span class="spacer"></span><span class="xs mut3">hoy 10:32</span></div>
+              <p class="xs mt">Ana Torres y María Rodríguez · 42 cambios</p>
+              <span class="tag brand xs mt">actual</span>
+            </div>
+            <div class="card" style="padding:9px">
+              <div class="row"><span class="avatar sm u2">MR</span><span class="spacer"></span><span class="xs mut3">ayer 18:04</span></div>
+              <p class="xs mt">María Rodríguez · 17 cambios</p>
+              <span class="tag ok xs mt">🏷️ Entrega parcial</span>
+            </div>
+            <div class="card" style="padding:9px">
+              <div class="row"><span class="avatar sm">AT</span><span class="spacer"></span><span class="xs mut3">12 ago 09:11</span></div>
+              <p class="xs mt">Ana Torres · 88 cambios</p>
+            </div>
+            <div class="card" style="padding:9px">
+              <div class="row"><span class="avatar sm u3">JC</span><span class="spacer"></span><span class="xs mut3">10 ago 15:47</span></div>
+              <p class="xs mt">Jorge Cárdenas · 5 comentarios</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head">Comparando <b>ayer 18:04</b> ↔ <b>hoy 10:32</b> <span class="spacer"></span><button class="btn sm">🏷️ Etiquetar</button><button class="btn sm">⬇ Descargar</button><button class="btn sm primary">↩ Restaurar esta versión</button></div>
+        <div class="code">
+          <div class="l">La tasa de falsos positivos se reduce</div>
+          <div class="l del">un 30 % respecto a la línea base.</div>
+          <div class="l ins">un 38 % respecto a la línea base,</div>
+          <div class="l ins">manteniendo la latencia bajo 40 ms.</div>
+          <div class="l"></div>
+          <div class="l ins"><span class="k">\input</span>{capitulos/resultados}</div>
+        </div>
+        <div class="pane-body row" style="border-top:1px solid var(--border)">
+          <span class="row xs"><span style="width:9px;height:9px;background:var(--u1);border-radius:2px;display:inline-block"></span> Ana Torres</span>
+          <span class="row xs"><span style="width:9px;height:9px;background:var(--u2);border-radius:2px;display:inline-block"></span> María Rodríguez</span>
+          <span class="spacer"></span>
+          <span class="xs mut3">Restaurar crea una versión nueva; no borra el historial intermedio</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — el historial aplica <b>el mismo control de acceso que el proyecto</b>: un colaborador revocado no puede usarlo como puerta trasera para leer contenido (T-P05). Los <i>snapshots</i> se almacenan cifrados con la clave del proyecto.</div>
+</section>
+
+<!-- ============ P-23 ============ -->
+<section class="screen" id="p23">
+  <header>
+    <h2><span class="id">P-23</span> Chat del proyecto</h2>
+    <p class="desc">Conversación persistente ligada al proyecto, visible para todos sus colaboradores.</p>
+    <div class="meta"><span class="tag">RF-074</span></div>
+  </header>
+  <div class="frame" style="max-width:400px">
+    <div class="pane-head">💬 Chat del proyecto <span class="spacer"></span><span class="tag">3 en línea</span></div>
+    <div class="pane-body col" style="min-height:230px">
+      <div class="row" style="align-items:flex-start"><span class="avatar sm u2">MR</span><div><div class="row"><b class="xs">María Rodríguez</b><span class="xs mut3">10:14</span></div><div class="card sm" style="padding:7px 10px;margin-top:3px">He corregido la precisión en resultados. ¿Revisas el intervalo de confianza?</div></div></div>
+      <div class="row" style="align-items:flex-start"><span class="avatar sm u3">JC</span><div><div class="row"><b class="xs">Jorge Cárdenas</b><span class="xs mut3">10:22</span></div><div class="card sm" style="padding:7px 10px;margin-top:3px">Dejé 2 comentarios en la sección 4.</div></div></div>
+      <div class="row" style="align-items:flex-start;flex-direction:row-reverse"><span class="avatar sm">AT</span><div style="text-align:right"><div class="row" style="justify-content:flex-end"><span class="xs mut3">10:31</span><b class="xs">Tú</b></div><div class="card sm" style="padding:7px 10px;margin-top:3px;background:var(--brand-bg);border-color:var(--brand)">Voy con ello. Compilando ahora.</div></div></div>
+    </div>
+    <div class="pane-body row" style="border-top:1px solid var(--border)"><input class="input" value="Escribe un mensaje…"><button class="btn primary sm">Enviar</button></div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b> — los mensajes se escapan al renderizar; no se interpretan etiquetas ni se autoenlazan URL sin validar el esquema. El chat hereda el control de acceso del proyecto.</div>
+</section>
+
+<!-- ============ P-24 ============ -->
+<section class="screen" id="p24">
+  <header>
+    <h2><span class="id">P-24</span> Compartir proyecto</h2>
+    <p class="desc">Gestión de colaboradores y enlaces de compartición. Solo el propietario accede a este diálogo.</p>
+    <div class="meta"><span class="tag">RF-026</span><span class="tag">RF-027</span><span class="tag">CU-14</span></div>
+  </header>
+  <div class="frame">
+    <div class="modal-bg">
+      <div class="modal" style="max-width:560px">
+        <div class="modal-head"><h3>Compartir «Tesis · Detección de intrusiones»</h3><span class="x">✕</span></div>
+        <div class="modal-body">
+          <div class="row mb"><input class="input" value="correo@universidad.edu"><div class="select"><input class="input" style="width:120px" value="Editor"></div><button class="btn primary">Invitar</button></div>
+
+          <b class="sm">Colaboradores</b>
+          <table class="tbl mt" style="margin-bottom:14px">
+            <tbody>
+              <tr><td><span class="row"><span class="avatar sm">AT</span> Ana Torres <span class="xs mut3">(tú)</span></span></td><td><span class="tag ok">Propietario</span></td><td class="muted">—</td></tr>
+              <tr><td><span class="row"><span class="avatar sm u2">MR</span> María Rodríguez</span></td><td><div class="select"><input class="input sm" style="width:110px;padding:2px 8px" value="Editor"></div></td><td><button class="btn sm ghost" style="color:var(--danger)">Revocar</button></td></tr>
+              <tr><td><span class="row"><span class="avatar sm u3">JC</span> Jorge Cárdenas</span></td><td><div class="select"><input class="input sm" style="width:110px;padding:2px 8px" value="Revisor"></div></td><td><button class="btn sm ghost" style="color:var(--danger)">Revocar</button></td></tr>
+              <tr><td><span class="row"><span class="avatar sm u4">LP</span> luis.p@example.com</span></td><td><span class="tag warn">Invitación pendiente</span></td><td><button class="btn sm ghost">Reenviar</button></td></tr>
+            </tbody>
+          </table>
+
+          <div class="divider"></div>
+          <div class="row between mb"><b class="sm">Enlace de compartición</b><span class="toggle on"></span></div>
+          <div class="row mb"><input class="input" style="font-family:var(--mono);font-size:11px" value="https://securtex.app/i/xR7k…9Qv2"><button class="btn sm">Copiar</button><button class="btn sm">Regenerar</button></div>
+          <div class="row"><div class="select"><input class="input sm" style="width:170px" value="Solo lectura"></div><span class="xs mut3">Caduca el 14/09/2026</span></div>
+
+          <div class="alert warn mt"><span class="ic">🔗</span><div class="xs"><strong>Cualquiera con el enlace podrá ver el proyecto</strong>El enlace se muestra una sola vez. Si lo pierdes, regenéralo: el anterior deja de funcionar al instante.</div></div>
+        </div>
+        <div class="modal-foot"><button class="btn">Cerrar</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>🔒 Seguridad</b>
+    <ul>
+      <li>El token del enlace tiene 256 bits y se almacena <b>hasheado</b>: ni el equipo puede recuperarlo (T-P02).</li>
+      <li>Estas páginas envían <code>Referrer-Policy: no-referrer</code> para que el token no se filtre por la cabecera <code>Referer</code>.</li>
+      <li>Revocar a un colaborador cierra sus WebSockets en menos de 5 segundos (T-P04).</li>
+      <li>Cada cambio de permisos genera un evento de auditoría con actor, objetivo y momento (RS-050).</li>
+      <li>El rol <code>owner</code> nunca es asignable por invitación: la transferencia de propiedad es un flujo aparte con confirmación de ambas partes.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ P-25 ============ -->
+<section class="screen" id="p25">
+  <header>
+    <h2><span class="id">P-25</span> Ajustes del proyecto</h2>
+    <p class="desc">Configuración de compilación, idioma del corrector y modo confidencial.</p>
+    <div class="meta"><span class="tag">RF-035</span><span class="tag">RF-051</span><span class="tag sec">F-268</span></div>
+  </header>
+  <div class="frame" style="max-width:520px">
+    <div class="pane-head">⚙️ Ajustes del proyecto</div>
+    <div class="pane-body">
+      <div class="grid c2">
+        <div class="field"><label for="s-comp">Compilador</label><div class="select"><input class="input" id="s-comp" value="pdfLaTeX"></div></div>
+        <div class="field"><label for="s-tl">Versión de TeX Live</label><div class="select"><input class="input" id="s-tl" value="2025"></div></div>
+        <div class="field"><label for="s-main">Documento principal</label><div class="select"><input class="input" id="s-main" value="main.tex"></div></div>
+        <div class="field"><label for="s-lang">Idioma del corrector</label><div class="select"><input class="input" id="s-lang" value="Español (Ecuador)"></div></div>
+      </div>
+      <div class="divider"></div>
+      <div class="row between mb"><div><b class="sm">Autocompilación</b><p class="xs mut">Compila al detenerse la escritura</p></div><span class="toggle on"></span></div>
+      <div class="row between mb"><div><b class="sm">Detener en el primer error</b><p class="xs mut">Acelera el diagnóstico</p></div><span class="toggle"></span></div>
+      <div class="row between mb"><div><b class="sm">Control de cambios</b><p class="xs mut">Registra las ediciones como sugerencias</p></div><span class="toggle on"></span></div>
+      <div class="divider"></div>
+      <div class="row between"><div><b class="sm">🔒 Modo confidencial</b><p class="xs mut">Desactiva los enlaces públicos, exige MFA a todos los colaboradores y añade marca de agua al PDF</p></div><span class="toggle"></span></div>
+      <div class="divider"></div>
+      <div class="row"><button class="btn sm">⬇ Descargar .zip</button><button class="btn sm">📋 Duplicar</button><button class="btn sm">👤 Transferir propiedad</button><button class="btn sm danger">🗑️ Papelera</button></div>
+      <p class="xs mut3 mt">Almacenamiento usado: 184 MB de 1 GB</p>
+      <div class="bar" style="margin-top:5px"><i style="width:18%"></i></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ P-26 ============ -->
+<section class="screen" id="p26">
+  <header>
+    <h2><span class="id">P-26</span> Paleta de símbolos y generador de tablas</h2>
+    <p class="desc">Asistentes de inserción para reducir la fricción de escribir LaTeX a mano.</p>
+    <div class="meta"><span class="tag">RF-047</span></div>
+  </header>
+  <div class="frame">
+    <div class="layout side" style="grid-template-columns:1fr 1fr">
+      <div class="pane">
+        <div class="pane-head">Σ Paleta de símbolos</div>
+        <div class="pane-body">
+          <input class="input mb" value="🔍 Buscar símbolo o comando…">
+          <div class="row wrap xs mb"><span class="tag brand">Griego</span><span class="tag">Operadores</span><span class="tag">Relaciones</span><span class="tag">Flechas</span><span class="tag">Delimitadores</span><span class="tag">Acentos</span></div>
+          <div class="grid" style="grid-template-columns:repeat(8,1fr);gap:5px;font-size:16px;text-align:center">
+            <div class="card" style="padding:7px">α</div><div class="card" style="padding:7px">β</div><div class="card" style="padding:7px">γ</div><div class="card" style="padding:7px">δ</div>
+            <div class="card" style="padding:7px">ε</div><div class="card" style="padding:7px">θ</div><div class="card" style="padding:7px">λ</div><div class="card" style="padding:7px">μ</div>
+            <div class="card" style="padding:7px">π</div><div class="card" style="padding:7px">σ</div><div class="card" style="padding:7px">φ</div><div class="card" style="padding:7px">ω</div>
+            <div class="card" style="padding:7px">Σ</div><div class="card" style="padding:7px">∏</div><div class="card" style="padding:7px">∫</div><div class="card" style="padding:7px">∂</div>
+          </div>
+          <div class="card mt" style="padding:9px"><span class="xs mut">Insertará</span><br><code class="sm">\alpha</code></div>
+        </div>
+      </div>
+      <div class="pane">
+        <div class="pane-head">⊞ Generador de tablas</div>
+        <div class="pane-body">
+          <div class="row mb"><span class="sm">Filas</span><input class="input sm" style="width:52px" value="3"><span class="sm">Columnas</span><input class="input sm" style="width:52px" value="3"></div>
+          <div class="row wrap xs mb"><span class="tag brand">Bordes completos</span><span class="tag">Solo horizontales</span><span class="tag">booktabs</span><span class="tag">Sin bordes</span></div>
+          <table class="tbl mb" style="border:1px solid var(--border)">
+            <thead><tr><th>Encabezado 1</th><th>Encabezado 2</th><th>Encabezado 3</th></tr></thead>
+            <tbody><tr><td>·</td><td>·</td><td>·</td></tr><tr><td>·</td><td>·</td><td>·</td></tr></tbody>
+          </table>
+          <div class="row xs mb"><span>Alineación</span><span class="seg"><span class="on">Izq.</span><span>Centro</span><span>Der.</span></span><button class="btn sm">Combinar celdas</button></div>
+          <div class="code" style="border:1px solid var(--border);border-radius:var(--radius-s);padding:7px 0">
+            <div class="l"><span class="k">\begin</span>{tabular}{lll}</div>
+            <div class="l"><span class="k">\toprule</span></div>
+            <div class="l">Enc. 1 &amp; Enc. 2 &amp; Enc. 3 <span class="k">\\</span></div>
+            <div class="l"><span class="k">\bottomrule</span></div>
+            <div class="l"><span class="k">\end</span>{tabular}</div>
+          </div>
+          <button class="btn primary block mt">Insertar en el documento</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note a11y"><b>♿ Accesibilidad</b> — la paleta es una cuadrícula ARIA navegable con flechas; cada símbolo expone su nombre accesible (por ejemplo «alfa minúscula, comando barra alpha»), no solo el glifo.</div>
+</section>
+
+</div>
+<script src="assets/mockup.js"></script>
+</body>
+</html>

@@ -1,0 +1,342 @@
+@import "tailwindcss";
+
+/*
+ * SecurTex · Sistema de diseño «Papel y tinta»
+ * ------------------------------------------------------------------
+ * La calidez editorial de un documento académico (papel cálido, serif de
+ * composición) con la precisión de una herramienta de seguridad (tinta
+ * cobalto, violeta reservado a los controles de seguridad).
+ *
+ * Reglas (Docs/03-Sistema-de-Diseno.md):
+ *  · Ningún componente define colores propios: solo estos tokens.
+ *  · Claro y oscuro son igual de importantes.
+ *  · El color nunca comunica solo: siempre texto o icono además.
+ *  · Contraste texto/superficie ≥ 4.5:1 en ambos temas.
+ */
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+
+  --bg: #f4f2ec;
+  --bg-sunken: #ebe7de;
+  --surface: #fffefb;
+  --surface-2: #f6f4ee;
+  --surface-3: #ece8df;
+  --border: rgb(38 32 20 / 0.1);
+  --border-strong: rgb(38 32 20 / 0.17);
+  --hairline-light: rgb(255 255 255 / 0.75);
+
+  --text: #1b1916;
+  --text-2: #55504a;
+  --text-3: #7d776c;
+
+  --brand: #2742c4;
+  --brand-hover: #1e35a6;
+  --brand-fg: #ffffff;
+  --brand-soft: rgb(39 66 196 / 0.08);
+  --brand-line: rgb(39 66 196 / 0.28);
+
+  --ok: #13744a;
+  --ok-soft: rgb(19 116 74 / 0.09);
+  --warn: #8f5500;
+  --warn-soft: rgb(176 108 0 / 0.11);
+  --danger: #b42318;
+  --danger-soft: rgb(180 35 24 / 0.08);
+  --sec: #6531c4;
+  --sec-soft: rgb(101 49 196 / 0.09);
+  --sec-line: rgb(101 49 196 / 0.3);
+
+  --u1: #2f6fec;
+  --u2: #13895a;
+  --u3: #d0453b;
+  --u4: #c27c0e;
+
+  --ink-panel: #14141f;
+  --ink-panel-text: #ecebf5;
+
+  --shadow-card: 0 1px 0 var(--hairline-light) inset, 0 1px 2px rgb(30 24 14 / 0.04), 0 10px 30px -18px rgb(30 24 14 / 0.18);
+  --shadow-pop: 0 1px 0 var(--hairline-light) inset, 0 2px 6px rgb(30 24 14 / 0.06), 0 28px 70px -28px rgb(30 24 14 / 0.38);
+  --ring: 0 0 0 2px var(--surface), 0 0 0 4px rgb(39 66 196 / 0.55);
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-micro: 120ms;
+  --dur-panel: 200ms;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0e0e0c;
+  --bg-sunken: #0a0a09;
+  --surface: #161613;
+  --surface-2: #1c1b18;
+  --surface-3: #26251f;
+  --border: rgb(245 238 225 / 0.08);
+  --border-strong: rgb(245 238 225 / 0.15);
+  --hairline-light: rgb(255 255 255 / 0.04);
+
+  --text: #eeebe4;
+  --text-2: #a8a297;
+  --text-3: #8a8479;
+
+  --brand: #8ea2ff;
+  --brand-hover: #a9b8ff;
+  --brand-fg: #0c0f2e;
+  --brand-soft: rgb(142 162 255 / 0.1);
+  --brand-line: rgb(142 162 255 / 0.32);
+
+  --ok: #4cc38a;
+  --ok-soft: rgb(76 195 138 / 0.11);
+  --warn: #e3a83a;
+  --warn-soft: rgb(227 168 58 / 0.12);
+  --danger: #ff7a6e;
+  --danger-soft: rgb(255 122 110 / 0.1);
+  --sec: #b69bff;
+  --sec-soft: rgb(182 155 255 / 0.11);
+  --sec-line: rgb(182 155 255 / 0.32);
+
+  --u1: #6b9bff;
+  --u2: #44c48a;
+  --u3: #ff7b70;
+  --u4: #f0b247;
+
+  --ink-panel: #0b0b14;
+  --ink-panel-text: #ecebf5;
+
+  --shadow-card: 0 1px 0 var(--hairline-light) inset, 0 1px 2px rgb(0 0 0 / 0.3), 0 12px 32px -18px rgb(0 0 0 / 0.7);
+  --shadow-pop: 0 1px 0 var(--hairline-light) inset, 0 2px 8px rgb(0 0 0 / 0.4), 0 30px 80px -30px rgb(0 0 0 / 0.85);
+  --ring: 0 0 0 2px var(--surface), 0 0 0 4px rgb(142 162 255 / 0.65);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-sunken: var(--bg-sunken);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-fg: var(--text);
+  --color-fg-2: var(--text-2);
+  --color-fg-3: var(--text-3);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-fg: var(--brand-fg);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-line: var(--brand-line);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-sec: var(--sec);
+  --color-sec-soft: var(--sec-soft);
+  --color-sec-line: var(--sec-line);
+  --color-u1: var(--u1);
+  --color-u2: var(--u2);
+  --color-u3: var(--u3);
+  --color-u4: var(--u4);
+  --color-ink: var(--ink-panel);
+  --color-ink-fg: var(--ink-panel-text);
+
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-control: 7px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --radius-shell: 22px;
+
+  --shadow-card: var(--shadow-card);
+  --shadow-pop: var(--shadow-pop);
+
+  --ease-out: var(--ease-out);
+  --ease-drawer: var(--ease-drawer);
+}
+
+/* ─────────────────────────────── Base ─────────────────────────────── */
+
+@layer base {
+  html {
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  body {
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+
+  ::selection {
+    background: var(--brand-soft);
+    color: inherit;
+  }
+
+  :where(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: none;
+    box-shadow: var(--ring);
+    border-radius: var(--radius-control);
+  }
+
+  /* El texto nunca baja de 12 px (03-Sistema-de-Diseno §2.3). */
+  small { font-size: 0.75rem; }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+}
+
+/* ─────────────────────────── Utilidades propias ─────────────────────────── */
+
+@layer components {
+  /* Doble bisel: un contenedor «mecanizado» con una bandeja y un núcleo. */
+  .bezel {
+    padding: 6px;
+    border-radius: var(--radius-shell);
+    background: color-mix(in oklab, var(--surface-3) 55%, transparent);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .bezel-core {
+    border-radius: calc(var(--radius-shell) - 6px);
+    background: var(--surface);
+    box-shadow: var(--shadow-card), inset 0 0 0 1px var(--border);
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card), inset 0 0 0 1px var(--border);
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    border-radius: 999px;
+    padding: 0.25rem 0.7rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-2);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+
+  .hairline-x { background-image: linear-gradient(to right, transparent, var(--border-strong), transparent); height: 1px; }
+
+  /* Página de documento (vista previa del PDF y miniaturas). */
+  .paper {
+    background: #fffef9;
+    color: #1d1b17;
+    box-shadow: 0 1px 2px rgb(20 16 8 / 0.08), 0 12px 40px -16px rgb(20 16 8 / 0.3);
+  }
+  [data-theme="dark"] .paper {
+    background: #f4f1e8;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 20px 50px -20px rgb(0 0 0 / 0.9);
+  }
+
+  /* Grano de papel: fijo y sin eventos, nunca sobre contenedores con scroll. */
+  .grain::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 60;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  [data-theme="dark"] .grain::after { opacity: 0.05; }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface-3) 0%, var(--surface-2) 50%, var(--surface-3) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s var(--ease-in-out) infinite;
+    border-radius: 6px;
+  }
+
+  .tabular { font-variant-numeric: tabular-nums; }
+}
+
+/* ─────────────────────────────── Movimiento ─────────────────────────────── */
+
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes pop-in {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes dialog-in {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes caret-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+@keyframes scan {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.85); }
+}
+
+@keyframes synctex-flash {
+  0% { opacity: 0; }
+  12%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* SyncTeX directo sobre el PDF real. Sin «forwards»: con movimiento reducido se
+   ve fijo hasta que React lo retira, en vez de desaparecer al instante. */
+.synctex-mark {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 55%, transparent);
+  animation: synctex-flash 2000ms var(--ease-out);
+}
+
+.animate-rise { animation: rise 700ms var(--ease-out) both; }
+.animate-pop { animation: pop-in 180ms var(--ease-out) both; }
+.animate-fade { animation: fade-in 200ms var(--ease-out) both; }
+
+[data-radix-popper-content-wrapper] > [data-state="open"] { animation: pop-in 160ms var(--ease-out); transform-origin: var(--radix-dropdown-menu-content-transform-origin, var(--radix-popover-content-transform-origin, var(--radix-tooltip-content-transform-origin, center))); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton { animation: none; }
+}
+
+/* ─────────────────────────────── KaTeX ─────────────────────────────── */
+.katex { font-size: 1.08em; }
+.katex-display { margin: 0.9em 0; overflow-x: auto; overflow-y: hidden; }
