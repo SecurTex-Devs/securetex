@@ -1,0 +1,16 @@
+
+% --- SecurTex · sandbox de compilación (AGENTS.md §3.3) -------------------
+% No relajar ninguno de estos valores. El trabajador los repite en el entorno
+% de cada proceso TeX, que tiene prioridad sobre este archivo.
+shell_escape = f
+openin_any = p
+openout_any = p
+% Sin generación de fuentes al vuelo: mktexpk/mktextfm lanzan scripts.
+MKTEXPK = 0
+MKTEXTFM = 0
+MKTEXMF = 0
+MKTEXFMT = 0
+% Líneas largas en el registro: una ruta partida en dos no se podría sanear.
+max_print_line = 10000
+error_line = 254
+half_error_line = 238

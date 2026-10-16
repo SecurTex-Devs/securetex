@@ -25,6 +25,7 @@ const ENTRIES = [
   ['FILES_MASTER_KEY', key32(), 'Clave maestra de los archivos (envuelve las KEK de proyecto con AES-256-KW).'],
   ['TRANSPORT_PRIVATE_KEY', pkcs8('x25519'), 'Clave X25519 del servicio: abre los sobres C2 (X25519 + HKDF + ChaCha20-Poly1305).'],
   ['DATA_MASTER_KEY', key32(), 'Clave maestra de las columnas cifradas (C3c) y de los índices ciegos.'],
+  ['COMPILER_SIGNING_KEY', pkcs8('ed25519'), 'Clave Ed25519 que firma los PDF compilados (C4b). Solo la tiene la API, nunca el sandbox.'],
   ['SEED_DEMO_PASSWORD', `Demo-${secret(9)}`, 'Contraseña de las cuentas de demostración *@securtex.test (solo local).'],
   ['HIBP_ENABLED', 'true', 'Comprobación de contraseñas filtradas (HIBP, k-anonimato). Requiere Internet.'],
   ['GOOGLE_CLIENT_ID', '', 'Opcional: inicio de sesión con Google y Microsoft (OIDC). Redirect URI:\n#   http://localhost:3000/api/v1/auth/oidc/google/callback\n#   http://localhost:3000/api/v1/auth/oidc/microsoft/callback'],
