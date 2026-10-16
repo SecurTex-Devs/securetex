@@ -3,7 +3,7 @@
 import { api, unwrap } from '@/shared/api/client';
 import type { components } from '@/shared/api/generated';
 import { verifyArtifact } from '@/shared/crypto/artifact';
-import { envelopeContext, openBytesFromServer, replyKeyPair, sealForServer } from '@/shared/crypto/transport';
+import { envelopeContext, fetchSealed, openBytesFromServer, replyKeyPair, sealBytesForServer, sealForServer } from '@/shared/crypto/transport';
 import { parseCompileFrame, type ServerCompile } from './lib/compile-frame';
 
 type Schemas = components['schemas'];
@@ -31,7 +31,23 @@ export const filesApi = {
   remove: (projectId: string, fileId: string) => unwrap(api.DELETE('/api/v1/projects/{projectId}/files/{fileId}', filePath(projectId, fileId))),
   setMain: (projectId: string, mainFile: string) => unwrap(api.PATCH('/api/v1/projects/{projectId}', { ...path(projectId), body: { mainFile } })),
   analyze: (projectId: string) => unwrap(api.POST('/api/v1/projects/{projectId}/compile/analyze', path(projectId))),
+  /** Imagen o PDF: los bytes viajan sellados (C1 + C2); el servidor comprueba el tipo real. */
+  upload: async (projectId: string, newPath: string, bytes: Uint8Array) =>
+    unwrap(api.POST('/api/v1/projects/{projectId}/files/upload', {
+      ...path(projectId),
+      body: { path: newPath, envelope: await sealBytesForServer(bytes, envelopeContext(projectId, 'file:upload')) },
+    })),
+  /** Un archivo completo, sellado y verificado (C5). En los binarios, `content` va en base64. */
+  read: (projectId: string, fileId: string) =>
+    fetchSealed<FileMeta & { content: string }>(`/api/v1/projects/${projectId}/files/${fileId}`, envelopeContext(projectId, `file:${fileId}`)),
+  versions: (projectId: string, fileId: string) => unwrap(api.GET('/api/v1/projects/{projectId}/files/{fileId}/versions', filePath(projectId, fileId))),
+  version: (projectId: string, fileId: string, versionId: string) =>
+    fetchSealed<string>(`/api/v1/projects/${projectId}/files/${fileId}/versions/${versionId}`, envelopeContext(projectId, `version:${versionId}`), 'text'),
+  restore: (projectId: string, fileId: string, versionId: string) =>
+    unwrap(api.POST('/api/v1/projects/{projectId}/files/{fileId}/versions/{versionId}/restore', { params: { path: { projectId, fileId, versionId } } })),
 };
+
+export type FileVersion = Schemas['FileVersionDto'];
 
 export interface CompiledPdf {
   readonly header: ServerCompile;

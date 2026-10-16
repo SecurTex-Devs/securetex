@@ -23,7 +23,11 @@ export type PdfStatus = 'idle' | 'running' | 'done' | 'failed';
 /** `pdf`: el PDF real y firmado. `quick`: la vista previa compuesta en el navegador. */
 export type PreviewMode = 'pdf' | 'quick';
 export type SaveState = 'saved' | 'saving' | 'offline';
-export type FileKind = 'tex' | 'bib' | 'cls' | 'sty' | 'bst' | 'txt';
+export type FileKind = 'tex' | 'bib' | 'cls' | 'sty' | 'bst' | 'txt' | 'png' | 'jpg' | 'jpeg' | 'pdf';
+export type SidePanel = 'history' | null;
+
+/** Imágenes y PDF: no se editan como texto ni entran en la colaboración en vivo. */
+export const isBinaryKind = (kind: FileKind) => kind === 'png' || kind === 'jpg' || kind === 'jpeg' || kind === 'pdf';
 export type SecurityFinding = ServerFinding;
 
 export interface FileEntry {
@@ -56,6 +60,7 @@ interface EditorState {
   activeFile: string;
   openTabs: string[];
   view: ViewMode;
+  panel: SidePanel;
   status: CompileStatus;
   compileError: string | null;
   result: CompileResult | null;
@@ -79,6 +84,8 @@ interface EditorState {
   refreshTree: () => Promise<void>;
   flush: () => void;
   createFile: (path: string, content?: string) => Promise<void>;
+  uploadFile: (path: string, bytes: Uint8Array) => Promise<void>;
+  togglePanel: (p: Exclude<SidePanel, null>) => void;
   renameFile: (from: string, to: string) => Promise<void>;
   deleteFile: (path: string) => Promise<void>;
   setMain: (path: string) => Promise<void>;
@@ -97,7 +104,7 @@ interface EditorState {
   setPreviewMode: (m: PreviewMode) => void;
 }
 
-const KINDS: readonly FileKind[] = ['tex', 'bib', 'cls', 'sty', 'bst', 'txt'];
+const KINDS: readonly FileKind[] = ['tex', 'bib', 'cls', 'sty', 'bst', 'txt', 'png', 'jpg', 'jpeg', 'pdf'];
 const toEntry = (m: FileMeta): FileEntry => ({
   id: m.id, path: m.path, size: m.size, version: m.version,
   kind: (KINDS as readonly string[]).includes(m.kind) ? (m.kind as FileKind) : 'txt',
@@ -112,13 +119,15 @@ const byPath = (list: readonly FileMeta[]) => Object.fromEntries(list.map((m) =>
  */
 function project(collab: CollabClient, entries: Record<string, FileEntry>, prev: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {};
-  for (const e of Object.values(entries)) out[e.path] = collab.text(e.id).toString();
+  for (const e of Object.values(entries)) if (!isBinaryKind(e.kind)) out[e.path] = collab.text(e.id).toString();
   const keys = Object.keys(out);
   const same = keys.length === Object.keys(prev).length && keys.every((k) => prev[k] === out[k]);
   return same ? prev : out;
 }
 
 let projectionTimer: number | null = null;
+/** Argumentos del último `start`, para reconstruir el cliente si la sala cambia de época. */
+let lastStart: Parameters<EditorState['start']> | null = null;
 
 export const useEditor = create<EditorState>((set, get) => ({
   projectId: null,
@@ -133,6 +142,7 @@ export const useEditor = create<EditorState>((set, get) => ({
   activeFile: 'main.tex',
   openTabs: ['main.tex'],
   view: 'split',
+  panel: null,
   status: 'idle',
   compileError: null,
   result: null,
@@ -152,6 +162,7 @@ export const useEditor = create<EditorState>((set, get) => ({
 
   start: (projectId, url, list, mainFile, readOnly) => {
     get().stop();
+    lastStart = [projectId, url, list, mainFile, readOnly];
     const entries = byPath(list);
     const main = mainFile in entries ? mainFile : (list.find((f) => f.path.endsWith('.tex'))?.path ?? mainFile);
     const collab = new CollabClient(projectId, url, {
@@ -160,6 +171,24 @@ export const useEditor = create<EditorState>((set, get) => ({
       onTree: () => void get().refreshTree(),
       onAccess: (ro) => set({ readOnly: ro }),
       onError: (code, message) => set({ notice: { code, message, at: Date.now() } }),
+      onReset: () => {
+        // Se conserva lo escrito que el servidor no confirmó y se aplica sobre la sala nueva.
+        const s = get();
+        const pending = s.saveState !== 'saved' ? project(collab, s.entries, {}) : {};
+        const args = lastStart;
+        if (!args) return;
+        get().start(...args);
+        const fresh = get().collab;
+        if (!fresh || Object.keys(pending).length === 0) return;
+        const apply = () => {
+          for (const e of Object.values(get().entries)) {
+            const mine = pending[e.path];
+            const text = fresh.text(e.id);
+            if (mine !== undefined && text.toString() !== mine) fresh.doc.transact(() => { text.delete(0, text.length); text.insert(0, mine); });
+          }
+        };
+        const wait = window.setInterval(() => { if (get().synced) { window.clearInterval(wait); apply(); } }, 100);
+      },
       onSynced: () => set((s) => ({ synced: true, files: project(collab, s.entries, s.files) })),
     });
     // La proyección se recalcula con un pequeño retardo: escribir no debe recorrer el proyecto en cada tecla.
@@ -200,6 +229,15 @@ export const useEditor = create<EditorState>((set, get) => ({
   },
 
   flush: () => get().collab?.flush(),
+
+  uploadFile: async (path, bytes) => {
+    const { projectId } = get();
+    if (!projectId) return;
+    await filesApi.upload(projectId, path, bytes);
+    await get().refreshTree();
+  },
+
+  togglePanel: (p) => set((s) => ({ panel: s.panel === p ? null : p })),
 
   createFile: async (path, content = '') => {
     const { projectId } = get();

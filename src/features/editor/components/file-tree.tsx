@@ -1,7 +1,7 @@
 'use client';
 
-import { BookMarked, ChevronRight, Copy, Download, FileCode2, FilePlus2, FileText, Folder, FolderOpen, Lock, MoreHorizontal, PencilLine, Star, Trash2 } from 'lucide-react';
-import { useMemo, useState, type FormEvent } from 'react';
+import { BookMarked, ChevronRight, Copy, Download, FileCode2, FilePlus2, FileText, FileType2, Folder, FolderOpen, Image as ImageIcon, Lock, MoreHorizontal, PencilLine, Star, Trash2, Upload } from 'lucide-react';
+import { useMemo, useRef, useState, type FormEvent } from 'react';
 import { isApiError } from '@/shared/api/errors';
 import { getT } from '@/shared/i18n';
 import { cn } from '@/shared/lib/cn';
@@ -12,10 +12,12 @@ import { ConfirmDialog, Dialog } from '@/shared/ui/dialog';
 import { Field, Input } from '@/shared/ui/field';
 import { Menu, MenuItem, MenuSeparator } from '@/shared/ui/menu';
 import { toast } from '@/shared/ui/toast';
-import { useEditor, type FileEntry, type FileKind } from '../store';
+import { filesApi } from '../api';
+import { base64ToBytes, downloadBlob, MAX_UPLOAD_BYTES, mimeFor, UPLOAD_ACCEPT, uploadPath } from '../lib/upload';
+import { isBinaryKind, useEditor, type FileEntry, type FileKind } from '../store';
 
-const ICON: Record<FileKind, typeof FileText> = { tex: FileText, bib: BookMarked, cls: FileCode2, sty: FileCode2, bst: FileCode2, txt: FileText };
-const ICON_COLOR: Record<FileKind, string> = { tex: 'text-brand', bib: 'text-u2', cls: 'text-sec', sty: 'text-sec', bst: 'text-sec', txt: 'text-fg-3' };
+const ICON: Record<FileKind, typeof FileText> = { tex: FileText, bib: BookMarked, cls: FileCode2, sty: FileCode2, bst: FileCode2, txt: FileText, png: ImageIcon, jpg: ImageIcon, jpeg: ImageIcon, pdf: FileType2 };
+const ICON_COLOR: Record<FileKind, string> = { tex: 'text-brand', bib: 'text-u2', cls: 'text-sec', sty: 'text-sec', bst: 'text-sec', txt: 'text-fg-3', png: 'text-u4', jpg: 'text-u4', jpeg: 'text-u4', pdf: 'text-u3' };
 
 interface Dir { readonly name: string; readonly path: string; readonly dirs: Map<string, Dir>; readonly files: FileEntry[] }
 
@@ -55,13 +57,46 @@ export function FileTree({ canEdit }: { readonly canEdit: boolean }) {
   const tree = useMemo(() => buildTree(list), [list]);
   const total = list.reduce((sum, f) => sum + f.size, 0);
   const [dialog, setDialog] = useState<DialogState>(null);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+
+  /** Cada archivo: nombre seguro, tipo y tamaño comprobados; los bytes se cifran (C1 + C2) antes de salir. */
+  const upload = async (picked: readonly File[]) => {
+    setUploading(true);
+    try {
+      for (const file of picked) {
+        const target = uploadPath(file.name, 'figuras');
+        if (!target) { toast.error(t('files.uploadType', { name: file.name })); continue; }
+        if (file.size > MAX_UPLOAD_BYTES) { toast.error(t('files.uploadSize', { name: file.name })); continue; }
+        try {
+          await useEditor.getState().uploadFile(target, new Uint8Array(await file.arrayBuffer()));
+          toast.success(t('files.uploaded', { name: target }), t('files.uploadedHint', { path: target.replace(/\.[^.]+$/, '') }));
+        } catch (e) {
+          toast.error(isApiError(e) ? e.message : t('files.failed'));
+        }
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
-    <div className="flex h-full flex-col">
+    <div
+      className={cn('flex h-full flex-col transition-colors', dragging && 'bg-brand-soft/40')}
+      onDragOver={(e) => { if (canEdit && e.dataTransfer.types.includes('Files')) { e.preventDefault(); setDragging(true); } }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(e) => { e.preventDefault(); setDragging(false); if (canEdit) void upload([...e.dataTransfer.files]); }}
+    >
       <div className="flex h-10 shrink-0 items-center justify-between border-b border-line pl-4 pr-1.5">
         <h2 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-fg-3">{t('files.title')}</h2>
         {canEdit && (
-          <IconButton size="sm" label={t('files.newFile')} icon={<FilePlus2 className="size-[15px]" strokeWidth={1.5} />} onClick={() => setDialog({ kind: 'create', folder: '' })} />
+          <div className="flex">
+            <IconButton size="sm" label={t('files.newFile')} icon={<FilePlus2 className="size-[15px]" strokeWidth={1.5} />} onClick={() => setDialog({ kind: 'create', folder: '' })} />
+            <IconButton size="sm" label={t('files.upload')} disabled={uploading} icon={<Upload className="size-[15px]" strokeWidth={1.5} />} onClick={() => input.current?.click()} />
+            <input ref={input} type="file" multiple accept={UPLOAD_ACCEPT} className="sr-only" tabIndex={-1} aria-hidden="true"
+              onChange={(e) => { const files = [...(e.target.files ?? [])]; e.target.value = ''; void upload(files); }} />
+          </div>
         )}
       </div>
       <ul role="tree" aria-label={t('files.label')} className="min-h-0 flex-1 overflow-y-auto px-2 py-2 text-[13px]">
@@ -111,13 +146,13 @@ function FolderNode({ dir, depth, canEdit, onDialog }: {
   );
 }
 
-function download(name: string, content: string) {
-  const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = name;
-  a.click();
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+/** Texto desde la sala; imágenes y PDF se piden sellados al servidor y se verifican (C5). */
+async function download(file: FileEntry, name: string): Promise<void> {
+  const s = useEditor.getState();
+  if (!isBinaryKind(file.kind)) return downloadBlob(name, s.files[file.path] ?? '', 'text/plain;charset=utf-8');
+  if (!s.projectId) return;
+  const full = await filesApi.read(s.projectId, file.id);
+  downloadBlob(name, base64ToBytes(full.content), mimeFor(file.path));
 }
 
 /** «capitulos/intro.tex» → «capitulos/intro-copia.tex» (o -copia-2…) sin chocar con lo existente. */
@@ -147,7 +182,13 @@ function FileNode({ file, depth, canEdit, onDialog }: {
   const duplicate = () => {
     const s = useEditor.getState();
     const target = copyPath(file.path, s.entries);
-    run(() => s.createFile(target, s.files[file.path] ?? ''), t('files.created', { name: baseName(target) }));
+    const copy = async () => {
+      if (!isBinaryKind(file.kind)) return s.createFile(target, s.files[file.path] ?? '');
+      if (!s.projectId) return;
+      const full = await filesApi.read(s.projectId, file.id);
+      return s.uploadFile(target, base64ToBytes(full.content));
+    };
+    run(copy, t('files.created', { name: baseName(target) }));
   };
 
   return (
@@ -174,7 +215,7 @@ function FileNode({ file, depth, canEdit, onDialog }: {
           )}
           {canEdit && !isMain && <MenuItem icon={<PencilLine strokeWidth={1.5} />} onSelect={() => onDialog({ kind: 'rename', path: file.path })}>{t('files.rename')}</MenuItem>}
           {canEdit && <MenuItem icon={<Copy strokeWidth={1.5} />} onSelect={duplicate}>{t('files.duplicate')}</MenuItem>}
-          <MenuItem icon={<Download strokeWidth={1.5} />} onSelect={() => download(name, useEditor.getState().files[file.path] ?? '')}>{t('files.download')}</MenuItem>
+          <MenuItem icon={<Download strokeWidth={1.5} />} onSelect={() => void download(file, name).catch(() => toast.error(t('files.failed')))}>{t('files.download')}</MenuItem>
           {canEdit && !isMain && (
             <>
               <MenuSeparator />

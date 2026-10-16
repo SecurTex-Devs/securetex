@@ -99,6 +99,16 @@ export function transportKey(): Promise<Uint8Array> {
 
 /** C1 + C2 hacia el servicio. La clave efímera se destruye al terminar: secreto hacia adelante por mensaje. */
 export async function sealForServer(text: string, context: string): Promise<Envelope> {
+  const plain = enc.encode(text);
+  try {
+    return await sealBytesForServer(plain, context);
+  } finally {
+    wipe(plain);
+  }
+}
+
+/** Igual que `sealForServer`, para bytes (imágenes y PDF que se suben). */
+export async function sealBytesForServer(plain: Uint8Array, context: string): Promise<Envelope> {
   const server = await transportKey();
   const eph = x25519.utils.randomSecretKey();
   const epk = x25519.getPublicKey(eph);
@@ -108,14 +118,13 @@ export async function sealForServer(text: string, context: string): Promise<Enve
   const aad = enc.encode(context);
   const n1 = random(12);
   const n2 = random(12);
-  const plain = enc.encode(text);
   try {
     return {
       v: 1, epk: toB64url(epk), n1: toB64url(n1), wdek: toB64url(chachaSeal(wrap, n1, dek, aad)),
       n2: toB64url(n2), body: toB64url(chachaSeal(wrap, n2, gcmSeal(dek, plain, aad), aad)),
     };
   } finally {
-    wipe(eph, shared, wrap, dek, plain);
+    wipe(eph, shared, wrap, dek);
   }
 }
 
@@ -152,7 +161,7 @@ export function openBytesFromServer(env: Envelope, keys: ReturnType<typeof reply
  * GET de contenido sellado: envía la clave efímera en la cabecera y devuelve
  * el JSON ya verificado y descifrado (C5).
  */
-export async function fetchSealed<T>(url: string, context: string): Promise<T> {
+export async function fetchSealed<T>(url: string, context: string, as: 'json' | 'text' = 'json'): Promise<T> {
   const keys = replyKeyPair();
   const res = await fetch(url, { credentials: 'same-origin', headers: { 'X-SecurTex-Reply-Key': keys.header } });
   if (!res.ok) {
@@ -160,7 +169,8 @@ export async function fetchSealed<T>(url: string, context: string): Promise<T> {
     throw Object.assign(new Error('sealed_request_failed'), { status: res.status, body });
   }
   const { envelope } = (await res.json()) as { envelope: Envelope };
-  return JSON.parse(openFromServer(envelope, keys, context)) as T;
+  const plain = openFromServer(envelope, keys, context);
+  return (as === 'text' ? plain : JSON.parse(plain)) as T;
 }
 
 /**
