@@ -32,13 +32,17 @@ Next 15 (App Router) · React 19 · Tailwind 4 con los tokens «Papel y tinta» 
 - **Editor colaborativo**: varias personas en el mismo archivo a la vez (Yjs), con cursores y selecciones de cada una, avatares de quién está conectado y en qué archivo, y deshacer que solo deshace lo propio. Sin conexión se sigue escribiendo y se sincroniza al volver. Si te revocan el acceso, la sala se cierra al instante.
 - **Paleta de comandos LaTeX** (botón «Comandos» de la barra): búsqueda por nombre o comando, vista previa, y al hacer clic el comando se inserta con el cursor en el primer hueco por rellenar (Tab salta al siguiente; si había texto seleccionado, ocupa el primer hueco). **Personalizable**: cada persona puede cambiar la plantilla de cualquier comando, crear los suyos u ocultar los que no usa; se guardan cifrados en su cuenta y la siguen en cualquier equipo.
 - **Cifrado de extremo a extremo con el servicio**: todo lo que se escribe viaja en tramas C1 (AES-256-GCM) dentro de C2 (X25519 + ChaCha20-Poly1305) y se verifica al recibir (C5) antes de mostrarse. El indicador «Guardado y cifrado» explica las cinco capas.
-- **Compilar**: el servidor analiza el proyecto (P-47 si bloquea, con la línea exacta y una alternativa); si no hay nada bloqueante, la vista previa tipográfica se compone en el navegador con SyncTeX en ambos sentidos.
+- **Compilar**: el servidor analiza el proyecto (P-47 si bloquea, con la línea exacta y una alternativa) y compila con TeX Live en un sandbox sin red. El PDF llega firmado con Ed25519, se verifica (C4b) y se muestra con PDF.js endurecido; también se puede descargar, y el registro de compilación muestra errores y avisos. Mientras se escribe, la vista rápida se compone en el navegador con SyncTeX en ambos sentidos.
+- **Figuras**: botón «Subir» o arrastrar al árbol (PNG, JPG o PDF de hasta 5 MB). Se guardan en `figuras/` con un nombre seguro y la vista previa ofrece «Copiar \includegraphics»; la figura sale en el PDF compilado.
+- **Historial**: botón de reloj de la barra. Lista las versiones de cada archivo con autor y hora, muestra las diferencias con el texto actual y restaura una versión, que llega al instante a quienes estén editando. Por debajo de 1280 px el panel se superpone al PDF.
+- **Recuento de palabras** del documento (sigue los `\input`, sin comandos ni fórmulas) en la barra de estado, y corrector ortográfico del navegador en español.
+- **Copia y .zip**: desde el menú de cada proyecto, «Hacer una copia» (proyecto propio con su clave) y «Descargar código fuente (.zip)», que se genera en el navegador con el contenido sellado.
 - **Cuenta**: perfil, sesiones activas, actividad, preferencias del editor, vincular y desvincular Google/Microsoft, y exportación de todos tus datos en JSON (llegan sellados y se abren en el navegador).
 - **Administración**: resumen calculado con datos reales, gestión de cuentas (suspender/reactivar) y auditoría con verificación de la cadena.
 
 ### Fuera del alcance
 
-Chat, comentarios, control de cambios, historial de versiones, modo confidencial (clave que el servidor nunca recibe), importación .zip/GitHub, subida de imágenes, tokens de aplicación, passkeys, SAML, métricas y moderación. Los mockups de `Docs/mockups` siguen describiendo el diseño completo como referencia.
+Chat, comentarios, control de cambios, modo confidencial (clave que el servidor nunca recibe), importación .zip/GitHub, SyncTeX sobre el PDF real (sí lo hay en la vista rápida), tokens de aplicación, passkeys, SAML, métricas y moderación. Los mockups de `Docs/mockups` siguen describiendo el diseño completo como referencia.
 
 ---
 
