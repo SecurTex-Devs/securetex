@@ -29,6 +29,10 @@ const EnvSchema = z.object({
   MFA_ENCRYPTION_KEY: base64Key32,
   /** Clave maestra que envuelve las KEK de proyecto. Sustituto local de Vault Transit. */
   FILES_MASTER_KEY: base64Key32,
+  /** Clave privada X25519 (PKCS#8, base64) del servicio: abre los sobres C2 de los clientes. */
+  TRANSPORT_PRIVATE_KEY: z.string().min(40),
+  /** Clave maestra de las columnas cifradas (C3c) y de los índices ciegos; de ella se derivan subclaves con HKDF. */
+  DATA_MASTER_KEY: base64Key32,
   COOKIE_SECURE: boolFromString,
 
   SMTP_HOST: z.string().default('mailpit'),

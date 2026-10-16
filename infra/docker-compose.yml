@@ -29,6 +29,8 @@ x-api-env: &api-env
   JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:?}
   MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?}
   FILES_MASTER_KEY: ${FILES_MASTER_KEY:?ejecuta node infra/generate-env.mjs --force}
+  TRANSPORT_PRIVATE_KEY: ${TRANSPORT_PRIVATE_KEY:?ejecuta node infra/generate-env.mjs --add-missing}
+  DATA_MASTER_KEY: ${DATA_MASTER_KEY:?ejecuta node infra/generate-env.mjs --add-missing}
   COOKIE_SECURE: "false"
   SMTP_HOST: mailpit
   SMTP_PORT: "1025"
