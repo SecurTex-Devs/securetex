@@ -4,4 +4,4 @@
 **/.env.*
 !**/.env.example
 .git
-infra/.env
+.env

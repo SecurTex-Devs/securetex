@@ -11,12 +11,11 @@ Frontend de **SecurTex**, editor LaTeX colaborativo seguro: aplicación web, edi
 
 ### Arrancar
 
-La forma recomendada es la pila completa de `securtex-backend` (construye también esta aplicación):
+La forma recomendada es la pila completa desde la **raíz del repositorio** (construye también esta aplicación):
 
 ```bash
-cd ../securtex-backend
-node infra/generate-env.mjs
-docker compose -f infra/docker-compose.yml up --build -d   # http://localhost:3000
+cd ..
+./iniciar.sh            # o .\iniciar.ps1 en Windows · http://localhost:3000
 ```
 
 Para desarrollar solo el frontend contra esa API: `pnpm install`, copiar `.env.example` a `.env.local` y `pnpm dev`. Tras cambiar endpoints en el backend: `pnpm api:sync` (copia `contracts/openapi.json` y regenera los tipos; nunca se escriben a mano).
@@ -102,15 +101,15 @@ Incluye las 50 pantallas del producto en 8 grupos, con sus estados, sus anotacio
 ## Puesta en marcha
 
 ```bash
-git clone https://github.com/SecurTex-Devs/securtex-frontend.git
-cd securtex-frontend
+git clone https://github.com/SecurTex-Devs/securetex.git
+cd securetex/frontend
 cp .env.example .env.local
 pnpm install
 pnpm api:sync      # genera los tipos desde el contrato del backend
 pnpm dev
 ```
 
-**Requisitos:** Node 22 LTS, pnpm 9. Para el desarrollo completo, el backend levantado con `pnpm dev` en su repositorio.
+**Requisitos:** Node 22 LTS, pnpm 9. Para el desarrollo completo, la pila levantada desde la raíz con `./iniciar.sh` (o solo la API: `docker compose up -d api`).
 
 ---
 

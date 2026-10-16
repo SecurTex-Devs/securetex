@@ -1,13 +1,13 @@
 #!/usr/bin/env node
-// Copia el contrato OpenAPI generado por securtex-backend y regenera los tipos.
+// Copia el contrato OpenAPI generado por el backend (../backend) y regenera los tipos.
 // Los tipos de la API NUNCA se escriben a mano (AGENTS.md §1.7).
-//   pnpm api:sync     → copia contracts/openapi.json desde ../securtex-backend
+//   pnpm api:sync     → copia contracts/openapi.json desde ../backend
 //   pnpm api:check    → falla si la copia local está desactualizada
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const source = resolve(process.env.BACKEND_CONTRACT ?? '../securtex-backend/contracts/openapi.json');
+const source = resolve(process.env.BACKEND_CONTRACT ?? '../backend/contracts/openapi.json');
 const target = resolve('contracts/openapi.json');
 if (!existsSync(source)) {
   console.error(`No se encuentra el contrato del backend en ${source}`);

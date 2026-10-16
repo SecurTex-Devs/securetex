@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Genera infra/.env con secretos aleatorios para el entorno LOCAL.
+// Genera .env (en la raíz) con secretos aleatorios para el entorno LOCAL.
 // Nunca se versiona (.gitignore). Uso:
 //   node infra/generate-env.mjs                 crea el archivo si no existe
 //   node infra/generate-env.mjs --add-missing   añade solo las claves que falten (no toca las demás)
@@ -9,7 +9,8 @@ import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const target = join(dirname(fileURLToPath(import.meta.url)), '.env');
+// El .env vive en la raíz del repositorio: docker compose lo lee solo, sin --env-file.
+const target = join(dirname(fileURLToPath(import.meta.url)), '..', '.env');
 const secret = (bytes = 24) => randomBytes(bytes).toString('base64url');
 const key32 = () => randomBytes(32).toString('base64');
 const pkcs8 = (type) => generateKeyPairSync(type).privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64');

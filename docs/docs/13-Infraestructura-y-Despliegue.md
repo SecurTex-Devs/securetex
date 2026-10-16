@@ -69,11 +69,9 @@ graph TB
 ### 2.1 Entorno local — un solo comando
 
 ```bash
-git clone https://github.com/SecurTex-Devs/securtex-backend.git
-cd securtex-backend
-cp .env.example .env        # sin secretos reales; se generan al arrancar
-pnpm install
-pnpm dev                    # levanta todo el stack y siembra datos
+git clone https://github.com/SecurTex-Devs/securetex.git
+cd securetex
+./iniciar.sh                # o .\iniciar.ps1 en Windows: genera .env, levanta todo y siembra datos
 ```
 
 `docker-compose.yml` levanta: PostgreSQL, Redis, MinIO, Vault (modo dev), Keycloak con el realm preconfigurado, ClamAV, MailHog, y el runner de TeX Live ligero. **Ningún secreto real; ninguna configuración de desarrollo puede llegar a producción** (se verifica en el CI).

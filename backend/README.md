@@ -1,4 +1,4 @@
-# securtex-backend
+# SecurTex · backend
 
 Backend de **SecurTex**, editor LaTeX colaborativo seguro: API REST, servicios de dominio, colaboración en tiempo real y orquestador de compilación aislada.
 
@@ -11,21 +11,23 @@ Backend de **SecurTex**, editor LaTeX colaborativo seguro: API REST, servicios d
 
 ### Arrancar todo con Docker
 
+Desde la **raíz del repositorio** (un solo `docker-compose.yml` para todo):
+
 ```bash
-node infra/generate-env.mjs        # crea infra/.env con secretos aleatorios (gitignored)
-docker compose -f infra/docker-compose.yml up --build -d
+./iniciar.sh                       # o .\iniciar.ps1 en Windows: genera .env y levanta todo
+# a mano: node infra/generate-env.mjs && docker compose up --build -d
 ```
 
 | Servicio | URL | Nota |
 |---|---|---|
-| Aplicación web | http://localhost:3000 | Imagen de `../securtex-frontend` |
+| Aplicación web | http://localhost:3000 | Imagen de `../frontend` |
 | API + documentación | http://localhost:4000/api/docs | OpenAPI generado desde el código |
 | Correo de pruebas (Mailpit) | http://localhost:8025 | Enlaces de verificación y recuperación |
 | Compilador (sandbox) | — | Sin red: no publica puertos ni puede abrir conexiones |
 
-Si ya tenías un `infra/.env` de una versión anterior: `node infra/generate-env.mjs --add-missing` añade solo las claves nuevas. La migración S3 cifra columnas que antes estaban en claro y necesita una base vacía: `docker compose -f infra/docker-compose.yml down -v` antes de volver a levantar.
+Si ya tenías un `.env` (raíz) de una versión anterior: `node infra/generate-env.mjs --add-missing` añade solo las claves nuevas. La migración S3 cifra columnas que antes estaban en claro y necesita una base vacía: `docker compose down -v` antes de volver a levantar.
 
-El servicio `migrate` aplica las migraciones y siembra el escenario sintético: 4 usuarios `*@securtex.test` (Ana Torres es administradora) y 6 proyectos con sus archivos ya cifrados. La contraseña de esas cuentas es `SEED_DEMO_PASSWORD` de `infra/.env`. Es el único servicio con las credenciales del propietario de la base de datos; la API se conecta con tres roles de mínimo privilegio. Para empezar de cero: `docker compose -f infra/docker-compose.yml down -v`.
+El servicio `migrate` aplica las migraciones y siembra el escenario sintético: 4 usuarios `*@securtex.test` (Ana Torres es administradora) y 6 proyectos con sus archivos ya cifrados. La contraseña de esas cuentas es `SEED_DEMO_PASSWORD` de `.env` (raíz). Es el único servicio con las credenciales del propietario de la base de datos; la API se conecta con tres roles de mínimo privilegio. Para empezar de cero: `docker compose down -v`.
 
 ### Implementado
 
@@ -52,13 +54,13 @@ El servicio `migrate` aplica las migraciones y siembra el escenario sintético: 
 ### Usar SecurTex en la red local (varias personas, mismo wifi)
 
 1. Averigua la IP del equipo que hará de servidor (en Windows, `ipconfig` → «Dirección IPv4», p. ej. `192.168.1.50`).
-2. Añade a `infra/.env`:
+2. Añade a `.env` (raíz):
    ```
    PUBLISH_HOST=0.0.0.0
    APP_ORIGIN=http://192.168.1.50:3000,http://localhost:3000
    ```
    El primer origen es el de los enlaces de los correos; ponlo con la IP para que funcionen desde otros equipos.
-3. `docker compose -f infra/docker-compose.yml up -d` y permite en el cortafuegos de Windows los puertos **3000** (web) y **4000** (API y WebSocket de colaboración) para redes privadas.
+3. `docker compose up -d` y permite en el cortafuegos de Windows los puertos **3000** (web) y **4000** (API y WebSocket de colaboración) para redes privadas.
 4. Desde otro equipo de la red: `http://192.168.1.50:3000`. El cifrado C1/C2/C5 del navegador usa `@noble` y funciona también en `http://IP` (WebCrypto no estaría disponible ahí).
 
 Sin HTTPS en la LAN, las cookies viajan sin `Secure`: aceptable en una red de confianza para clase; en un despliegue real va detrás de TLS.
@@ -71,15 +73,15 @@ El código está hecho; solo hacen falta credenciales tuyas. Ambos registros son
 1. Crea un proyecto → «APIs y servicios» → «Pantalla de consentimiento de OAuth» → tipo *Externo*, en modo *Prueba*, y añade como «usuarios de prueba» los correos que vayan a entrar.
 2. «Credenciales» → «Crear credenciales» → «ID de cliente de OAuth» → *Aplicación web*.
 3. URI de redirección autorizado: `http://localhost:3000/api/v1/auth/oidc/google/callback`.
-4. Copia el ID y el secreto a `infra/.env` como `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
+4. Copia el ID y el secreto a `.env` (raíz) como `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
 
 **Microsoft** (portal de Azure → Microsoft Entra ID → «Registros de aplicaciones»):
 1. «Nuevo registro» → cuentas admitidas: *Cuentas personales de Microsoft* (o *cualquier directorio y cuentas personales*).
 2. URI de redirección, plataforma *Web*: `http://localhost:3000/api/v1/auth/oidc/microsoft/callback`.
 3. «Certificados y secretos» → nuevo secreto de cliente; copia su **valor**.
-4. En `infra/.env`: `MICROSOFT_CLIENT_ID` (Id. de aplicación), `MICROSOFT_CLIENT_SECRET` y `MICROSOFT_TENANT=consumers` (solo personales) o `common`.
+4. En `.env` (raíz): `MICROSOFT_CLIENT_ID` (Id. de aplicación), `MICROSOFT_CLIENT_SECRET` y `MICROSOFT_TENANT=consumers` (solo personales) o `common`.
 
-Después: `docker compose -f infra/docker-compose.yml up -d --force-recreate api`. Los botones aparecen solos en el acceso y en Ajustes → Cuentas vinculadas. Limitación: Google y Microsoft solo admiten `http://` con `localhost` como redirección, así que en la red local el acceso con proveedor funciona desde el equipo servidor; los demás usan correo y contraseña (o hace falta un dominio con HTTPS).
+Después: `docker compose up -d --force-recreate api`. Los botones aparecen solos en el acceso y en Ajustes → Cuentas vinculadas. Limitación: Google y Microsoft solo admiten `http://` con `localhost` como redirección, así que en la red local el acceso con proveedor funciona desde el equipo servidor; los demás usan correo y contraseña (o hace falta un dominio con HTTPS).
 
 ### Fuera del alcance de esta entrega
 
@@ -119,7 +121,7 @@ navegador ──C1+C2──▶ API ── análisis ──▶ volumen tmpfs comp
 
 **Riesgos residuales** (documentados, no resueltos en esta entrega):
 
-- **Sin gVisor.** Docker Desktop no trae `runsc`, así que el aislamiento es el de `runc` (espacios de nombres + seccomp por defecto de Docker), no un kernel de usuario. AGENTS.md exige gVisor en producción: donde esté instalado, `COMPILER_RUNTIME=runsc` en `infra/.env` lo activa sin tocar nada más.
+- **Sin gVisor.** Docker Desktop no trae `runsc`, así que el aislamiento es el de `runc` (espacios de nombres + seccomp por defecto de Docker), no un kernel de usuario. AGENTS.md exige gVisor en producción: donde esté instalado, `COMPILER_RUNTIME=runsc` en `.env` (raíz) lo activa sin tocar nada más.
 - **Un contenedor de larga vida, no uno por compilación.** Se destruye el directorio de cada trabajo, no el contenedor. Crear contenedores desde la API exigiría darle el socket de Docker (equivale a root en el anfitrión). Con 2 trabajos a la vez y el mismo uid, una fuga de TeX hasta ejecución de código podría leer el otro trabajo en curso o una petición aún en cola en el volumen.
 - **Lua puede leer archivos del contenedor.** Con `--safer` LuaTeX no ejecuta programas ni borra, pero `io.open` sigue leyendo cualquier archivo legible de la imagen (no hay secretos en ella). El análisis bloquea `\directlua`, pero es una lista de bloqueo que `\csname` puede esquivar: el contenedor es la frontera real.
 - **Figuras sin antivirus.** Las subidas se validan por extensión, firma binaria y tamaño, y TeX las lee en el sandbox sin red, pero no pasan por un escáner (ClamAV) ni se recodifican. Un PDF malicioso subido como figura llega intacto a quien lo descargue; en el navegador se abre con PDF.js endurecido (sin scripts ni XFA).
@@ -186,9 +188,8 @@ pnpm docs:serve           # http://localhost:3000/api/docs
 ## Puesta en marcha (arquitectura objetivo)
 
 ```bash
-git clone https://github.com/SecurTex-Devs/securtex-backend.git
-cd securtex-backend
-cp .env.example .env
+git clone https://github.com/SecurTex-Devs/securetex.git
+cd securetex/backend
 pnpm install
 pnpm dev
 ```

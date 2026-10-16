@@ -3,8 +3,8 @@
   "private": true,
   "engines": { "node": ">=22" },
   "scripts": {
-    "dev": "docker compose -f infra/docker-compose.yml up --build",
-    "dev:down": "docker compose -f infra/docker-compose.yml down",
+    "dev": "docker compose -f ../docker-compose.yml up --build",
+    "dev:down": "docker compose -f ../docker-compose.yml down",
     "build": "pnpm --filter @securtex/api build",
     "test": "pnpm --filter @securtex/api test",
     "test:security": "pnpm --filter @securtex/api test:security",

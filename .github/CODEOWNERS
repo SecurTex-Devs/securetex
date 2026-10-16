@@ -1,0 +1,27 @@
+# Responsables de revisión. Toda la base de código pasa por @DaGeus15;
+# las rutas sensibles se listan aparte para que nunca se pierda de vista.
+
+*                                                @DaGeus15
+
+# backend
+/backend/AGENTS.md                               @DaGeus15
+/backend/Docs/03-Estandares-de-Codigo.md         @DaGeus15
+/backend/packages/security/                      @DaGeus15
+/backend/apps/auth-service/                      @DaGeus15
+/backend/apps/compile-orchestrator/              @DaGeus15
+/backend/apps/url-fetcher/                       @DaGeus15
+/backend/packages/db/migrations/                 @DaGeus15
+/infra/                                          @DaGeus15
+/docker-compose.yml                              @DaGeus15
+
+# frontend
+/frontend/AGENTS.md                              @DaGeus15
+/frontend/Docs/02-Seguridad-en-el-Cliente.md     @DaGeus15
+/frontend/Docs/08-Criptografia-en-el-Cliente.md  @DaGeus15
+/frontend/src/shared/crypto/                     @DaGeus15
+/frontend/src/shared/security/                   @DaGeus15
+
+# docs
+/docs/docs/05-Seguridad.md                       @DaGeus15
+/docs/docs/14-Criptografia-Multicapa.md          @DaGeus15
+/docs/docs/adr/                                  @DaGeus15

@@ -1,10 +1,11 @@
-# SecurTex · entorno local completo (Sprint 1)
+# SecurTex · todo el sistema con un solo comando
 #
-#   node infra/generate-env.mjs        # una vez: secretos aleatorios en infra/.env
-#   docker compose -f infra/docker-compose.yml up --build
+#   Windows:      .\iniciar.ps1
+#   Linux/macOS:  ./iniciar.sh
 #
-# Requiere los tres repositorios clonados uno al lado del otro
-# (securtex-backend/ y securtex-frontend/ en la misma carpeta).
+# o a mano:
+#   node infra/generate-env.mjs        # una vez: secretos aleatorios en .env (nunca se versiona)
+#   docker compose up --build -d
 #
 # | Servicio  | URL                              | Para qué                          |
 # |-----------|----------------------------------|-----------------------------------|
@@ -59,7 +60,7 @@ services:
       DB_AUDIT_PASSWORD: ${DB_AUDIT_PASSWORD:?}
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./postgres/01-roles.sh:/docker-entrypoint-initdb.d/01-roles.sh:ro
+      - ./infra/postgres/01-roles.sh:/docker-entrypoint-initdb.d/01-roles.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U securtex_owner -d securtex"]
       interval: 3s
@@ -77,7 +78,7 @@ services:
   # credenciales del propietario de la base de datos; la API nunca las tiene.
   migrate:
     build:
-      context: ..
+      context: ./backend
       dockerfile: apps/api/Dockerfile
     image: securtex-api:local
     environment:
@@ -97,7 +98,7 @@ services:
   # gVisor (runsc) no está en Docker Desktop; donde exista, COMPILER_RUNTIME=runsc.
   compiler:
     build:
-      context: ..
+      context: ./backend
       dockerfile: apps/compiler/Dockerfile
     image: securtex-compiler:local
     runtime: ${COMPILER_RUNTIME:-runc}
@@ -153,7 +154,7 @@ services:
 
   web:
     build:
-      context: ../../securtex-frontend
+      context: ./frontend
     environment:
       API_INTERNAL_URL: http://api:4000
       COLLAB_PUBLIC_PORT: "4000"

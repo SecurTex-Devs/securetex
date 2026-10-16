@@ -1,8 +1,0 @@
-* @DaGeus15
-
-# Zonas de riesgo crítico
-/AGENTS.md                              @DaGeus15
-/Docs/02-Seguridad-en-el-Cliente.md     @DaGeus15
-/Docs/08-Criptografia-en-el-Cliente.md  @DaGeus15
-/src/shared/crypto/                     @DaGeus15
-/src/shared/security/                   @DaGeus15

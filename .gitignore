@@ -1,0 +1,21 @@
+# Secretos locales generados por infra/generate-env.mjs — NUNCA se versionan.
+# (Cada carpeta tiene además su propio .gitignore.)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+
+# Dependencias y builds
+node_modules/
+.pnpm-store/
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
