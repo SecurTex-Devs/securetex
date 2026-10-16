@@ -2,9 +2,10 @@
 
 import { api, unwrap } from '@/shared/api/client';
 import type { components } from '@/shared/api/generated';
-import { verifyArtifact } from '@/shared/crypto/artifact';
+import { verifyArtifact, verifySynctex } from '@/shared/crypto/artifact';
 import { envelopeContext, fetchSealed, openBytesFromServer, replyKeyPair, sealBytesForServer, sealForServer } from '@/shared/crypto/transport';
 import { parseCompileFrame, type ServerCompile } from './lib/compile-frame';
+import { parseSyncMap, type SyncMap } from './lib/synctex';
 
 type Schemas = components['schemas'];
 export type FileMeta = Schemas['FileMetaDto'];
@@ -53,6 +54,8 @@ export interface CompiledPdf {
   readonly header: ServerCompile;
   /** Solo existe si superó la verificación Ed25519 (C4b). */
   readonly pdf: Uint8Array | null;
+  /** Mapa SyncTeX del PDF, con su firma Ed25519 ya verificada; null si no vino. */
+  readonly synctex: SyncMap | null;
 }
 
 export const compileApi = {
@@ -65,9 +68,12 @@ export const compileApi = {
   run: async (projectId: string): Promise<CompiledPdf> => {
     const keys = replyKeyPair();
     const { envelope } = await unwrap(api.POST('/api/v1/projects/{projectId}/compile', { params: { path: { projectId }, header: { 'X-SecurTex-Reply-Key': keys.header } } }));
-    const { header, pdf } = parseCompileFrame(openBytesFromServer(envelope, keys, envelopeContext(projectId, 'compile:pdf')));
-    if (pdf.length === 0) return { header, pdf: null };
+    const { header, pdf, synctex } = parseCompileFrame(openBytesFromServer(envelope, keys, envelopeContext(projectId, 'compile:pdf')));
+    if (pdf.length === 0) return { header, pdf: null, synctex: null };
     await verifyArtifact(pdf, header.compilationId, header.signature);
-    return { header, pdf };
+    if (synctex.length === 0) return { header, pdf, synctex: null };
+    // Un mapa que no verifica es una manipulación: se rechaza la respuesta entera, como con el PDF.
+    await verifySynctex(synctex, pdf, header.compilationId, header.synctexSignature);
+    return { header, pdf, synctex: parseSyncMap(synctex) };
   },
 };

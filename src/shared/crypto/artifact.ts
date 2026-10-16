@@ -22,6 +22,15 @@ export interface ArtifactSignature {
   readonly value: string;
 }
 
+/** Firma del mapa SyncTeX: Ed25519("securtex:c4b:synctex:v1" ‖ SHA-256(mapa) ‖ compilationId[16] ‖ SHA-256(pdf)). */
+export interface SynctexSignature {
+  readonly alg: 'Ed25519';
+  readonly sha256: string;
+  readonly value: string;
+}
+
+const SYNCTEX_DOMAIN = new TextEncoder().encode('securtex:c4b:synctex:v1');
+
 let artifactKey: Promise<Uint8Array> | null = null;
 
 /** Clave pública Ed25519 del servicio de compilación. */
@@ -60,4 +69,23 @@ export async function verifyArtifact(pdf: Uint8Array, compilationId: string, sig
     valid = false;
   }
   if (!valid) throw new IntegrityFailure('c4b_signature');
+}
+
+/**
+ * El mapa SyncTeX lleva su propia firma, con separación de dominio y atada al
+ * PDF de la misma compilación: un mapa de otra compilación (u otro PDF) no
+ * verifica. Se llama después de `verifyArtifact`.
+ */
+export async function verifySynctex(map: Uint8Array, pdf: Uint8Array, compilationId: string, signature: SynctexSignature | null): Promise<void> {
+  if (!signature || signature.alg !== 'Ed25519') throw new IntegrityFailure('c4b_synctex_missing');
+  const digest = sha256(map);
+  if (!equalBytes(digest, fromB64url(signature.sha256))) throw new IntegrityFailure('c4b_synctex_digest');
+  const message = concat(SYNCTEX_DOMAIN, digest, uuidBytes(compilationId), sha256(pdf));
+  let valid = false;
+  try {
+    valid = ed25519.verify(fromB64url(signature.value), message, await artifactPublicKey());
+  } catch {
+    valid = false;
+  }
+  if (!valid) throw new IntegrityFailure('c4b_synctex_signature');
 }

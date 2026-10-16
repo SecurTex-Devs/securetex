@@ -8,7 +8,8 @@ import { IconButton } from '@/shared/ui/button';
 import { Kbd } from '@/shared/ui/badge';
 import { Spinner } from '@/shared/ui/spinner';
 import type { Src } from '../lib/latex-blocks';
-import { useEditor } from '../store';
+import { syncInverse } from '../lib/synctex';
+import { isBinaryKind, useEditor } from '../store';
 import { BlockedPanel } from './blocked-panel';
 import { DocumentPages } from './document-pages';
 import { PdfControls, PdfNotice } from './pdf-controls';
@@ -55,6 +56,16 @@ export function PreviewPane() {
   const compileError = useEditor((s) => s.compileError);
 
   const onInverseSync = useCallback((src: Src) => jumpTo(src.file, src.line), [jumpTo]);
+  // SyncTeX sobre el PDF real: el mapa firmado de la misma compilación que el PDF.
+  const synctex = useEditor((s) => s.synctex);
+  const pdfTarget = useEditor((s) => s.pdfTarget);
+  const onPdfInverse = useCallback((n: number, x: number, y: number) => {
+    if (!synctex) return;
+    const src = syncInverse(synctex, n, x, y);
+    // Solo se salta a archivos que existen en el proyecto (y no a imágenes).
+    const entry = src ? useEditor.getState().entries[src.file] : undefined;
+    if (src && entry && !isBinaryKind(entry.kind)) jumpTo(src.file, src.line);
+  }, [synctex, jumpTo]);
 
   // Página visible según el desplazamiento (IntersectionObserver, nunca un listener de scroll).
   useEffect(() => {
@@ -100,7 +111,7 @@ export function PreviewPane() {
 
       <div ref={scroller} className="relative min-h-0 flex-1 overflow-auto px-4 pt-5">
         {status === 'blocked' && result ? <BlockedPanel findings={result.findings} /> : showPdf && pdf ? (
-          <PdfViewer data={pdf} zoom={zoom} onPages={setPdfPages} />
+          <PdfViewer data={pdf} zoom={zoom} onPages={setPdfPages} target={pdfTarget} onInverse={synctex ? onPdfInverse : null} />
         ) : result && total > 0 ? (
           <div className={cn('transition-opacity duration-300', busy && 'opacity-60')}>
             <DocumentPages model={result.model} pages={result.pages} zoom={zoom} highlight={highlight} onInverseSync={onInverseSync} />
@@ -125,7 +136,7 @@ export function PreviewPane() {
         ) : null}
         {busy && <CompileProgress status={status} />}
       </div>
-      {!showPdf && result && total > 0 && status !== 'blocked' && (
+      {(showPdf ? synctex !== null : result !== null && total > 0) && status !== 'blocked' && (
         <p className="pointer-events-none absolute bottom-3 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full xl:block bg-surface/90 px-3 py-1 text-[11px] text-fg-3 shadow-[var(--shadow-card),inset_0_0_0_1px_var(--border)] backdrop-blur">{t('pdf.syncHint')}</p>
       )}
     </section>

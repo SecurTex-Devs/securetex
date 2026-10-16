@@ -27,6 +27,7 @@ export function FormatToolbar({ viewRef, readOnly }: { readonly viewRef: RefObje
   const activeFile = useEditor((s) => s.activeFile);
   const cursor = useEditor((s) => s.cursor);
   const setHighlight = useEditor((s) => s.setHighlight);
+  const syncToPdf = useEditor((s) => s.syncToPdf);
   const v = () => viewRef.current;
   const run = (fn: (view: EditorView) => void) => () => { const view = v(); if (view) fn(view); };
 
@@ -57,7 +58,7 @@ export function FormatToolbar({ viewRef, readOnly }: { readonly viewRef: RefObje
       </Tooltip>
       <Tooltip content={t('toolbar.toPdf')}>
         <IconButton size="sm" className="size-7" label={t('toolbar.toPdf')} icon={<LocateFixed className="size-[15px]" strokeWidth={1.6} />}
-          onClick={() => setHighlight(nearestBlock(activeFile, cursor.line))} />
+          onClick={() => { if (!syncToPdf(activeFile, cursor.line)) setHighlight(nearestBlock(activeFile, cursor.line)); }} />
       </Tooltip>
     </div>
   );

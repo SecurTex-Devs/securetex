@@ -304,6 +304,23 @@
   50% { opacity: 0.45; transform: scale(0.85); }
 }
 
+@keyframes synctex-flash {
+  0% { opacity: 0; }
+  12%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* SyncTeX directo sobre el PDF real. Sin «forwards»: con movimiento reducido se
+   ve fijo hasta que React lo retira, en vez de desaparecer al instante. */
+.synctex-mark {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 55%, transparent);
+  animation: synctex-flash 2000ms var(--ease-out);
+}
+
 .animate-rise { animation: rise 700ms var(--ease-out) both; }
 .animate-pop { animation: pop-in 180ms var(--ease-out) both; }
 .animate-fade { animation: fade-in 200ms var(--ease-out) both; }

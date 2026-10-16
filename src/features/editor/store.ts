@@ -6,6 +6,7 @@ import { getT } from '@/shared/i18n';
 import { IntegrityFailure } from '@/shared/crypto/transport';
 import { compileApi, filesApi, type FileMeta, type ServerFinding } from './api';
 import type { ServerCompile } from './lib/compile-frame';
+import { syncForward, type SyncMap, type SyncTarget } from './lib/synctex';
 import { CollabClient, type CollabStatus } from './collab';
 import { diagnose, type Diagnostic } from './lib/diagnostics';
 import { buildDocument, paginate, type Block, type DocumentModel, type Src } from './lib/latex-blocks';
@@ -76,6 +77,10 @@ interface EditorState {
   /** PDF verificado con Ed25519 (C4b); null si la última compilación no produjo uno. */
   pdf: Uint8Array | null;
   server: ServerCompile | null;
+  /** Mapa SyncTeX del PDF mostrado (firma verificada); null si la compilación no lo trajo. */
+  synctex: SyncMap | null;
+  /** SyncTeX directo sobre el PDF real: página y rectángulos que resaltar. */
+  pdfTarget: (SyncTarget & { readonly at: number }) | null;
   previewMode: PreviewMode;
   /** Último aviso del servidor (cuota, acceso) para mostrarlo una vez. */
   notice: { code: string; message: string; at: number } | null;
@@ -95,6 +100,8 @@ interface EditorState {
   setCursor: (line: number, col: number) => void;
   jumpTo: (file: string, line: number) => void;
   setHighlight: (src: Src | null) => void;
+  /** «Ver en el PDF» desde el cursor. false si no hay PDF real con mapa (se usa la vista rápida). */
+  syncToPdf: (file: string, line: number) => boolean;
   setAutoCompile: (v: boolean) => void;
   setLogOpen: (v: boolean) => void;
   compile: () => Promise<void>;
@@ -158,6 +165,8 @@ export const useEditor = create<EditorState>((set, get) => ({
   pdfError: null,
   pdf: null,
   server: null,
+  synctex: null,
+  pdfTarget: null,
   previewMode: 'pdf',
 
   start: (projectId, url, list, mainFile, readOnly) => {
@@ -202,7 +211,7 @@ export const useEditor = create<EditorState>((set, get) => ({
     set({
       projectId, collab, entries, readOnly, synced: false, connection: 'connecting', saveState: 'saved', files: {},
       mainFile: main, activeFile: main, openTabs: [main], status: 'idle', compileError: null, result: null, highlight: null, notice: null,
-      analysis: null, pdfStatus: 'idle', pdfError: null, pdf: null, server: null, previewMode: 'pdf',
+      analysis: null, pdfStatus: 'idle', pdfError: null, pdf: null, server: null, synctex: null, pdfTarget: null, previewMode: 'pdf',
     });
     collab.connect();
   },
@@ -285,6 +294,14 @@ export const useEditor = create<EditorState>((set, get) => ({
   setCursor: (line, col) => set({ cursor: { line, col } }),
   jumpTo: (file, line) => set((s) => ({ jump: { file, line, at: Date.now() }, activeFile: file, openTabs: s.openTabs.includes(file) ? s.openTabs : [...s.openTabs, file] })),
   setHighlight: (highlight) => set({ highlight }),
+  syncToPdf: (file, line) => {
+    const { previewMode, pdf, synctex } = get();
+    if (previewMode !== 'pdf' || !pdf || !synctex) return false;
+    const target = syncForward(synctex, file, line);
+    if (!target) return false;
+    set({ pdfTarget: { ...target, at: Date.now() } });
+    return true;
+  },
   setAutoCompile: (autoCompile) => set({ autoCompile }),
   setLogOpen: (logOpen) => set({ logOpen }),
   setPreviewMode: (previewMode) => set({ previewMode }),
@@ -306,12 +323,15 @@ export const useEditor = create<EditorState>((set, get) => ({
     if (!projectId || pdfStatus === 'running') return;
     set({ pdfStatus: 'running', pdfError: null });
     try {
-      const { header, pdf } = await compileApi.run(projectId);
+      const { header, pdf, synctex } = await compileApi.run(projectId);
       if (get().projectId !== projectId) return;
       const failed = !pdf;
       set((s) => ({
         server: header,
         pdf: pdf ?? s.pdf,
+        // El mapa va siempre con su PDF: si no llegó PDF nuevo, se conserva el par anterior.
+        synctex: pdf ? synctex : s.synctex,
+        pdfTarget: pdf ? null : s.pdfTarget,
         pdfStatus: failed ? 'failed' : 'done',
         pdfError: failed ? pdfFailure(header.status) : null,
         // Sin PDF nuevo, se vuelve a la vista rápida; con errores, se abre el registro real.
