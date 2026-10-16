@@ -1,10 +1,6 @@
-# SecurTex · todo el sistema con un solo comando
+# SecurTex · todo el sistema: base de datos, API, sandbox de LaTeX, web y correo
 #
-#   Windows:      .\iniciar.ps1
-#   Linux/macOS:  ./iniciar.sh
-#
-# o a mano:
-#   node infra/generate-env.mjs        # una vez: secretos aleatorios en .env (nunca se versiona)
+#   cp .env.example .env        # rellena los secretos (cada uno trae su comando)
 #   docker compose up --build -d
 #
 # | Servicio  | URL                              | Para qué                          |
@@ -14,7 +10,7 @@
 # | mailpit   | http://localhost:8025            | Bandeja de los correos enviados   |
 #
 # Los puertos internos (PostgreSQL) no se publican. Los publicados se atan a
-# 127.0.0.1: no quedan expuestos a la red local.
+# 127.0.0.1 salvo que PUBLISH_HOST diga otra cosa.
 
 name: securtex
 
@@ -26,15 +22,15 @@ x-api-env: &api-env
   APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
   # La API solo confía en X-Forwarded-For si viene de la red interna (el proxy de Next).
   TRUST_PROXY: loopback,uniquelocal
-  DATABASE_URL_IDENTITY: postgresql://securtex_identity:${DB_IDENTITY_PASSWORD:?ejecuta node infra/generate-env.mjs}@postgres:5432/securtex
+  DATABASE_URL_IDENTITY: postgresql://securtex_identity:${DB_IDENTITY_PASSWORD:?falta en .env (copia .env.example a .env y rellénalo)}@postgres:5432/securtex
   DATABASE_URL_APP: postgresql://securtex_app:${DB_APP_PASSWORD:?}@postgres:5432/securtex
   DATABASE_URL_AUDIT: postgresql://securtex_audit:${DB_AUDIT_PASSWORD:?}@postgres:5432/securtex
   JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY:?}
   MFA_ENCRYPTION_KEY: ${MFA_ENCRYPTION_KEY:?}
-  FILES_MASTER_KEY: ${FILES_MASTER_KEY:?ejecuta node infra/generate-env.mjs --force}
-  TRANSPORT_PRIVATE_KEY: ${TRANSPORT_PRIVATE_KEY:?ejecuta node infra/generate-env.mjs --add-missing}
-  DATA_MASTER_KEY: ${DATA_MASTER_KEY:?ejecuta node infra/generate-env.mjs --add-missing}
-  COMPILER_SIGNING_KEY: ${COMPILER_SIGNING_KEY:?ejecuta node infra/generate-env.mjs --add-missing}
+  FILES_MASTER_KEY: ${FILES_MASTER_KEY:?falta en .env (copia .env.example a .env y rellénalo)}
+  TRANSPORT_PRIVATE_KEY: ${TRANSPORT_PRIVATE_KEY:?falta en .env (copia .env.example a .env y rellénalo)}
+  DATA_MASTER_KEY: ${DATA_MASTER_KEY:?falta en .env (copia .env.example a .env y rellénalo)}
+  COMPILER_SIGNING_KEY: ${COMPILER_SIGNING_KEY:?falta en .env (copia .env.example a .env y rellénalo)}
   COMPILE_JOBS_DIR: /jobs
   COMPILE_TIMEOUT_MS: &compile-timeout "30000"
   COOKIE_SECURE: "false"

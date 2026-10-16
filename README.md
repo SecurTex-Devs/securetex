@@ -6,25 +6,18 @@ Editor LaTeX colaborativo y seguro, al estilo de Overleaf: edición en tiempo re
 
 ---
 
-## Arrancar todo con un solo comando
+## Arrancar
 
-**Requisito único:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) (o Docker Engine con Compose v2) en marcha. Node.js es opcional.
-
-```powershell
-# Windows (PowerShell)
-git clone https://github.com/SecurTex-Devs/securetex.git
-cd securetex
-.\iniciar.ps1
-```
+**Requisito:** Docker con Compose v2 (por ejemplo, Docker Desktop).
 
 ```bash
-# Linux / macOS
 git clone https://github.com/SecurTex-Devs/securetex.git
 cd securetex
-./iniciar.sh
+cp .env.example .env          # rellena los secretos: cada uno trae al lado el comando que lo genera
+docker compose up --build -d
 ```
 
-El script genera la primera vez un `.env` con secretos aleatorios, que nunca se versiona. Después construye las imágenes y levanta los seis servicios. La primera vez tarda varios minutos, porque descarga TeX Live para el sandbox; las siguientes es casi inmediato.
+La primera vez tarda varios minutos, porque construye las imágenes e instala TeX Live en el sandbox.
 
 | Qué | Dónde |
 |---|---|
@@ -32,16 +25,15 @@ El script genera la primera vez un `.env` con secretos aleatorios, que nunca se 
 | Correos enviados (verificación, recuperación) | http://localhost:8025 |
 | API (Swagger, solo en desarrollo) | http://localhost:4000/api/docs |
 
-**Cuentas de demostración** (solo local): `ana.torres@securtex.test` (administradora), `maria.rodriguez@securtex.test`, `jorge.cardenas@securtex.test` y `luis.perez@securtex.test`. Las cuatro comparten la contraseña que el script muestra al terminar, que es `SEED_DEMO_PASSWORD` en el `.env`.
+**Cuentas de demostración** (solo local): `ana.torres@securtex.test` (administradora), `maria.rodriguez@securtex.test`, `jorge.cardenas@securtex.test` y `luis.perez@securtex.test`. Su contraseña es `SEED_DEMO_PASSWORD` del `.env`. Si la dejaste vacía, se genera una y aparece en `docker compose logs migrate`.
 
 | Tarea | Comando |
 |---|---|
-| Detener (los datos se conservan) | `.\iniciar.ps1 -Parar` · `./iniciar.sh --parar` |
+| Detener (los datos se conservan) | `docker compose down` |
 | Ver los registros | `docker compose logs -f api web` |
 | Empezar de cero (borra la base) | `docker compose down -v` |
-| A mano, sin el script | `node infra/generate-env.mjs` y luego `docker compose up --build -d` |
 
-> **No borres ni regeneres el `.env`** si quieres conservar tus proyectos: sus claves cifran los datos guardados. Con otras claves, lo guardado no se puede descifrar.
+> **No cambies las claves del `.env`** una vez creada la base: cifran los datos guardados y, con otras, no se pueden descifrar.
 
 ### Usarlo desde otros equipos de la red local
 
@@ -61,7 +53,8 @@ Es gratis. Basta con registrar la aplicación en cada proveedor y copiar el ID y
 | [`frontend/`](frontend/) | Aplicación web (Next.js 15): editor CodeMirror, visor PDF, sistema de diseño y el prototipo de las 50 pantallas |
 | [`docs/`](docs/) | Análisis, requisitos, arquitectura, seguridad, criptografía multicapa, modelo de datos, UML, plan y ADR (MkDocs) |
 | `docker-compose.yml` | Toda la pila: `postgres`, `migrate`, `compiler`, `api`, `web` y `mailpit` |
-| `infra/` | Generador de secretos locales y el script de roles de PostgreSQL |
+| `.env.example` | Todas las variables que necesita la pila, con el comando que genera cada secreto |
+| `infra/postgres/` | Script que crea los roles de PostgreSQL al inicializar la base |
 
 Los tres proyectos venían de repositorios separados y conservan todo su historial de git.
 

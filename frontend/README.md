@@ -15,7 +15,8 @@ La forma recomendada es la pila completa desde la **raíz del repositorio** (con
 
 ```bash
 cd ..
-./iniciar.sh            # o .\iniciar.ps1 en Windows · http://localhost:3000
+cp .env.example .env    # rellena los secretos
+docker compose up --build -d   # http://localhost:3000
 ```
 
 Para desarrollar solo el frontend contra esa API: `pnpm install`, copiar `.env.example` a `.env.local` y `pnpm dev`. Tras cambiar endpoints en el backend: `pnpm api:sync` (copia `contracts/openapi.json` y regenera los tipos; nunca se escriben a mano).
@@ -109,7 +110,7 @@ pnpm api:sync      # genera los tipos desde el contrato del backend
 pnpm dev
 ```
 
-**Requisitos:** Node 22 LTS, pnpm 9. Para el desarrollo completo, la pila levantada desde la raíz con `./iniciar.sh` (o solo la API: `docker compose up -d api`).
+**Requisitos:** Node 22 LTS, pnpm 9. Para el desarrollo completo, la pila levantada desde la raíz con `docker compose up -d`.
 
 ---
 

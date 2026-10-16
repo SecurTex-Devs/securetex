@@ -71,7 +71,8 @@ graph TB
 ```bash
 git clone https://github.com/SecurTex-Devs/securetex.git
 cd securetex
-./iniciar.sh                # o .\iniciar.ps1 en Windows: genera .env, levanta todo y siembra datos
+cp .env.example .env        # rellena los secretos (cada uno trae su comando)
+docker compose up --build -d   # levanta todo y siembra datos
 ```
 
 `docker-compose.yml` levanta: PostgreSQL, Redis, MinIO, Vault (modo dev), Keycloak con el realm preconfigurado, ClamAV, MailHog, y el runner de TeX Live ligero. **Ningún secreto real; ninguna configuración de desarrollo puede llegar a producción** (se verifica en el CI).

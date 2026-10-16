@@ -14,8 +14,8 @@ Backend de **SecurTex**, editor LaTeX colaborativo seguro: API REST, servicios d
 Desde la **raíz del repositorio** (un solo `docker-compose.yml` para todo):
 
 ```bash
-./iniciar.sh                       # o .\iniciar.ps1 en Windows: genera .env y levanta todo
-# a mano: node infra/generate-env.mjs && docker compose up --build -d
+cp .env.example .env               # rellena los secretos; cada uno trae el comando que lo genera
+docker compose up --build -d
 ```
 
 | Servicio | URL | Nota |
@@ -25,7 +25,7 @@ Desde la **raíz del repositorio** (un solo `docker-compose.yml` para todo):
 | Correo de pruebas (Mailpit) | http://localhost:8025 | Enlaces de verificación y recuperación |
 | Compilador (sandbox) | — | Sin red: no publica puertos ni puede abrir conexiones |
 
-Si ya tenías un `.env` (raíz) de una versión anterior: `node infra/generate-env.mjs --add-missing` añade solo las claves nuevas. La migración S3 cifra columnas que antes estaban en claro y necesita una base vacía: `docker compose down -v` antes de volver a levantar.
+Si ya tenías un `.env` de una versión anterior, compáralo con `.env.example` y añade las claves que falten (sin tocar las existentes). La migración S3 cifra columnas que antes estaban en claro y necesita una base vacía: `docker compose down -v` antes de volver a levantar.
 
 El servicio `migrate` aplica las migraciones y siembra el escenario sintético: 4 usuarios `*@securtex.test` (Ana Torres es administradora) y 6 proyectos con sus archivos ya cifrados. La contraseña de esas cuentas es `SEED_DEMO_PASSWORD` de `.env` (raíz). Es el único servicio con las credenciales del propietario de la base de datos; la API se conecta con tres roles de mínimo privilegio. Para empezar de cero: `docker compose down -v`.
 
