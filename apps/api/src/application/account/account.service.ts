@@ -4,6 +4,7 @@ import { NotFoundError, ValidationError } from '../../domain/errors';
 import { asUserId } from '../../domain/values';
 import { Databases } from '../../infrastructure/db/databases';
 import { Mailer } from '../../infrastructure/mail/mailer';
+import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 import { AuditLog } from '../audit/audit-log';
 import { MfaService } from '../auth/mfa';
 import { SessionService } from '../auth/sessions';
@@ -37,6 +38,7 @@ export class AccountService {
     private readonly mfa: MfaService,
     private readonly mailer: Mailer,
     private readonly audit: AuditLog,
+    private readonly cipher: FieldCipher,
   ) {}
 
   async profile(actor: Actor) {
@@ -50,8 +52,14 @@ export class AccountService {
     });
     const mfa = await this.mfa.status(actor.userId);
     const { passwordHash, ...rest } = user;
+    const c = this.cipher;
     return {
       ...rest,
+      primaryEmail: c.decrypt(user.primaryEmail, FIELD.userEmail),
+      firstName: c.decrypt(user.firstName, FIELD.userFirstName),
+      lastName: c.decrypt(user.lastName, FIELD.userLastName),
+      institution: c.decrypt(user.institution, FIELD.userInstitution),
+      roleTitle: c.decrypt(user.roleTitle, FIELD.userRoleTitle),
       // Solo se expone si existe contraseña, nunca el hash (API §4.3).
       hasPassword: passwordHash !== null,
       emailVerified: user.emailVerifiedAt !== null,
@@ -64,7 +72,10 @@ export class AccountService {
     const clean = Object.fromEntries(
       Object.entries(update).filter(([, v]) => typeof v === 'string').map(([k, v]) => [k, (v as string).normalize('NFC').trim().slice(0, 80)]),
     );
-    await this.db.identity.user.update({ where: { id: actor.userId }, data: clean });
+    // Los datos personales se guardan cifrados (C3c); idioma y zona horaria no identifican a nadie.
+    const contexts: Record<string, string> = { firstName: FIELD.userFirstName, lastName: FIELD.userLastName, institution: FIELD.userInstitution, roleTitle: FIELD.userRoleTitle };
+    const data = Object.fromEntries(Object.entries(clean).map(([k, v]) => [k, contexts[k] ? this.cipher.encrypt(v, contexts[k]) : v]));
+    await this.db.identity.user.update({ where: { id: actor.userId }, data });
     await this.audit.record({ type: 'account.profile.updated', actorUserId: actor.userId, outcome: 'success', metadata: { fields: Object.keys(clean).join(',') } }, meta);
     return this.profile(actor);
   }
@@ -75,7 +86,12 @@ export class AccountService {
       orderBy: { lastSeenAt: 'desc' },
       select: { id: true, deviceLabel: true, ipPrefix: true, authMethod: true, createdAt: true, lastSeenAt: true, expiresAt: true },
     });
-    return rows.map((s) => ({ ...s, current: s.id === actor.sessionId }));
+    return rows.map((s) => ({
+      ...s,
+      deviceLabel: this.cipher.decrypt(s.deviceLabel, FIELD.sessionDevice),
+      ipPrefix: this.cipher.decrypt(s.ipPrefix, FIELD.sessionIp),
+      current: s.id === actor.sessionId,
+    }));
   }
 
   async revokeSession(actor: Actor, sessionId: string, meta: RequestMeta): Promise<void> {
@@ -87,11 +103,12 @@ export class AccountService {
   }
 
   async identities(actor: Actor) {
-    return this.db.identity.userIdentity.findMany({
+    const rows = await this.db.identity.userIdentity.findMany({
       where: { userId: actor.userId },
       select: { id: true, provider: true, providerEmail: true, linkedAt: true, lastUsedAt: true },
       orderBy: { linkedAt: 'asc' },
     });
+    return rows.map((r) => ({ ...r, providerEmail: this.cipher.decryptOptional(r.providerEmail, FIELD.identityEmail) }));
   }
 
   async activity(actor: Actor) {

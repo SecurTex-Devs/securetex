@@ -5,6 +5,7 @@ import { NotFoundError } from '../../domain/errors';
 import type { SafeFilePath } from '../../domain/values';
 import type { AppTx } from '../../infrastructure/db/databases';
 import { FileCrypto } from '../../infrastructure/security/envelope';
+import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 
 /** UUIDv7 generado en la aplicación: el id del archivo forma parte de la AAD antes de insertar. */
 export function uuidv7(): string {
@@ -23,7 +24,23 @@ export function uuidv7(): string {
  */
 @Injectable()
 export class EncryptedFileStore {
-  constructor(private readonly crypto: FileCrypto) {}
+  constructor(
+    private readonly crypto: FileCrypto,
+    private readonly cipher: FieldCipher,
+  ) {}
+
+  /** Índice ciego de una ruta, ligado al proyecto: la misma ruta en dos proyectos no se puede correlacionar. */
+  pathIndex(projectId: string, path: string): string {
+    return this.cipher.index(`path:${projectId}`, path);
+  }
+
+  encryptPath(path: string): string {
+    return this.cipher.encrypt(path, FIELD.filePath);
+  }
+
+  decryptPath(stored: string): string {
+    return this.cipher.decrypt(stored, FIELD.filePath);
+  }
 
   async createProjectKey(tx: AppTx, projectId: string): Promise<void> {
     await tx.projectKey.create({ data: { projectId, wrappedKek: this.crypto.newProjectKey() } });
@@ -42,7 +59,7 @@ export class EncryptedFileStore {
     const sealed = this.crypto.seal(kek, { projectId, fileId: id, version: 1 }, content);
     return tx.projectFile.create({
       data: {
-        id, projectId, path: path.toString(), kind: path.extension, size: Buffer.byteLength(content, 'utf8'),
+        id, projectId, path: this.encryptPath(path.toString()), pathIndex: this.pathIndex(projectId, path.toString()), kind: path.extension, size: Buffer.byteLength(content, 'utf8'),
         version: 1, ...sealed, createdBy: actorId, updatedBy: actorId,
       },
     });

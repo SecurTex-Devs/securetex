@@ -4,6 +4,7 @@ import { AUTH } from '../../domain/constants';
 import { ConflictError, ValidationError } from '../../domain/errors';
 import { Databases } from '../../infrastructure/db/databases';
 import { SecretBox } from '../../infrastructure/security/secret-box';
+import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 import { randomSecret, safeEqual, sha256 } from '../../infrastructure/security/tokens';
 import { generateTotpSecret, totpUri, verifyTotp } from '../../infrastructure/security/totp';
 import { AuditLog } from '../audit/audit-log';
@@ -28,6 +29,7 @@ export class MfaService {
     private readonly db: Databases,
     private readonly box: SecretBox,
     private readonly audit: AuditLog,
+    private readonly cipher: FieldCipher,
   ) {}
 
   async status(userId: string): Promise<MfaStatus> {
@@ -50,7 +52,7 @@ export class MfaService {
     await this.db.identity.mfaMethod.deleteMany({ where: { userId: actor.userId, type: 'totp', confirmedAt: null } });
     const secret = generateTotpSecret();
     await this.db.identity.mfaMethod.create({
-      data: { userId: actor.userId, type: 'totp', label: 'Aplicación autenticadora', secretEncrypted: this.box.seal(secret, actor.userId) },
+      data: { userId: actor.userId, type: 'totp', label: this.cipher.encrypt('Aplicación autenticadora', FIELD.mfaLabel), secretEncrypted: this.box.seal(secret, actor.userId) },
     });
     const otpauthUri = totpUri(secret, actor.email);
     const qrDataUrl = await toDataURL(otpauthUri, { errorCorrectionLevel: 'M', margin: 1, width: 220 });

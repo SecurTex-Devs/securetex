@@ -5,6 +5,7 @@ import { AUTH } from '../../domain/constants';
 import { NotFoundError, UnauthorizedError } from '../../domain/errors';
 import { Email } from '../../domain/values';
 import { Databases } from '../../infrastructure/db/databases';
+import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 import { formatCompositeToken, parseCompositeToken, randomSecret, secretMatches, sha256 } from '../../infrastructure/security/tokens';
 import { AuditLog } from '../audit/audit-log';
 import type { RequestMeta } from '../request-meta';
@@ -50,6 +51,7 @@ export class OidcService {
     private readonly db: Databases,
     private readonly auth: AuthService,
     private readonly audit: AuditLog,
+    private readonly cipher: FieldCipher,
   ) {}
 
   enabledProviders(): readonly ExternalProvider[] {
@@ -107,8 +109,9 @@ export class OidcService {
     claims: Record<string, unknown>,
     meta: RequestMeta,
   ): Promise<string> {
+    const subjectIndex = this.cipher.index(`subject:${provider}`, subject);
     const identity = await this.db.identity.userIdentity.findUnique({
-      where: { provider_providerSubject: { provider, providerSubject: subject } },
+      where: { provider_subjectIndex: { provider, subjectIndex } },
       include: { user: { select: { status: true } } },
     });
     if (identity) {
@@ -121,19 +124,26 @@ export class OidcService {
       throw new UnauthorizedError('oidc_email_unverified', 'Tu proveedor no ha confirmado tu correo. Regístrate con correo y contraseña.');
     }
     const email = Email.of(rawEmail);
-    const existing = await this.db.identity.user.findUnique({ where: { primaryEmail: email.toString() } });
+    const existing = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email.toString()) } });
     if (existing) {
       await this.audit.record({ type: 'auth.oidc.link_required', severity: 'notice', actorUserId: existing.id, outcome: 'denied', metadata: { provider } }, meta);
       throw new UnauthorizedError('oidc_link_required', 'Ya existe una cuenta con ese correo. Inicia sesión y vincula el proveedor desde Ajustes.');
     }
     const user = await this.db.identity.user.create({
       data: {
-        primaryEmail: email.toString(),
+        primaryEmail: this.cipher.encrypt(email.toString(), FIELD.userEmail),
+        emailIndex: this.cipher.emailIndex(email.toString()),
         emailVerifiedAt: new Date(),
         status: 'active',
-        firstName: typeof claims['given_name'] === 'string' ? claims['given_name'].slice(0, 80) : '',
-        lastName: typeof claims['family_name'] === 'string' ? claims['family_name'].slice(0, 80) : '',
-        identities: { create: { provider, providerSubject: subject, providerEmail: email.toString(), lastUsedAt: new Date() } },
+        firstName: this.cipher.encrypt(typeof claims['given_name'] === 'string' ? claims['given_name'].slice(0, 80) : '', FIELD.userFirstName),
+        lastName: this.cipher.encrypt(typeof claims['family_name'] === 'string' ? claims['family_name'].slice(0, 80) : '', FIELD.userLastName),
+        identities: {
+          create: {
+            provider, subjectIndex, lastUsedAt: new Date(),
+            providerSubject: this.cipher.encrypt(subject, FIELD.identitySubject),
+            providerEmail: this.cipher.encrypt(email.toString(), FIELD.identityEmail),
+          },
+        },
       },
     });
     await this.audit.record({ type: 'auth.register.success', actorUserId: user.id, outcome: 'success', metadata: { provider } }, meta);

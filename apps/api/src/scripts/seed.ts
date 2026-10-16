@@ -7,6 +7,7 @@ import { templateFiles, type TemplateId } from '../domain/templates';
 import { asUserId, SafeFilePath } from '../domain/values';
 import { Databases } from '../infrastructure/db/databases';
 import { FileCrypto } from '../infrastructure/security/envelope';
+import { FIELD, FieldCipher } from '../infrastructure/security/field-cipher';
 import { PasswordHasher } from '../infrastructure/security/passwords';
 
 /**
@@ -50,14 +51,19 @@ async function main(): Promise<void> {
   const password = provided && provided.length >= 12 ? provided : randomBytes(12).toString('base64url');
   const hash = await new PasswordHasher().hash(password);
 
-  const store = new EncryptedFileStore(new FileCrypto());
+  const cipher = new FieldCipher();
+  const store = new EncryptedFileStore(new FileCrypto(), cipher);
+  const enc = (value: string, context: string) => cipher.encrypt(value, context);
   const ids = new Map<Key, string>();
   for (const u of USERS) {
     const user = await db.identity.user.create({
       data: {
-        primaryEmail: u.email, passwordHash: hash, passwordUpdatedAt: new Date(), emailVerifiedAt: new Date(), status: 'active',
-        firstName: u.firstName, lastName: u.lastName, roleTitle: u.title, institution: 'Universidad Técnica de Ambato', isSystemAdmin: u.admin,
-        identities: { create: { provider: 'local', providerSubject: u.email, providerEmail: u.email } },
+        // Mismo cifrado por columna (C3c) e índices ciegos que la API.
+        primaryEmail: enc(u.email, FIELD.userEmail), emailIndex: cipher.emailIndex(u.email),
+        passwordHash: hash, passwordUpdatedAt: new Date(), emailVerifiedAt: new Date(), status: 'active',
+        firstName: enc(u.firstName, FIELD.userFirstName), lastName: enc(u.lastName, FIELD.userLastName),
+        roleTitle: enc(u.title, FIELD.userRoleTitle), institution: enc('Universidad Técnica de Ambato', FIELD.userInstitution), isSystemAdmin: u.admin,
+        identities: { create: { provider: 'local', providerSubject: enc(u.email, FIELD.identitySubject), subjectIndex: cipher.index('subject:local', u.email), providerEmail: enc(u.email, FIELD.identityEmail) } },
       },
     });
     ids.set(u.key, user.id);
@@ -66,7 +72,7 @@ async function main(): Promise<void> {
 
   const tagIds = await db.asUser(asUserId(id('ana')), async (tx) => {
     const map = new Map<string, string>();
-    for (const t of TAGS) map.set(t.name, (await tx.tag.create({ data: { userId: id('ana'), name: t.name, color: t.color } })).id);
+    for (const t of TAGS) map.set(t.name, (await tx.tag.create({ data: { userId: id('ana'), name: enc(t.name, FIELD.tagName), nameIndex: cipher.tagIndex(t.name), color: t.color } })).id);
     return map;
   });
 
@@ -77,7 +83,7 @@ async function main(): Promise<void> {
     await db.asUser(asUserId(ownerId), async (tx) => {
       const project = await tx.project.create({
         data: {
-          ownerId, name: p.name, compiler: p.template === 'presentacion' ? 'xelatex' : 'pdflatex',
+          ownerId, name: enc(p.name, FIELD.projectName), mainFile: enc('main.tex', FIELD.projectMainFile), compiler: p.template === 'presentacion' ? 'xelatex' : 'pdflatex',
           lastActivityAt: new Date(Date.now() - index * 26 * 3_600_000),
           ...(p.archived ? { archivedAt: new Date() } : {}),
         },

@@ -5,6 +5,7 @@ import { ForbiddenError, InvalidCredentialsError, RateLimitedError, Unauthorized
 import { Email } from '../../domain/values';
 import { Databases } from '../../infrastructure/db/databases';
 import { Mailer } from '../../infrastructure/mail/mailer';
+import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 import { PasswordHasher } from '../../infrastructure/security/passwords';
 import { formatCompositeToken, parseCompositeToken, randomSecret, secretMatches, sha256 } from '../../infrastructure/security/tokens';
 import { AuditLog } from '../audit/audit-log';
@@ -42,6 +43,7 @@ export class AuthService {
     private readonly emailTokens: EmailTokenService,
     private readonly mailer: Mailer,
     private readonly audit: AuditLog,
+    private readonly cipher: FieldCipher,
   ) {}
 
   /**
@@ -51,7 +53,8 @@ export class AuthService {
   async register(input: RegisterInput, meta: RequestMeta): Promise<void> {
     const email = Email.of(input.email);
     const passwordHash = await this.newPasswords.validateAndHash(input.password, email);
-    const existing = await this.db.identity.user.findUnique({ where: { primaryEmail: email.toString() } });
+    // Búsqueda por índice ciego: el correo está cifrado en la base (C3c).
+    const existing = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email.toString()) } });
     if (existing) {
       await this.mailer.send({
         to: email.toString(),
@@ -67,15 +70,23 @@ export class AuthService {
     }
     const user = await this.db.identity.user.create({
       data: {
-        primaryEmail: email.toString(),
+        primaryEmail: this.cipher.encrypt(email.toString(), FIELD.userEmail),
+        emailIndex: this.cipher.emailIndex(email.toString()),
         passwordHash,
         passwordUpdatedAt: new Date(),
-        firstName: input.firstName.trim().slice(0, 80),
-        lastName: input.lastName.trim().slice(0, 80),
-        identities: { create: { provider: 'local', providerSubject: email.toString(), providerEmail: email.toString() } },
+        firstName: this.cipher.encrypt(input.firstName.trim().slice(0, 80), FIELD.userFirstName),
+        lastName: this.cipher.encrypt(input.lastName.trim().slice(0, 80), FIELD.userLastName),
+        identities: {
+          create: {
+            provider: 'local',
+            providerSubject: this.cipher.encrypt(email.toString(), FIELD.identitySubject),
+            subjectIndex: this.cipher.index('subject:local', email.toString()),
+            providerEmail: this.cipher.encrypt(email.toString(), FIELD.identityEmail),
+          },
+        },
       },
     });
-    await this.sendVerification(user);
+    await this.sendVerification(user.id, email.toString(), input.firstName.trim());
     await this.audit.record({ type: 'auth.register.success', actorUserId: user.id, target: { type: 'user', id: user.id }, outcome: 'success' }, meta);
   }
 
@@ -94,14 +105,14 @@ export class AuthService {
     const wait = last ? AUTH.VERIFY_EMAIL_RESEND_COOLDOWN_MS - (Date.now() - last.getTime()) : 0;
     if (wait > 0) throw new RateLimitedError(Math.ceil(wait / 1000), 'resend_cooldown', 'Ya te hemos enviado un enlace hace poco. Espera un momento.');
     const user = await this.db.identity.user.findUniqueOrThrow({ where: { id: actor.userId } });
-    await this.sendVerification(user);
+    await this.sendVerification(user.id, actor.email, this.cipher.decrypt(user.firstName, FIELD.userFirstName));
     return { retryAfterSeconds: Math.ceil(AUTH.VERIFY_EMAIL_RESEND_COOLDOWN_MS / 1000) };
   }
 
   async login(rawEmail: string, password: string, remember: boolean, meta: RequestMeta): Promise<LoginResult> {
     const email = Email.of(rawEmail);
     await this.throttle.assertNotLocked(email);
-    const user = await this.db.identity.user.findUnique({ where: { primaryEmail: email.toString() } });
+    const user = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email.toString()) } });
     const valid = user?.passwordHash ? await this.hasher.verify(user.passwordHash, password) : await this.burn(password);
 
     if (!user || !valid || user.status === 'suspended' || user.status === 'deleted') {
@@ -168,11 +179,11 @@ export class AuthService {
   /** P-06 · respuesta idéntica exista o no la cuenta (RF-007). */
   async forgotPassword(rawEmail: string, meta: RequestMeta): Promise<void> {
     const email = Email.of(rawEmail);
-    const user = await this.db.identity.user.findUnique({ where: { primaryEmail: email.toString() } });
+    const user = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email.toString()) } });
     if (!user || user.status === 'suspended' || user.status === 'deleted') return;
     const link = await this.emailTokens.issue(user.id, 'reset_password');
     await this.mailer.send({
-      to: user.primaryEmail,
+      to: email.toString(),
       subject: 'Restablece tu contraseña de SecurTex',
       heading: 'Restablecer contraseña',
       paragraphs: ['Has pedido restablecer tu contraseña. El enlace es válido durante 30 minutos y solo funciona una vez.', 'Al guardar la nueva contraseña cerraremos tus demás sesiones.'],
@@ -187,14 +198,15 @@ export class AuthService {
     const userId = await this.emailTokens.consume(token, 'reset_password');
     if (!userId) throw new ValidationError({ token: 'El enlace no es válido o ha caducado.' }, 'El enlace no es válido o ha caducado. Pide uno nuevo.');
     const user = await this.db.identity.user.findUniqueOrThrow({ where: { id: userId } });
-    const passwordHash = await this.newPasswords.validateAndHash(password, Email.of(user.primaryEmail));
+    const userEmail = this.cipher.decrypt(user.primaryEmail, FIELD.userEmail);
+    const passwordHash = await this.newPasswords.validateAndHash(password, Email.of(userEmail));
     await this.db.identity.user.update({
       where: { id: userId },
       // Restablecer por correo también demuestra la propiedad del correo.
       data: { passwordHash, passwordUpdatedAt: new Date(), emailVerifiedAt: user.emailVerifiedAt ?? new Date(), status: user.status === 'pending' ? 'active' : user.status },
     });
     const closed = await this.sessions.revokeAllForUser(userId, 'password_change');
-    await this.notifyPasswordChanged(user.primaryEmail);
+    await this.notifyPasswordChanged(userEmail);
     await this.audit.record({ type: 'auth.password.reset', severity: 'notice', actorUserId: userId, outcome: 'success', metadata: { sessionsClosed: closed } }, meta);
   }
 
@@ -264,12 +276,12 @@ export class AuthService {
     return false;
   }
 
-  private async sendVerification(user: Pick<User, 'id' | 'primaryEmail' | 'firstName'>): Promise<void> {
-    const link = await this.emailTokens.issue(user.id, 'verify_email');
+  private async sendVerification(userId: string, to: string, firstName: string): Promise<void> {
+    const link = await this.emailTokens.issue(userId, 'verify_email');
     await this.mailer.send({
-      to: user.primaryEmail,
+      to,
       subject: 'Confirma tu correo en SecurTex',
-      heading: user.firstName ? `Hola, ${user.firstName}` : 'Confirma tu correo',
+      heading: firstName ? `Hola, ${firstName}` : 'Confirma tu correo',
       paragraphs: ['Confirma que este correo es tuyo para empezar a crear proyectos. El enlace caduca en 24 horas y solo funciona una vez.'],
       action: { label: 'Confirmar mi correo', url: link },
       footnote: 'Si no te has registrado en SecurTex, ignora este mensaje.',

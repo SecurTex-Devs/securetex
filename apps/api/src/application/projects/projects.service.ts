@@ -8,6 +8,7 @@ import { Email, ProjectName, SafeFilePath, asProjectId, asUserId, type Invitable
 import { EncryptedFileStore } from '../files/file-store';
 import { Databases, type AppTx } from '../../infrastructure/db/databases';
 import { Mailer } from '../../infrastructure/mail/mailer';
+import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 import { loadEnv } from '../../config/env';
 import { AuditLog } from '../audit/audit-log';
 import type { Actor, RequestMeta } from '../request-meta';
@@ -58,6 +59,7 @@ export class ProjectsService {
     private readonly audit: AuditLog,
     private readonly mailer: Mailer,
     private readonly store: EncryptedFileStore,
+    private readonly cipher: FieldCipher,
   ) {}
 
   async list(actor: Actor, query: ProjectQuery) {
@@ -66,11 +68,21 @@ export class ProjectsService {
       const rows = await tx.project.findMany({
         where: this.filterWhere(actor.userId, query),
         select: PROJECT_SELECT,
-        orderBy: query.sort.endsWith('name') ? { name: query.sort.startsWith('-') ? 'desc' : 'asc' } : { lastActivityAt: query.sort.startsWith('-') ? 'desc' : 'asc' },
-        take: 200,
+        orderBy: { lastActivityAt: query.sort === 'lastActivity' ? 'asc' : 'desc' },
+        take: 500,
       });
       const counts = await this.counts(tx, actor.userId);
-      return { items: rows.filter((r) => this.roleOf(r, actor.userId) !== null).map((r) => this.toDto(r, actor.userId)), counts };
+      // El nombre está cifrado en la base (C3c): la búsqueda y el orden por nombre se hacen ya descifrados.
+      const needle = query.q ? fold(query.q.slice(0, 80)) : null;
+      const items = rows
+        .filter((r) => this.roleOf(r, actor.userId) !== null)
+        .map((r) => this.decryptRow(r))
+        .filter((r) => needle === null || fold(r.name).includes(needle));
+      if (query.sort.endsWith('name')) {
+        const dir = query.sort.startsWith('-') ? -1 : 1;
+        items.sort((a, b) => dir * a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
+      }
+      return { items: items.slice(0, 200).map((r) => this.toDto(r, actor.userId)), counts };
     });
   }
 
@@ -88,15 +100,24 @@ export class ProjectsService {
     const name = ProjectName.of(rawName);
     const project = await this.db.asUser(asUserId(actor.userId), async (tx) => {
       const me = await tx.user.findUniqueOrThrow({ where: { id: actor.userId }, select: { firstName: true, lastName: true } });
-      const files = templateFiles(template, name.toString(), `${me.firstName} ${me.lastName}`.trim());
-      const created = await tx.project.create({ data: { ownerId: actor.userId, name: name.toString(), compiler: compiler ?? (template === 'presentacion' ? 'xelatex' : 'pdflatex') }, select: { id: true } });
+      const author = `${this.cipher.decrypt(me.firstName, FIELD.userFirstName)} ${this.cipher.decrypt(me.lastName, FIELD.userLastName)}`.trim();
+      const files = templateFiles(template, name.toString(), author);
+      const created = await tx.project.create({
+        data: {
+          ownerId: actor.userId,
+          name: this.cipher.encrypt(name.toString(), FIELD.projectName),
+          mainFile: this.cipher.encrypt('main.tex', FIELD.projectMainFile),
+          compiler: compiler ?? (template === 'presentacion' ? 'xelatex' : 'pdflatex'),
+        },
+        select: { id: true },
+      });
       await tx.projectMember.create({ data: { projectId: created.id, userId: actor.userId, role: 'owner' } });
       await this.store.createProjectKey(tx, created.id);
       for (const f of files) await this.store.insert(tx, created.id, actor.userId, SafeFilePath.of(f.path), f.content);
       return tx.project.findUniqueOrThrow({ where: { id: created.id }, select: PROJECT_SELECT });
     });
     await this.audit.record({ type: 'project.created', actorUserId: actor.userId, target: { type: 'project', id: project.id }, outcome: 'success', metadata: { template } }, meta);
-    return this.toDto(project, actor.userId);
+    return this.toDto(this.decryptRow(project), actor.userId);
   }
 
   async update(actor: Actor, rawId: string, patch: ProjectPatch, meta: RequestMeta) {
@@ -106,20 +127,20 @@ export class ProjectsService {
       await this.load(actor, rawId, 'change_settings', meta);
     }
     const data: Prisma.ProjectUpdateInput = {
-      ...(patch.name !== undefined ? { name: ProjectName.of(patch.name).toString() } : {}),
+      ...(patch.name !== undefined ? { name: this.cipher.encrypt(ProjectName.of(patch.name).toString(), FIELD.projectName) } : {}),
       ...(patch.compiler !== undefined ? { compiler: patch.compiler } : {}),
-      ...(patch.mainFile !== undefined ? { mainFile: this.safeMainFile(patch.mainFile) } : {}),
+      ...(patch.mainFile !== undefined ? { mainFile: this.cipher.encrypt(this.safeMainFile(patch.mainFile), FIELD.projectMainFile) } : {}),
       lastActivityAt: new Date(),
     };
     const row = await this.db.asUser(asUserId(actor.userId), async (tx) => {
       // El documento principal tiene que existir: si no, el compilador no sabría qué compilar.
-      if (patch.mainFile !== undefined && !(await tx.projectFile.findFirst({ where: { projectId: id, path: patch.mainFile }, select: { id: true } }))) {
+      if (patch.mainFile !== undefined && !(await tx.projectFile.findFirst({ where: { projectId: id, pathIndex: this.cipher.index(`path:${id}`, patch.mainFile.normalize('NFC').trim()) }, select: { id: true } }))) {
         throw new ValidationError({ mainFile: 'Ese archivo no existe en el proyecto.' });
       }
       return tx.project.update({ where: { id }, data, select: PROJECT_SELECT });
     });
     await this.audit.record({ type: 'project.updated', actorUserId: actor.userId, target: { type: 'project', id }, outcome: 'success', metadata: { fields: Object.keys(patch).join(',') } }, meta);
-    return this.toDto(row, actor.userId);
+    return this.toDto(this.decryptRow(row), actor.userId);
   }
 
   async setLifecycle(actor: Actor, rawId: string, change: 'archive' | 'unarchive' | 'trash' | 'restore', meta: RequestMeta) {
@@ -133,7 +154,7 @@ export class ProjectsService {
       change === 'trash' ? { trashedAt: now } : { trashedAt: null };
     const updated = await this.db.asUser(asUserId(actor.userId), (tx) => tx.project.update({ where: { id }, data, select: PROJECT_SELECT }));
     await this.audit.record({ type: `project.${change}`, actorUserId: actor.userId, target: { type: 'project', id }, outcome: 'success' }, meta);
-    return this.toDto(updated, actor.userId);
+    return this.toDto(this.decryptRow(updated), actor.userId);
   }
 
   /**
@@ -169,7 +190,10 @@ export class ProjectsService {
         where: { projectId: id, status: 'pending', expiresAt: { gt: new Date() } },
         select: { id: true, email: true, role: true, createdAt: true, expiresAt: true },
       });
-      return { members, invitations };
+      return {
+        members: members.map((m) => ({ ...m, user: this.decryptUser(m.user) })),
+        invitations: invitations.map((i) => ({ ...i, email: this.cipher.decrypt(i.email, FIELD.invitationEmail) })),
+      };
     });
   }
 
@@ -181,13 +205,15 @@ export class ProjectsService {
     if (row.members.some((m) => m.user.primaryEmail.toLowerCase() === email.toString())) {
       throw new ConflictError('already_member', 'Esa persona ya colabora en el proyecto.');
     }
-    const invitation = await this.db.asUser(asUserId(actor.userId), async (tx) => {
-      await tx.invitation.updateMany({ where: { projectId: id, email: email.toString(), status: 'pending' }, data: { status: 'revoked', respondedAt: new Date() } });
+    const emailIndex = this.cipher.emailIndex(email.toString());
+    const created = await this.db.asUser(asUserId(actor.userId), async (tx) => {
+      await tx.invitation.updateMany({ where: { projectId: id, emailIndex, status: 'pending' }, data: { status: 'revoked', respondedAt: new Date() } });
       return tx.invitation.create({
-        data: { projectId: id, email: email.toString(), role, invitedBy: actor.userId, expiresAt: new Date(Date.now() + PROJECTS.INVITATION_TTL_MS) },
-        select: { id: true, email: true, role: true, createdAt: true, expiresAt: true },
+        data: { projectId: id, email: this.cipher.encrypt(email.toString(), FIELD.invitationEmail), emailIndex, role, invitedBy: actor.userId, expiresAt: new Date(Date.now() + PROJECTS.INVITATION_TTL_MS) },
+        select: { id: true, role: true, createdAt: true, expiresAt: true },
       });
     });
+    const invitation = { ...created, email: email.toString() };
     await this.mailer.send({
       to: email.toString(),
       subject: `Te han invitado a «${row.name}» en SecurTex`,
@@ -238,18 +264,18 @@ export class ProjectsService {
     if (!actor.emailVerified) return [];
     return this.db.asUser(asUserId(actor.userId), (tx) =>
       tx.invitation.findMany({
-        where: { email: actor.email, status: 'pending', expiresAt: { gt: new Date() } },
+        where: { emailIndex: this.cipher.emailIndex(actor.email), status: 'pending', expiresAt: { gt: new Date() } },
         // Sin datos del propietario: quien aún no es miembro no puede leer su perfil (RLS de users).
         select: { id: true, role: true, createdAt: true, expiresAt: true, project: { select: { id: true, name: true } } },
         orderBy: { createdAt: 'desc' },
       }),
-    );
+    ).then((rows) => rows.map((r) => ({ ...r, project: { ...r.project, name: this.cipher.decrypt(r.project.name, FIELD.projectName) } })));
   }
 
   async respondInvitation(actor: Actor, invitationId: string, accept: boolean, meta: RequestMeta): Promise<void> {
     if (!actor.emailVerified) throw new ForbiddenError('email_not_verified', 'Verifica tu correo para aceptar invitaciones.');
     await this.db.asUser(asUserId(actor.userId), async (tx) => {
-      const invitation = await tx.invitation.findFirst({ where: { id: invitationId, email: actor.email, status: 'pending', expiresAt: { gt: new Date() } } });
+      const invitation = await tx.invitation.findFirst({ where: { id: invitationId, emailIndex: this.cipher.emailIndex(actor.email), status: 'pending', expiresAt: { gt: new Date() } } });
       if (!invitation) throw new NotFoundError();
       if (accept) {
         // RLS solo admite esta fila si existe la invitación pendiente para ese rol exacto.
@@ -267,16 +293,23 @@ export class ProjectsService {
   // ─────────────────────────── Etiquetas (privadas) ───────────────────────────
 
   async tags(actor: Actor) {
-    return this.db.asUser(asUserId(actor.userId), (tx) =>
-      tx.tag.findMany({ select: { id: true, name: true, color: true, _count: { select: { projects: true } } }, orderBy: { name: 'asc' } }),
+    const rows = await this.db.asUser(asUserId(actor.userId), (tx) =>
+      tx.tag.findMany({ select: { id: true, name: true, color: true, _count: { select: { projects: true } } } }),
     );
+    return rows
+      .map((t) => ({ ...t, name: this.cipher.decrypt(t.name, FIELD.tagName) }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
   }
 
   async createTag(actor: Actor, rawName: string, color: string) {
     const name = rawName.normalize('NFC').trim();
     if (!name || name.length > PROJECTS.TAG_NAME_MAX_LENGTH) throw new ValidationError({ name: 'Usa entre 1 y 40 caracteres.' });
     try {
-      return await this.db.asUser(asUserId(actor.userId), (tx) => tx.tag.create({ data: { userId: actor.userId, name, color }, select: { id: true, name: true, color: true } }));
+      const tag = await this.db.asUser(asUserId(actor.userId), (tx) => tx.tag.create({
+        data: { userId: actor.userId, name: this.cipher.encrypt(name, FIELD.tagName), nameIndex: this.cipher.tagIndex(name), color },
+        select: { id: true, color: true },
+      }));
+      return { ...tag, name };
     } catch {
       throw new ConflictError('tag_exists', 'Ya tienes una etiqueta con ese nombre.');
     }
@@ -312,9 +345,10 @@ export class ProjectsService {
     } catch {
       throw new NotFoundError();
     }
-    const row = await this.db.asUser(asUserId(actor.userId), (tx) => tx.project.findUnique({ where: { id }, select: PROJECT_SELECT }));
-    const role = row ? this.roleOf(row, actor.userId) : null;
-    if (!row || role === null) throw new NotFoundError();
+    const found = await this.db.asUser(asUserId(actor.userId), (tx) => tx.project.findUnique({ where: { id }, select: PROJECT_SELECT }));
+    const role = found ? this.roleOf(found, actor.userId) : null;
+    if (!found || role === null) throw new NotFoundError();
+    const row = this.decryptRow(found);
     const decision = decide(role, action);
     if (!decision.allowed) {
       if (meta) {
@@ -327,6 +361,26 @@ export class ProjectsService {
 
   private roleOf(row: ProjectRow, userId: string): ProjectRole | null {
     return (row.members.find((m) => m.userId === userId)?.role as DbRole | undefined) ?? null;
+  }
+
+  /** Columnas C3c → texto. Se descifra después de autorizar: nunca para quien no es miembro. */
+  private decryptRow(row: ProjectRow): ProjectRow {
+    return {
+      ...row,
+      name: this.cipher.decrypt(row.name, FIELD.projectName),
+      mainFile: this.cipher.decrypt(row.mainFile, FIELD.projectMainFile),
+      owner: { ...row.owner, ...this.decryptUser(row.owner) },
+      members: row.members.map((m) => ({ ...m, user: this.decryptUser(m.user) })),
+    };
+  }
+
+  private decryptUser<T extends { firstName: string; lastName: string; primaryEmail?: string }>(u: T): T {
+    return {
+      ...u,
+      firstName: this.cipher.decrypt(u.firstName, FIELD.userFirstName),
+      lastName: this.cipher.decrypt(u.lastName, FIELD.userLastName),
+      ...(u.primaryEmail !== undefined ? { primaryEmail: this.cipher.decrypt(u.primaryEmail, FIELD.userEmail) } : {}),
+    };
   }
 
   private toDto(row: ProjectRow, userId: string) {
@@ -353,7 +407,6 @@ export class ProjectsService {
   private filterWhere(userId: string, query: ProjectQuery): Prisma.ProjectWhereInput {
     const base: Prisma.ProjectWhereInput = {
       members: { some: { userId, revokedAt: null } },
-      ...(query.q ? { name: { contains: query.q.slice(0, 80), mode: 'insensitive' } } : {}),
       ...(query.tagId ? { tags: { some: { tagId: query.tagId } } } : {}),
     };
     switch (query.filter) {
@@ -387,3 +440,8 @@ export class ProjectsService {
 }
 
 const ROLE_LABEL: Readonly<Record<InvitableRole, string>> = { editor: 'Editor', reviewer: 'Revisor', viewer: 'Lector' };
+
+/** Comparación sin mayúsculas ni tildes para buscar en nombres ya descifrados. */
+function fold(value: string): string {
+  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+}

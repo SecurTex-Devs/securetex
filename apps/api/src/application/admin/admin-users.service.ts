@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConflictError, NotFoundError } from '../../domain/errors';
 import { isUuid } from '../../domain/values';
 import { Databases } from '../../infrastructure/db/databases';
+import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 import { AuditLog } from '../audit/audit-log';
 import { SessionService } from '../auth/sessions';
 import type { Actor, RequestMeta } from '../request-meta';
@@ -18,12 +19,12 @@ export class AdminUsersService {
     private readonly db: Databases,
     private readonly sessions: SessionService,
     private readonly audit: AuditLog,
+    private readonly cipher: FieldCipher,
   ) {}
 
   async list(query: string | undefined) {
-    const q = query?.trim().slice(0, 80);
+    const q = query?.trim().slice(0, 80).toLowerCase();
     const users = await this.db.identity.user.findMany({
-      where: q ? { OR: [{ primaryEmail: { contains: q, mode: 'insensitive' } }, { firstName: { contains: q, mode: 'insensitive' } }, { lastName: { contains: q, mode: 'insensitive' } }] } : {},
       select: {
         id: true, primaryEmail: true, firstName: true, lastName: true, status: true, isSystemAdmin: true,
         emailVerifiedAt: true, lastLoginAt: true, createdAt: true,
@@ -31,9 +32,20 @@ export class AdminUsersService {
         sessions: { where: { revokedAt: null, expiresAt: { gt: new Date() } }, select: { id: true } },
       },
       orderBy: { createdAt: 'asc' },
-      take: 200,
+      take: 1000,
     });
-    return users.map(({ mfaMethods, sessions, ...u }) => ({ ...u, mfaEnabled: mfaMethods.length > 0, activeSessions: sessions.length }));
+    // Nombres y correos están cifrados (C3c): la búsqueda se hace ya descifrados, en memoria.
+    return users
+      .map(({ mfaMethods, sessions, ...u }) => ({
+        ...u,
+        primaryEmail: this.cipher.decrypt(u.primaryEmail, FIELD.userEmail),
+        firstName: this.cipher.decrypt(u.firstName, FIELD.userFirstName),
+        lastName: this.cipher.decrypt(u.lastName, FIELD.userLastName),
+        mfaEnabled: mfaMethods.length > 0,
+        activeSessions: sessions.length,
+      }))
+      .filter((u) => !q || `${u.firstName} ${u.lastName} ${u.primaryEmail}`.toLowerCase().includes(q))
+      .slice(0, 200);
   }
 
   async setSuspended(actor: Actor, userId: string, suspended: boolean, meta: RequestMeta): Promise<void> {

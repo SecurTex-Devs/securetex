@@ -90,8 +90,10 @@ enum CompilerEngine {
 
 model User {
   id                String     @id @default(dbgenerated("uuidv7()")) @db.Uuid
-  /// PII · insensible a mayúsculas
-  primaryEmail      String     @unique @map("primary_email") @db.Citext
+  /// ENCRYPTED (C3c) · correo cifrado; la búsqueda usa emailIndex
+  primaryEmail      String     @map("primary_email")
+  /// INTERNAL · índice ciego HMAC-SHA-256 del correo normalizado
+  emailIndex        String     @unique @map("email_index")
   emailVerifiedAt   DateTime?  @map("email_verified_at") @db.Timestamptz(3)
   /// SECRET · Argon2id; NULL si solo entra con un proveedor externo
   passwordHash      String?    @map("password_hash")
@@ -132,16 +134,18 @@ model UserIdentity {
   id              String      @id @default(dbgenerated("uuidv7()")) @db.Uuid
   userId          String      @map("user_id") @db.Uuid
   provider        IdpProvider
-  /// INTERNAL · el `sub` del proveedor
+  /// ENCRYPTED (C3c) · el `sub` del proveedor
   providerSubject String      @map("provider_subject")
-  /// PII
-  providerEmail   String?     @map("provider_email") @db.Citext
+  /// INTERNAL · índice ciego del `sub`
+  subjectIndex    String      @map("subject_index")
+  /// ENCRYPTED (C3c)
+  providerEmail   String?     @map("provider_email")
   linkedAt        DateTime    @default(now()) @map("linked_at") @db.Timestamptz(3)
   lastUsedAt      DateTime?   @map("last_used_at") @db.Timestamptz(3)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerSubject])
+  @@unique([provider, subjectIndex])
   @@index([userId])
   @@map("user_identities")
 }
@@ -309,7 +313,8 @@ model Project {
   /// INTERNAL · contenido controlado por el usuario: se escapa siempre al renderizar
   name           String
   compiler       CompilerEngine @default(pdflatex)
-  mainFile       String         @default("main.tex") @map("main_file")
+  /// ENCRYPTED (C3c)
+  mainFile       String         @map("main_file")
   confidential   Boolean        @default(false)
   archivedAt     DateTime?      @map("archived_at") @db.Timestamptz(3)
   trashedAt      DateTime?      @map("trashed_at") @db.Timestamptz(3)
@@ -348,8 +353,10 @@ model ProjectMember {
 model Invitation {
   id          String           @id @default(dbgenerated("uuidv7()")) @db.Uuid
   projectId   String           @map("project_id") @db.Uuid
-  /// PII
-  email       String           @db.Citext
+  /// ENCRYPTED (C3c)
+  email       String
+  /// INTERNAL · índice ciego del correo invitado; RLS lo compara con el del usuario
+  emailIndex  String           @map("email_index")
   role        ProjectRole
   invitedBy   String           @map("invited_by") @db.Uuid
   status      InvitationStatus @default(pending)
@@ -359,7 +366,7 @@ model Invitation {
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@index([email, status])
+  @@index([emailIndex, status])
   @@index([projectId])
   @@map("invitations")
 }
@@ -368,14 +375,17 @@ model Invitation {
 model Tag {
   id        String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
   userId    String   @map("user_id") @db.Uuid
+  /// ENCRYPTED (C3c)
   name      String
+  /// INTERNAL · índice ciego del nombre normalizado (unicidad por usuario)
+  nameIndex String   @map("name_index")
   color     String   @default("blue")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
 
   user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   projects ProjectTag[]
 
-  @@unique([userId, name])
+  @@unique([userId, nameIndex])
   @@map("tags")
 }
 
@@ -411,8 +421,10 @@ model ProjectKey {
 model ProjectFile {
   id         String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
   projectId  String   @map("project_id") @db.Uuid
-  /// INTERNAL · ruta relativa validada por SafeFilePath
+  /// ENCRYPTED (C3c) · ruta relativa validada por SafeFilePath
   path       String
+  /// INTERNAL · índice ciego de la ruta (unicidad dentro del proyecto)
+  pathIndex  String   @map("path_index")
   /// INTERNAL · tex, bib, cls, sty, txt
   kind       String
   /// INTERNAL · tamaño del texto plano en bytes
@@ -434,6 +446,6 @@ model ProjectFile {
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, path])
+  @@unique([projectId, pathIndex])
   @@map("project_files")
 }
