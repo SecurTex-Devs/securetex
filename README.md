@@ -22,36 +22,72 @@ docker compose -f infra/docker-compose.yml up --build -d
 | API + documentación | http://localhost:4000/api/docs | OpenAPI generado desde el código |
 | Correo de pruebas (Mailpit) | http://localhost:8025 | Enlaces de verificación y recuperación |
 
+Si ya tenías un `infra/.env` de una versión anterior: `node infra/generate-env.mjs --add-missing` añade solo las claves nuevas. La migración S3 cifra columnas que antes estaban en claro y necesita una base vacía: `docker compose -f infra/docker-compose.yml down -v` antes de volver a levantar.
+
 El servicio `migrate` aplica las migraciones y siembra el escenario sintético: 4 usuarios `*@securtex.test` (Ana Torres es administradora) y 6 proyectos con sus archivos ya cifrados. La contraseña de esas cuentas es `SEED_DEMO_PASSWORD` de `infra/.env`. Es el único servicio con las credenciales del propietario de la base de datos; la API se conecta con tres roles de mínimo privilegio. Para empezar de cero: `docker compose -f infra/docker-compose.yml down -v`.
 
 ### Implementado
 
 | Área | Qué hay |
 |---|---|
-| Identidad | Registro con verificación por correo, Argon2id + comprobación HIBP (k-anonimato), bloqueo por cuenta, recuperación de contraseña, OIDC (Google/Microsoft con PKCE, sin vincular por correo), TOTP con códigos de recuperación y antirreplay, reautenticación para acciones sensibles |
+| Identidad | Registro con verificación por correo, Argon2id + comprobación HIBP (k-anonimato), bloqueo por cuenta con clave HMAC, recuperación de contraseña, OIDC (Google/Microsoft con PKCE), vincular y desvincular proveedores desde Ajustes con reautenticación, TOTP con códigos de recuperación y antirreplay, aviso por correo de inicio de sesión desde un dispositivo nuevo |
 | Sesiones | JWT Ed25519 de 10 min en cookie, refresh opaco rotatorio con detección de reutilización (revoca la familia), CSRF por Origin + token sincronizado, sesiones visibles y revocables |
 | Autorización | Guard global que deniega por defecto (`@Policy`), matriz de roles owner/editor/reviewer/viewer, 404 uniforme para no miembros y **Row Level Security forzada** en PostgreSQL |
 | Proyectos | Crear (en blanco o desde plantilla), renombrar, archivar, papelera, borrado definitivo, invitaciones por correo, cambio de rol, revocación, etiquetas privadas |
-| **Archivos cifrados (C3 + C4)** | Cada guardado se cifra con AES-256-GCM y una DEK nueva envuelta con la KEK del proyecto (AES-256-KW), AAD = `proyecto ‖ archivo ‖ versión`. El HMAC-SHA-256 se verifica en tiempo constante **antes** de descifrar; un fallo responde 409 `integrity_violation` y se audita como crítico. Borrar el proyecto destruye su clave |
-| Edición | Árbol de archivos (crear, renombrar/mover, eliminar, documento principal) con rutas validadas (`SafeFilePath`: sin `..`, absolutas, ocultas ni extensiones fuera de lista), cuotas (1 MB por archivo, 20 MB y 200 archivos por proyecto) y autoguardado con concurrencia optimista (409 `version_conflict`) |
-| Compilación segura | `POST /projects/:id/compile/analyze`: el servidor decide antes de compilar. Bloquea `\write18`, `\input{|…}`, lecturas fuera del proyecto, Lua y E/S directa; avisa de paquetes con shell-escape y `\catcode`. Los bloqueos se auditan |
-| Plantillas | 5 plantillas del equipo (`blank`, `tesis-uta`, `articulo`, `informe-lab`, `presentacion`) generadas en el servidor y cifradas desde el primer byte |
+| **Colaboración en tiempo real** | Yjs (CRDT) por proyecto sobre WebSocket en `/api/v1/collab/:projectId`: varias personas escriben a la vez, con cursores y presencia. Origin exacto (anti CSWSH), sesión por cookie, rol revalidado cada 10 s y al instante al revocar (cierre 4403). Lectores y revisores ven en vivo, pero el servidor descarta sus cambios. El nombre y el color del cursor los pone el servidor (no se pueden suplantar). Se persiste cifrado cada 1,5 s (máximo 8 s) |
+| **Cifrado multicapa C1–C5** | **C1** AES-256-GCM en el navegador · **C2** sobre X25519 + HKDF-SHA-256 + ChaCha20-Poly1305 (por mensaje en REST; por conexión, estilo Noise NK, en el WebSocket, con contadores antirrepetición) · **C3** AES-256-KW + AES-256-GCM en reposo, AAD `proyecto ‖ archivo ‖ versión` · **C4** HMAC-SHA-256 verificado antes de descifrar · **C5** el navegador comprueba Poly1305 y la etiqueta GCM antes de mostrar nada |
+| **Datos personales cifrados (C3c)** | Correos, nombres, institución, cargo, sujetos y correos OIDC, IP y dispositivo de las sesiones, etiquetas, nombres de proyecto, documento principal, rutas de archivo, invitaciones y preferencias: AES-256-CBC + HMAC-SHA-256 (encrypt-then-MAC), contexto `tabla.columna`. Búsquedas y unicidad con índices ciegos HMAC; RLS casa invitaciones por índice ciego |
+| Edición | Árbol de archivos (crear, renombrar/mover, eliminar, documento principal) con rutas validadas (`SafeFilePath`), cuotas (1 MB por archivo, 20 MB y 200 archivos por proyecto) |
+| Compilación segura | `POST /projects/:id/compile/analyze`: guarda lo de la sala y decide antes de compilar. Bloquea `\write18`, `\input{|…}`, lecturas fuera del proyecto, Lua y E/S directa; avisa de paquetes con shell-escape y `\catcode`. Los bloqueos se auditan |
+| Plantillas | 5 plantillas del equipo generadas en el servidor y cifradas desde el primer byte |
 | Administración | Listado de cuentas, suspender (cierra sus sesiones al instante) y reactivar; auditoría global con verificación de la cadena de hashes |
-| Auditoría | Registro append-only encadenado por hash, escrito por un rol de base de datos que solo puede insertar |
+| Auditoría | Registro append-only encadenado por hash, escrito por un rol de base de datos que solo puede insertar. Es la única tabla con metadatos en claro (tipo de evento, prefijo de IP anonimizado): cifrarla rompería la verificación de la cadena |
+
+### Usar SecurTex en la red local (varias personas, mismo wifi)
+
+1. Averigua la IP del equipo que hará de servidor (en Windows, `ipconfig` → «Dirección IPv4», p. ej. `192.168.1.50`).
+2. Añade a `infra/.env`:
+   ```
+   PUBLISH_HOST=0.0.0.0
+   APP_ORIGIN=http://192.168.1.50:3000,http://localhost:3000
+   ```
+   El primer origen es el de los enlaces de los correos; ponlo con la IP para que funcionen desde otros equipos.
+3. `docker compose -f infra/docker-compose.yml up -d` y permite en el cortafuegos de Windows los puertos **3000** (web) y **4000** (API y WebSocket de colaboración) para redes privadas.
+4. Desde otro equipo de la red: `http://192.168.1.50:3000`. El cifrado C1/C2/C5 del navegador usa `@noble` y funciona también en `http://IP` (WebCrypto no estaría disponible ahí).
+
+Sin HTTPS en la LAN, las cookies viajan sin `Secure`: aceptable en una red de confianza para clase; en un despliegue real va detrás de TLS.
+
+### Iniciar sesión con Google y Microsoft (gratis)
+
+El código está hecho; solo hacen falta credenciales tuyas. Ambos registros son gratuitos.
+
+**Google** (consola de Google Cloud):
+1. Crea un proyecto → «APIs y servicios» → «Pantalla de consentimiento de OAuth» → tipo *Externo*, en modo *Prueba*, y añade como «usuarios de prueba» los correos que vayan a entrar.
+2. «Credenciales» → «Crear credenciales» → «ID de cliente de OAuth» → *Aplicación web*.
+3. URI de redirección autorizado: `http://localhost:3000/api/v1/auth/oidc/google/callback`.
+4. Copia el ID y el secreto a `infra/.env` como `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
+
+**Microsoft** (portal de Azure → Microsoft Entra ID → «Registros de aplicaciones»):
+1. «Nuevo registro» → cuentas admitidas: *Cuentas personales de Microsoft* (o *cualquier directorio y cuentas personales*).
+2. URI de redirección, plataforma *Web*: `http://localhost:3000/api/v1/auth/oidc/microsoft/callback`.
+3. «Certificados y secretos» → nuevo secreto de cliente; copia su **valor**.
+4. En `infra/.env`: `MICROSOFT_CLIENT_ID` (Id. de aplicación), `MICROSOFT_CLIENT_SECRET` y `MICROSOFT_TENANT=consumers` (solo personales) o `common`.
+
+Después: `docker compose -f infra/docker-compose.yml up -d --force-recreate api`. Los botones aparecen solos en el acceso y en Ajustes → Cuentas vinculadas. Limitación: Google y Microsoft solo admiten `http://` con `localhost` como redirección, así que en la red local el acceso con proveedor funciona desde el equipo servidor; los demás usan correo y contraseña (o hace falta un dominio con HTTPS).
 
 ### Fuera del alcance de esta entrega
 
-Se retiraron de la interfaz y del backend porque su complejidad no cabe en esta fase: chat del proyecto, comentarios y control de cambios, historial de versiones, presencia y colaboración en tiempo real (Yjs), modo confidencial / cifrado en el navegador (C1, C2, C5), importación desde .zip o GitHub, subida de binarios (imágenes, PDF), tokens de aplicación, passkeys, SAML, métricas de servicio y moderación de plantillas. **La compilación real con TeX Live en un sandbox gVisor tampoco está**: la vista previa tipográfica se compone en el navegador, pero solo después de que el análisis del servidor no encuentre nada bloqueante.
+Chat del proyecto, comentarios y control de cambios, historial de versiones, modo confidencial (DEK que el servidor nunca recibe y compilación en el navegador), importación desde .zip o GitHub, subida de binarios (imágenes, PDF), tokens de aplicación, passkeys, SAML, métricas de servicio y moderación de plantillas. **La compilación real con TeX Live en un sandbox gVisor tampoco está**: la vista previa tipográfica se compone en el navegador, pero solo después de que el análisis del servidor no encuentre nada bloqueante; por eso tampoco hay firma Ed25519 de PDF (C4b).
 
 ### Pruebas
 
 ```bash
 cd apps/api
 npx vitest run                              # 73 unitarias: dominio, primitivas, cifrado (bit-flip, AAD, KEK ajena), rutas, analizador
-node --test "test/security/*.test.mjs"     # 39 casos de abuso contra la pila en marcha (Docker arriba)
+node --test "test/security/*.test.mjs"     # 47 casos de abuso contra la pila en marcha (Docker arriba)
 ```
 
-Los casos de abuso cubren acceso cruzado e IDOR, rol insuficiente, recorrido de rutas, conflictos de versión, cuotas, el bloqueo de `\write18`, reutilización de refresh tokens, CSRF, fuerza bruta y MFA.
+Los casos de abuso cubren acceso cruzado e IDOR, rol insuficiente, recorrido de rutas, conflictos de versión, cuotas, el bloqueo de `\write18`, reutilización de refresh tokens, CSRF, fuerza bruta, MFA, sobres C2 manipulados o reubicados, y en la colaboración: CSWSH, sesión ausente, lector que intenta escribir, trama manipulada y revocación en caliente. `test/security/demo-maria.mjs` simula a una segunda persona escribiendo para verlo en el navegador.
 
 ---
 
