@@ -1,0 +1,4088 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/api/v1/auth/register": {
+      "post": {
+        "description": "Respuesta idéntica exista o no el correo (T-A09). Envía el enlace de verificación.",
+        "operationId": "Auth_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Registro con correo y contraseña",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "operationId": "Auth_verifyEmail",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verificar el correo con el token de un solo uso",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/verify-email/resend": {
+      "post": {
+        "description": "Una vez cada 5 minutos.",
+        "operationId": "Auth_resendVerification",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetryAfterDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reenviar el correo de verificación",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "description": "Bloqueo por cuenta tras 10 fallos (15 min) y límite por IP. Si hay MFA, responde `mfa_required`.",
+        "operationId": "Auth_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Inicio de sesión local",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/verify": {
+      "post": {
+        "description": "Requiere la cookie del reto. Máximo 5 intentos por reto.",
+        "operationId": "Auth_verifyMfa",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfaVerifyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Completar el segundo factor",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "description": "La reutilización de un token ya rotado revoca la sesión entera (RS-003).",
+        "operationId": "Auth_refresh",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Rotar el refresh token",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "Auth_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cerrar la sesión actual",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/logout-others": {
+      "post": {
+        "description": "Requiere reautenticación reciente.",
+        "operationId": "Auth_logoutOthers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClosedSessionsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cerrar todas las demás sesiones",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/password/forgot": {
+      "post": {
+        "description": "Respuesta idéntica exista o no la cuenta (RF-007).",
+        "operationId": "Auth_forgot",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Solicitar el enlace de recuperación",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/password/reset": {
+      "post": {
+        "description": "Cierra todas las sesiones de la cuenta.",
+        "operationId": "Auth_reset",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Establecer una contraseña nueva con el token",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/password/change": {
+      "post": {
+        "description": "Requiere reautenticación reciente. Cierra las demás sesiones.",
+        "operationId": "Auth_changePassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClosedSessionsDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cambiar la contraseña",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/reauth": {
+      "post": {
+        "description": "Eleva la sesión 5 minutos para operaciones sensibles (RS-006).",
+        "operationId": "Auth_reauth",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReauthDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ElevationDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reautenticarse",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/mfa": {
+      "get": {
+        "operationId": "Auth_mfaStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Estado del segundo factor",
+        "tags": [
+          "Autenticación"
+        ]
+      },
+      "delete": {
+        "operationId": "Auth_disableMfa",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Desactivar el segundo factor",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/totp/setup": {
+      "post": {
+        "description": "Devuelve el secreto una sola vez.",
+        "operationId": "Auth_totpSetup",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotpSetupDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Iniciar el alta de TOTP",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/totp/confirm": {
+      "post": {
+        "description": "Devuelve los 10 códigos de respaldo una sola vez.",
+        "operationId": "Auth_totpConfirm",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TotpCodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodesDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Confirmar TOTP",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/mfa/recovery-codes": {
+      "post": {
+        "description": "Invalida los anteriores.",
+        "operationId": "Auth_regenerateCodes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodesDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Generar códigos de respaldo nuevos",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/providers": {
+      "get": {
+        "operationId": "Auth_providers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProvidersDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Proveedores de identidad configurados",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/oidc/{provider}": {
+      "get": {
+        "description": "Authorization Code + PKCE S256, state y nonce de un solo uso.",
+        "operationId": "Auth_oidcStart",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Iniciar el flujo OIDC (Google o Microsoft)",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/oidc/{provider}/link": {
+      "post": {
+        "operationId": "Auth_oidcLink",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedirectUrlDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Iniciar la vinculación de un proveedor externo",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/auth/oidc/{provider}/callback": {
+      "get": {
+        "operationId": "Auth_oidcCallback",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Retorno del proveedor OIDC",
+        "tags": [
+          "Autenticación"
+        ]
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "operationId": "Me_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Perfil del usuario actual",
+        "tags": [
+          "Cuenta"
+        ]
+      },
+      "patch": {
+        "operationId": "Me_update",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Actualizar el perfil",
+        "tags": [
+          "Cuenta"
+        ]
+      },
+      "delete": {
+        "description": "Requiere reautenticación reciente y la frase de confirmación.",
+        "operationId": "Me_deleteAccount",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Eliminar la cuenta",
+        "tags": [
+          "Cuenta"
+        ]
+      }
+    },
+    "/api/v1/me/sessions": {
+      "get": {
+        "description": "Dispositivo, IP anonimizada y última actividad (RF-008).",
+        "operationId": "Me_sessions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sesiones activas",
+        "tags": [
+          "Cuenta"
+        ]
+      }
+    },
+    "/api/v1/me/sessions/{sessionId}": {
+      "delete": {
+        "operationId": "Me_revokeSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revocar una sesión propia",
+        "tags": [
+          "Cuenta"
+        ]
+      }
+    },
+    "/api/v1/me/identities": {
+      "get": {
+        "operationId": "Me_identities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IdentityDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Proveedores de identidad vinculados",
+        "tags": [
+          "Cuenta"
+        ]
+      }
+    },
+    "/api/v1/me/identities/{identityId}": {
+      "delete": {
+        "description": "Exige reautenticación y que quede otra forma de entrar.",
+        "operationId": "Me_unlinkIdentity",
+        "parameters": [
+          {
+            "name": "identityId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Desvincular un proveedor externo",
+        "tags": [
+          "Cuenta"
+        ]
+      }
+    },
+    "/api/v1/me/activity": {
+      "get": {
+        "description": "Vista de solo lectura sobre la auditoría propia (F-024).",
+        "operationId": "Me_activity",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Actividad reciente de la cuenta",
+        "tags": [
+          "Cuenta"
+        ]
+      }
+    },
+    "/api/v1/me/preferences": {
+      "get": {
+        "operationId": "Me_preferences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Preferencias del editor",
+        "tags": [
+          "Cuenta"
+        ]
+      },
+      "put": {
+        "operationId": "Me_savePreferences",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavePreferencesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreferencesDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Guardar las preferencias del editor",
+        "tags": [
+          "Cuenta"
+        ]
+      }
+    },
+    "/api/v1/me/deletion-impact": {
+      "get": {
+        "operationId": "Me_deletionImpact",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletionImpactDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Qué se perdería al eliminar la cuenta",
+        "tags": [
+          "Cuenta"
+        ]
+      }
+    },
+    "/api/v1/projects": {
+      "get": {
+        "operationId": "Projects_list",
+        "parameters": [
+          {
+            "name": "filter",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "owned",
+                "shared",
+                "archived",
+                "trash"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 80,
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "-name",
+                "lastActivity",
+                "-lastActivity"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectListDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Listar proyectos con filtros, búsqueda y etiquetas",
+        "tags": [
+          "Proyectos"
+        ]
+      },
+      "post": {
+        "description": "Requiere el correo verificado (RF-001).",
+        "operationId": "Projects_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Crear un proyecto en blanco",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}": {
+      "get": {
+        "description": "404 uniforme si no existe o no eres miembro (T-P07).",
+        "operationId": "Projects_get",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Detalle del proyecto",
+        "tags": [
+          "Proyectos"
+        ]
+      },
+      "patch": {
+        "operationId": "Projects_update",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Renombrar (propietario) o cambiar compilador y documento principal (editor)",
+        "tags": [
+          "Proyectos"
+        ]
+      },
+      "delete": {
+        "description": "Solo desde la papelera y por el propietario.",
+        "operationId": "Projects_remove",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Eliminar definitivamente",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/archive": {
+      "post": {
+        "operationId": "Projects_archive",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Archivar",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/unarchive": {
+      "post": {
+        "operationId": "Projects_unarchive",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Desarchivar",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/trash": {
+      "post": {
+        "description": "Se purga a los 30 días.",
+        "operationId": "Projects_trash",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Mover a la papelera",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/restore": {
+      "post": {
+        "operationId": "Projects_restore",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Restaurar desde la papelera",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/leave": {
+      "post": {
+        "operationId": "Projects_leave",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Abandonar un proyecto compartido",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/members": {
+      "get": {
+        "operationId": "Projects_members",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MembersDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Colaboradores e invitaciones pendientes",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/invitations": {
+      "post": {
+        "description": "Solo el propietario. El rol owner no es invitable.",
+        "operationId": "Projects_invite",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Invitar por correo",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/invitations/{invitationId}": {
+      "delete": {
+        "operationId": "Projects_revokeInvitation",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revocar una invitación pendiente",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/members/{userId}": {
+      "patch": {
+        "operationId": "Projects_changeRole",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeRoleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Cambiar el rol de un colaborador",
+        "tags": [
+          "Proyectos"
+        ]
+      },
+      "delete": {
+        "operationId": "Projects_revokeMember",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revocar el acceso de un colaborador",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/tags": {
+      "put": {
+        "operationId": "Projects_setTags",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetTagsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Asignar tus etiquetas privadas al proyecto",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/invitations": {
+      "get": {
+        "operationId": "Invitations_mine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReceivedInvitationDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Invitaciones recibidas pendientes",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/invitations/{invitationId}/accept": {
+      "post": {
+        "operationId": "Invitations_accept",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Aceptar una invitación",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/invitations/{invitationId}/decline": {
+      "post": {
+        "operationId": "Invitations_decline",
+        "parameters": [
+          {
+            "name": "invitationId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Rechazar una invitación",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/tags": {
+      "get": {
+        "operationId": "Tags_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Tus etiquetas privadas",
+        "tags": [
+          "Etiquetas"
+        ]
+      },
+      "post": {
+        "operationId": "Tags_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTagDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Crear una etiqueta",
+        "tags": [
+          "Etiquetas"
+        ]
+      }
+    },
+    "/api/v1/tags/{tagId}": {
+      "delete": {
+        "description": "No elimina los proyectos.",
+        "operationId": "Tags_remove",
+        "parameters": [
+          {
+            "name": "tagId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Eliminar una etiqueta",
+        "tags": [
+          "Etiquetas"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files": {
+      "get": {
+        "operationId": "Files_list",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FileMetaDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Árbol de archivos (solo metadatos)",
+        "tags": [
+          "Archivos"
+        ]
+      },
+      "post": {
+        "description": "Contenido en un sobre C1 + C2. Ruta validada por SafeFilePath; cuota de 1 MB por archivo y 20 MB por proyecto.",
+        "operationId": "Files_create",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMetaDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Crear un archivo de texto",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/contents": {
+      "get": {
+        "description": "C4 (HMAC) → C3 (descifrado) en el servidor; después C1 + C2 hacia el cliente.",
+        "operationId": "Files_contents",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-SecurTex-Reply-Key",
+            "in": "header",
+            "description": "Clave pública X25519 efímera del cliente (base64url): la respuesta se sella para ella (C2).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SealedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Todos los archivos, sellados para el cliente",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/{fileId}": {
+      "get": {
+        "operationId": "Files_read",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-SecurTex-Reply-Key",
+            "in": "header",
+            "description": "Clave pública X25519 efímera del cliente (base64url): la respuesta se sella para ella (C2).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SealedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Un archivo, sellado para el cliente",
+        "tags": [
+          "Archivos"
+        ]
+      },
+      "patch": {
+        "operationId": "Files_rename",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameFileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMetaDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Renombrar o mover un archivo",
+        "tags": [
+          "Archivos"
+        ]
+      },
+      "delete": {
+        "description": "El documento principal no se puede eliminar.",
+        "operationId": "Files_remove",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Eliminar un archivo",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/upload": {
+      "post": {
+        "description": "Bytes en un sobre C1 + C2. Tipo real comprobado por magic bytes; máximo 5 MB; cifrado en reposo.",
+        "operationId": "Files_upload",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadFileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMetaDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Subir una imagen (PNG, JPG) o un PDF",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/{fileId}/content": {
+      "put": {
+        "description": "Sobre C1 + C2. Concurrencia optimista: 409 si `baseVersion` no es la actual. El editor usa la colaboración en tiempo real; esta ruta es para clientes de la API.",
+        "operationId": "Files_write",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WriteFileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileMetaDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Guardar el contenido",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/{fileId}/versions": {
+      "get": {
+        "description": "Instantáneas cifradas con autor y fecha (F-150).",
+        "operationId": "Files_versions",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FileVersionDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Historial de versiones de un archivo",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/{fileId}/versions/{versionId}": {
+      "get": {
+        "operationId": "Files_version",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-SecurTex-Reply-Key",
+            "in": "header",
+            "description": "Clave pública X25519 efímera del cliente (base64url): la respuesta se sella para ella (C2).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SealedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Contenido de una versión, sellado para el cliente",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/files/{fileId}/versions/{versionId}/restore": {
+      "post": {
+        "description": "Crea un cambio nuevo con el contenido antiguo; no borra el historial intermedio. Lo ven al instante quienes estén editando.",
+        "operationId": "Files_restore",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fileId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "versionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Restaurar una versión",
+        "tags": [
+          "Archivos"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/compile": {
+      "post": {
+        "description": "Autoriza `compile`, repite el análisis de seguridad (422 `compile_blocked` si hay algo bloqueante) y compila en un contenedor sin red, de solo lectura, sin capacidades y con -no-shell-escape, openin_any=p, openout_any=p y un plazo de 30 s. El PDF se valida (firma %PDF, %%EOF, 16 MB), se firma con Ed25519 (C4b) y viaja en un sobre C1 + C2 con contexto `compile:pdf`: u32be(longitud) ‖ cabecera JSON ‖ PDF ‖ mapa SyncTeX (v2; `pdfBytes` y `synctexBytes` delimitan cada parte). El mapa SyncTeX (PDF ↔ archivo:línea, solo rutas del proyecto, 4 MB como mucho) se valida y se firma aparte: Ed25519(\"securtex:c4b:synctex:v1\" ‖ SHA-256(mapa) ‖ compilationId ‖ SHA-256(pdf)). 429 `compile_busy` si ya hay una compilación en curso; 503 `compiler_unavailable` si el sandbox no responde.",
+        "operationId": "Compile_compile",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-SecurTex-Reply-Key",
+            "in": "header",
+            "description": "Clave pública X25519 efímera del cliente (base64url): la respuesta se sella para ella (C2).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SealedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Compilar el proyecto en el sandbox y devolver el PDF firmado",
+        "tags": [
+          "Compilación"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/compile/analyze": {
+      "post": {
+        "description": "Decisión autoritativa del servidor: \\write18, lecturas fuera del proyecto, código Lua, E/S directa. Los bloqueos se auditan.",
+        "operationId": "Compile_analyze",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalysisDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Análisis de seguridad previo a la compilación",
+        "tags": [
+          "Compilación"
+        ]
+      }
+    },
+    "/api/v1/projects/{projectId}/duplicate": {
+      "post": {
+        "description": "Proyecto nuevo con su propia clave; los archivos se recifran.",
+        "operationId": "Duplicate_duplicate",
+        "parameters": [
+          {
+            "name": "projectId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuplicateProjectDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Hacer una copia del proyecto",
+        "tags": [
+          "Proyectos"
+        ]
+      }
+    },
+    "/api/v1/crypto/transport-key": {
+      "get": {
+        "description": "X25519 en base64url. Los clientes sellan con ella los sobres C1 + C2.",
+        "operationId": "Crypto_transportKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportKeyDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Clave pública de transporte (C2)",
+        "tags": [
+          "Criptografía"
+        ]
+      }
+    },
+    "/api/v1/crypto/artifact-key": {
+      "get": {
+        "description": "Ed25519 en base64url. Firma = Ed25519(SHA-256(pdf) ‖ compilationId ‖ sourceTreeHash). El mapa SyncTeX se firma con la misma clave: Ed25519(\"securtex:c4b:synctex:v1\" ‖ SHA-256(mapa) ‖ compilationId ‖ SHA-256(pdf)).",
+        "operationId": "Crypto_artifactKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtifactKeyDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Clave pública de firma de artefactos (C4b)",
+        "tags": [
+          "Criptografía"
+        ]
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "description": "Sin acceso al contenido de los proyectos.",
+        "operationId": "Admin_listUsers",
+        "parameters": [
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AdminUserDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Usuarios de la plataforma",
+        "tags": [
+          "Administración"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{userId}/suspend": {
+      "post": {
+        "description": "Revoca todas sus sesiones al instante. Auditado.",
+        "operationId": "Admin_suspend",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Suspender una cuenta",
+        "tags": [
+          "Administración"
+        ]
+      }
+    },
+    "/api/v1/admin/users/{userId}/reactivate": {
+      "post": {
+        "operationId": "Admin_reactivate",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatusResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reactivar una cuenta",
+        "tags": [
+          "Administración"
+        ]
+      }
+    },
+    "/api/v1/admin/audit": {
+      "get": {
+        "operationId": "Admin_events",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditEventDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Últimos eventos de auditoría (global)",
+        "tags": [
+          "Administración"
+        ]
+      }
+    },
+    "/api/v1/admin/audit/verify": {
+      "get": {
+        "operationId": "Admin_verify",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChainVerificationDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Verificar la integridad de la cadena de hashes",
+        "tags": [
+          "Administración"
+        ]
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "operationId": "Health_health",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sonda de salud",
+        "tags": [
+          "Sistema"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "SecurTex API",
+    "description": "API REST de SecurTex · Sprint 1: identidad, sesiones, MFA, auditoría y proyectos.\n\nAutenticación por cookies HttpOnly. Toda petición que cambia estado exige `Origin` válido y, con sesión, la cabecera `X-CSRF-Token`.\n\nErrores en formato RFC 9457 (Problem Details).",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "stx_at"
+      }
+    },
+    "schemas": {
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Correo con el que se creará la cuenta.",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "description": "Entre 12 y 128 caracteres; se comprueba contra filtraciones.",
+            "maxLength": 256
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "lastName": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "acceptTerms": {
+            "type": "boolean",
+            "description": "Aceptación de términos y política de privacidad.",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "firstName",
+          "lastName",
+          "acceptTerms"
+        ]
+      },
+      "StatusResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Estado de la operación."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "TokenDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token de un solo uso recibido por correo (256 bits, base64url).",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          }
+        },
+        "required": [
+          "token"
+        ]
+      },
+      "RetryAfterDto": {
+        "type": "object",
+        "properties": {
+          "retryAfterSeconds": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "retryAfterSeconds"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "remember": {
+            "type": "boolean",
+            "description": "«No cerrar sesión»: cookie persistente de hasta 7 días."
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "LoginResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "`authenticated` o `mfa_required` (en cuyo caso hay que llamar a /auth/mfa/verify).",
+            "enum": [
+              "authenticated",
+              "mfa_required"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "MfaVerifyDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "description": "`totp` para la aplicación autenticadora; `recovery` para un código de respaldo.",
+            "enum": [
+              "totp",
+              "recovery"
+            ]
+          },
+          "code": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 16
+          }
+        },
+        "required": [
+          "kind",
+          "code"
+        ]
+      },
+      "ClosedSessionsDto": {
+        "type": "object",
+        "properties": {
+          "closedSessions": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "closedSessions"
+        ]
+      },
+      "EmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token de un solo uso recibido por correo (256 bits, base64url).",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "ChangePasswordDto": {
+        "type": "object",
+        "properties": {
+          "newPassword": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "newPassword"
+        ]
+      },
+      "ReauthDto": {
+        "type": "object",
+        "properties": {
+          "password": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$"
+          }
+        }
+      },
+      "ElevationDto": {
+        "type": "object",
+        "properties": {
+          "elevatedUntil": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "elevatedUntil"
+        ]
+      },
+      "MfaStatusDto": {
+        "type": "object",
+        "properties": {
+          "totpEnabled": {
+            "type": "boolean"
+          },
+          "totpConfirmedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "recoveryCodesRemaining": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "totpEnabled",
+          "totpConfirmedAt",
+          "recoveryCodesRemaining"
+        ]
+      },
+      "TotpSetupDto": {
+        "type": "object",
+        "properties": {
+          "otpauthUri": {
+            "type": "string",
+            "description": "URI otpauth:// para aplicaciones que no leen QR. Se muestra una sola vez."
+          },
+          "qrDataUrl": {
+            "type": "string",
+            "description": "QR como data:image/png;base64 (permitido por la CSP en img-src)."
+          },
+          "secret": {
+            "type": "string",
+            "description": "Secreto en base32 para introducirlo a mano."
+          }
+        },
+        "required": [
+          "otpauthUri",
+          "qrDataUrl",
+          "secret"
+        ]
+      },
+      "TotpCodeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "pattern": "^\\d{6}$"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
+      "RecoveryCodesDto": {
+        "type": "object",
+        "properties": {
+          "recoveryCodes": {
+            "description": "Se muestran una sola vez; en el servidor solo queda su hash.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "recoveryCodes"
+        ]
+      },
+      "ProvidersDto": {
+        "type": "object",
+        "properties": {
+          "providers": {
+            "type": "array",
+            "description": "Proveedores externos configurados en este despliegue.",
+            "items": {
+              "type": "string",
+              "enum": [
+                "google",
+                "microsoft"
+              ]
+            }
+          }
+        },
+        "required": [
+          "providers"
+        ]
+      },
+      "RedirectUrlDto": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "URL del proveedor de identidad a la que debe navegar el navegador."
+          }
+        },
+        "required": [
+          "url"
+        ]
+      },
+      "ProfileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "primaryEmail": {
+            "type": "string"
+          },
+          "emailVerified": {
+            "type": "boolean"
+          },
+          "emailVerifiedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "institution": {
+            "type": "string"
+          },
+          "roleTitle": {
+            "type": "string"
+          },
+          "locale": {
+            "type": "string"
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "active",
+              "suspended",
+              "deleted"
+            ],
+            "type": "string"
+          },
+          "isSystemAdmin": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "passwordUpdatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "hasPassword": {
+            "type": "boolean"
+          },
+          "mfa": {
+            "$ref": "#/components/schemas/MfaStatusDto"
+          },
+          "elevatedUntil": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "primaryEmail",
+          "emailVerified",
+          "emailVerifiedAt",
+          "firstName",
+          "lastName",
+          "institution",
+          "roleTitle",
+          "locale",
+          "timezone",
+          "status",
+          "isSystemAdmin",
+          "createdAt",
+          "passwordUpdatedAt",
+          "hasPassword",
+          "mfa",
+          "elevatedUntil"
+        ]
+      },
+      "UpdateProfileDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "lastName": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "institution": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "roleTitle": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "locale": {
+            "type": "string",
+            "enum": [
+              "es",
+              "en"
+            ]
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 64,
+            "pattern": "^[A-Za-z_]+(\\/[A-Za-z_+-]+)*$"
+          }
+        }
+      },
+      "SessionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "deviceLabel": {
+            "type": "string",
+            "description": "«Chrome · Windows»"
+          },
+          "ipPrefix": {
+            "type": "string",
+            "description": "IP anonimizada (/24 o /48)."
+          },
+          "authMethod": {
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastSeenAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "current": {
+            "type": "boolean",
+            "description": "La sesión desde la que se hace la petición."
+          }
+        },
+        "required": [
+          "id",
+          "deviceLabel",
+          "ipPrefix",
+          "authMethod",
+          "createdAt",
+          "lastSeenAt",
+          "expiresAt",
+          "current"
+        ]
+      },
+      "IdentityDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "local",
+              "google",
+              "microsoft"
+            ]
+          },
+          "providerEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "linkedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "lastUsedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "provider",
+          "providerEmail",
+          "linkedAt",
+          "lastUsedAt"
+        ]
+      },
+      "ActivityDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "actorIpPrefix": {
+            "type": "string",
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "occurredAt",
+          "eventType",
+          "outcome",
+          "actorIpPrefix",
+          "metadata"
+        ]
+      },
+      "PreferencesDto": {
+        "type": "object",
+        "properties": {
+          "prefs": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "prefs"
+        ]
+      },
+      "SavePreferencesDto": {
+        "type": "object",
+        "properties": {
+          "prefs": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Objeto plano de hasta 32 KB: tipografía, comandos personalizados…"
+          }
+        },
+        "required": [
+          "prefs"
+        ]
+      },
+      "DeletionImpactDto": {
+        "type": "object",
+        "properties": {
+          "ownedProjects": {
+            "type": "number"
+          },
+          "sharedOwnedProjects": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "ownedProjects",
+          "sharedOwnedProjects"
+        ]
+      },
+      "DeleteAccountDto": {
+        "type": "object",
+        "properties": {
+          "confirmation": {
+            "type": "string",
+            "description": "Debe ser exactamente «ELIMINAR MI CUENTA».",
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "confirmation"
+        ]
+      },
+      "ProjectOwnerDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "CollaboratorDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "editor",
+              "reviewer",
+              "viewer",
+              "owner"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "role",
+          "name"
+        ]
+      },
+      "ProjectDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "compiler": {
+            "enum": [
+              "pdflatex",
+              "xelatex",
+              "lualatex"
+            ],
+            "type": "string"
+          },
+          "mainFile": {
+            "type": "string"
+          },
+          "confidential": {
+            "type": "boolean"
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "trashedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastActivityAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/ProjectOwnerDto"
+          },
+          "role": {
+            "description": "Tu rol en el proyecto.",
+            "enum": [
+              "editor",
+              "reviewer",
+              "viewer",
+              "owner"
+            ],
+            "type": "string"
+          },
+          "allowedActions": {
+            "description": "Acciones que la interfaz puede ofrecer. Cortesía visual: el servidor vuelve a decidir.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "collaborators": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CollaboratorDto"
+            }
+          },
+          "tagIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "compiler",
+          "mainFile",
+          "confidential",
+          "archived",
+          "trashedAt",
+          "lastActivityAt",
+          "createdAt",
+          "owner",
+          "role",
+          "allowedActions",
+          "collaborators",
+          "tagIds"
+        ]
+      },
+      "ProjectCountsDto": {
+        "type": "object",
+        "properties": {
+          "all": {
+            "type": "number"
+          },
+          "owned": {
+            "type": "number"
+          },
+          "shared": {
+            "type": "number"
+          },
+          "archived": {
+            "type": "number"
+          },
+          "trash": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "all",
+          "owned",
+          "shared",
+          "archived",
+          "trash"
+        ]
+      },
+      "ProjectListDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProjectDto"
+            }
+          },
+          "counts": {
+            "$ref": "#/components/schemas/ProjectCountsDto"
+          }
+        },
+        "required": [
+          "items",
+          "counts"
+        ]
+      },
+      "CreateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "compiler": {
+            "type": "string",
+            "enum": [
+              "pdflatex",
+              "xelatex",
+              "lualatex"
+            ]
+          },
+          "template": {
+            "type": "string",
+            "description": "Plantilla de partida del catálogo del equipo. Por defecto, documento en blanco.",
+            "enum": [
+              "blank",
+              "tesis-uta",
+              "articulo",
+              "informe-lab",
+              "presentacion"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "compiler": {
+            "type": "string",
+            "enum": [
+              "pdflatex",
+              "xelatex",
+              "lualatex"
+            ]
+          },
+          "mainFile": {
+            "type": "string",
+            "maxLength": 200
+          }
+        }
+      },
+      "MemberUserDto": {
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "primaryEmail": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "firstName",
+          "lastName",
+          "primaryEmail"
+        ]
+      },
+      "MemberDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "editor",
+              "reviewer",
+              "viewer",
+              "owner"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/MemberUserDto"
+          }
+        },
+        "required": [
+          "userId",
+          "role",
+          "createdAt",
+          "user"
+        ]
+      },
+      "InvitationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "editor",
+              "reviewer",
+              "viewer",
+              "owner"
+            ],
+            "type": "string"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "createdAt",
+          "expiresAt"
+        ]
+      },
+      "MembersDto": {
+        "type": "object",
+        "properties": {
+          "members": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MemberDto"
+            }
+          },
+          "invitations": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InvitationDto"
+            }
+          }
+        },
+        "required": [
+          "members",
+          "invitations"
+        ]
+      },
+      "InviteMemberDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254
+          },
+          "role": {
+            "type": "string",
+            "description": "`owner` NO es asignable por invitación (T-A11).",
+            "enum": [
+              "editor",
+              "reviewer",
+              "viewer"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "role"
+        ]
+      },
+      "ChangeRoleDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "editor",
+              "reviewer",
+              "viewer"
+            ]
+          }
+        },
+        "required": [
+          "role"
+        ]
+      },
+      "SetTagsDto": {
+        "type": "object",
+        "properties": {
+          "tagIds": {
+            "maxItems": 20,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "tagIds"
+        ]
+      },
+      "InvitationProjectDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ]
+      },
+      "ReceivedInvitationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "editor",
+              "reviewer",
+              "viewer",
+              "owner"
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "project": {
+            "$ref": "#/components/schemas/InvitationProjectDto"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "createdAt",
+          "expiresAt",
+          "project"
+        ]
+      },
+      "TagCountDto": {
+        "type": "object",
+        "properties": {
+          "projects": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "projects"
+        ]
+      },
+      "TagDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "_count": {
+            "$ref": "#/components/schemas/TagCountDto"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "color"
+        ]
+      },
+      "CreateTagDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          },
+          "color": {
+            "type": "string",
+            "enum": [
+              "blue",
+              "green",
+              "amber",
+              "red",
+              "violet",
+              "slate"
+            ]
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "FileMetaDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "version": {
+            "type": "number"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "path",
+          "kind",
+          "size",
+          "version",
+          "updatedAt"
+        ]
+      },
+      "EnvelopeDto": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "epk": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "n1": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "wdek": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "n2": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "body": {
+            "type": "string",
+            "description": "El contenido ocupa como mucho 1 MB; cifrado y en base64url, algo más.",
+            "maxLength": 1400000
+          }
+        },
+        "required": [
+          "v",
+          "epk",
+          "n1",
+          "wdek",
+          "n2",
+          "body"
+        ]
+      },
+      "SealedResponseDto": {
+        "type": "object",
+        "properties": {
+          "envelope": {
+            "$ref": "#/components/schemas/EnvelopeDto"
+          }
+        },
+        "required": [
+          "envelope"
+        ]
+      },
+      "CreateFileDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Ruta relativa, p. ej. «capitulos/intro.tex».",
+            "maxLength": 200
+          },
+          "envelope": {
+            "description": "Contenido inicial sellado (C1 + C2).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EnvelopeDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "envelope"
+        ]
+      },
+      "BinaryEnvelopeDto": {
+        "type": "object",
+        "properties": {
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
+          },
+          "epk": {
+            "type": "string",
+            "maxLength": 64
+          },
+          "n1": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "wdek": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "n2": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "body": {
+            "type": "string",
+            "maxLength": 6800000
+          }
+        },
+        "required": [
+          "v",
+          "epk",
+          "n1",
+          "wdek",
+          "n2",
+          "body"
+        ]
+      },
+      "UploadFileDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Ruta relativa, p. ej. «figuras/arquitectura.png».",
+            "maxLength": 200
+          },
+          "envelope": {
+            "$ref": "#/components/schemas/BinaryEnvelopeDto"
+          }
+        },
+        "required": [
+          "path",
+          "envelope"
+        ]
+      },
+      "WriteFileDto": {
+        "type": "object",
+        "properties": {
+          "envelope": {
+            "$ref": "#/components/schemas/EnvelopeDto"
+          },
+          "baseVersion": {
+            "type": "number",
+            "description": "Versión sobre la que se editó. Si no coincide con la actual: 409.",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "envelope",
+          "baseVersion"
+        ]
+      },
+      "FileVersionDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "size": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "path": {
+            "type": "string",
+            "description": "Ruta que tenía el archivo en ese momento."
+          },
+          "author": {
+            "type": "string",
+            "nullable": true,
+            "description": "null si la persona ya no comparte el proyecto."
+          }
+        },
+        "required": [
+          "id",
+          "size",
+          "createdAt",
+          "path",
+          "author"
+        ]
+      },
+      "RenameFileDto": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "path"
+        ]
+      },
+      "SecurityFindingDto": {
+        "type": "object",
+        "properties": {
+          "rule": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "blocking",
+              "warning"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "file": {
+            "type": "string"
+          },
+          "line": {
+            "type": "number"
+          },
+          "snippet": {
+            "type": "string"
+          },
+          "alternative": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule",
+          "severity",
+          "title",
+          "file",
+          "line",
+          "snippet",
+          "alternative"
+        ]
+      },
+      "AnalysisDto": {
+        "type": "object",
+        "properties": {
+          "verdict": {
+            "type": "string",
+            "description": "`blocked`: el servidor no permitiría compilar este proyecto.",
+            "enum": [
+              "clean",
+              "warnings",
+              "blocked"
+            ]
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SecurityFindingDto"
+            }
+          },
+          "analyzedFiles": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "verdict",
+          "findings",
+          "analyzedFiles"
+        ]
+      },
+      "DuplicateProjectDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "TransportKeyDto": {
+        "type": "object",
+        "properties": {
+          "alg": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "Clave pública de 32 bytes en base64url."
+          },
+          "contexts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "alg",
+          "key",
+          "contexts"
+        ]
+      },
+      "ArtifactKeyDto": {
+        "type": "object",
+        "properties": {
+          "alg": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "Clave pública de 32 bytes en base64url."
+          },
+          "message": {
+            "type": "string",
+            "description": "Qué se firma: SHA-256(pdf) ‖ compilationId (16 bytes) ‖ sourceTreeHash (32 bytes)."
+          }
+        },
+        "required": [
+          "alg",
+          "key",
+          "message"
+        ]
+      },
+      "AdminUserDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "primaryEmail": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
+          "lastName": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "active",
+              "suspended",
+              "deleted"
+            ]
+          },
+          "isSystemAdmin": {
+            "type": "boolean"
+          },
+          "emailVerifiedAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "lastLoginAt": {
+            "format": "date-time",
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "mfaEnabled": {
+            "type": "boolean"
+          },
+          "activeSessions": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "primaryEmail",
+          "firstName",
+          "lastName",
+          "status",
+          "isSystemAdmin",
+          "emailVerifiedAt",
+          "lastLoginAt",
+          "createdAt",
+          "mfaEnabled",
+          "activeSessions"
+        ]
+      },
+      "AuditEventDto": {
+        "type": "object",
+        "properties": {
+          "seq": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "occurredAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "actorUserId": {
+            "type": "string",
+            "nullable": true
+          },
+          "actorIpPrefix": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetType": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetId": {
+            "type": "string",
+            "nullable": true
+          },
+          "outcome": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          },
+          "hash": {
+            "type": "string",
+            "description": "Hash del evento (hex)."
+          }
+        },
+        "required": [
+          "seq",
+          "id",
+          "occurredAt",
+          "eventType",
+          "severity",
+          "actorUserId",
+          "actorIpPrefix",
+          "targetType",
+          "targetId",
+          "outcome",
+          "reason",
+          "hash"
+        ]
+      },
+      "ChainVerificationDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "checked": {
+            "type": "number"
+          },
+          "brokenAtSeq": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "ok",
+          "checked",
+          "brokenAtSeq"
+        ]
+      },
+      "HealthDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "degraded"
+            ]
+          },
+          "database": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status",
+          "database"
+        ]
+      }
+    }
+  }
+}

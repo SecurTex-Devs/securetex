@@ -1,0 +1,13 @@
+packages:
+  - "apps/*"
+
+# Solo estos paquetes pueden ejecutar scripts de instalación (AGENTS.md §8:
+# scripts de post-instalación no auditados prohibidos).
+allowBuilds:
+  "@nestjs/core": true
+  "@prisma/client": true
+  "@prisma/engines": true
+  "argon2": true
+  "prisma": true
+  "esbuild": true
+  "@scarf/scarf": false

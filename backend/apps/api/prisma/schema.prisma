@@ -1,0 +1,495 @@
+// SecurTex · modelo de datos del Sprint 1 (identidad, sesiones, MFA, auditoría y proyectos).
+// Fuente: securtex-docs/docs/06-Modelo-de-Datos.md
+//
+// Clasificación de columnas (AGENTS.md §3.2) en los comentarios ///:
+//   PUBLIC · INTERNAL · PII · SECRET · ENCRYPTED
+//
+// Row Level Security, roles de base de datos, funciones auxiliares y reglas
+// append-only NO se pueden expresar en Prisma: viven en la migración SQL
+// (prisma/migrations/*/migration.sql). Toda tabla con datos de usuario tiene
+// RLS habilitada y FORZADA.
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets   = ["native", "debian-openssl-3.0.x"]
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [citext, pgcrypto]
+}
+
+enum UserStatus {
+  pending
+  active
+  suspended
+  deleted
+
+  @@map("user_status")
+}
+
+enum IdpProvider {
+  local
+  google
+  microsoft
+
+  @@map("idp_provider")
+}
+
+enum MfaType {
+  totp
+  recovery_code
+
+  @@map("mfa_type")
+}
+
+enum ChallengeKind {
+  mfa
+  oidc
+
+  @@map("challenge_kind")
+}
+
+enum EmailTokenPurpose {
+  verify_email
+  reset_password
+
+  @@map("email_token_purpose")
+}
+
+enum ProjectRole {
+  owner
+  editor
+  reviewer
+  viewer
+
+  @@map("project_role")
+}
+
+enum InvitationStatus {
+  pending
+  accepted
+  declined
+  expired
+  revoked
+
+  @@map("invitation_status")
+}
+
+enum CompilerEngine {
+  pdflatex
+  xelatex
+  lualatex
+
+  @@map("compiler_engine")
+}
+
+// ─────────────────────────────── Identidad ───────────────────────────────
+
+model User {
+  id                String     @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  /// ENCRYPTED (C3c) · correo cifrado; la búsqueda usa emailIndex
+  primaryEmail      String     @map("primary_email")
+  /// INTERNAL · índice ciego HMAC-SHA-256 del correo normalizado
+  emailIndex        String     @unique @map("email_index")
+  emailVerifiedAt   DateTime?  @map("email_verified_at") @db.Timestamptz(3)
+  /// SECRET · Argon2id; NULL si solo entra con un proveedor externo
+  passwordHash      String?    @map("password_hash")
+  passwordUpdatedAt DateTime?  @map("password_updated_at") @db.Timestamptz(3)
+  /// PII
+  firstName         String     @default("") @map("first_name")
+  /// PII
+  lastName          String     @default("") @map("last_name")
+  /// PII
+  institution       String     @default("")
+  /// PII
+  roleTitle         String     @default("") @map("role_title")
+  locale            String     @default("es")
+  /// PII
+  timezone          String     @default("America/Guayaquil")
+  status            UserStatus @default(pending)
+  isSystemAdmin     Boolean    @default(false) @map("is_system_admin")
+  lastLoginAt       DateTime?  @map("last_login_at") @db.Timestamptz(3)
+  createdAt         DateTime   @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt         DateTime?  @map("deleted_at") @db.Timestamptz(3)
+
+  identities   UserIdentity[]
+  sessions     Session[]
+  mfaMethods   MfaMethod[]
+  emailTokens  EmailToken[]
+  challenges   AuthChallenge[]
+  preferences  EditorPreferences?
+  ownedProjects Project[]       @relation("ProjectOwner")
+  memberships  ProjectMember[]  @relation("MemberUser")
+  tags         Tag[]
+
+  @@index([status])
+  @@map("users")
+}
+
+model UserIdentity {
+  id              String      @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId          String      @map("user_id") @db.Uuid
+  provider        IdpProvider
+  /// ENCRYPTED (C3c) · el `sub` del proveedor
+  providerSubject String      @map("provider_subject")
+  /// INTERNAL · índice ciego del `sub`
+  subjectIndex    String      @map("subject_index")
+  /// ENCRYPTED (C3c)
+  providerEmail   String?     @map("provider_email")
+  linkedAt        DateTime    @default(now()) @map("linked_at") @db.Timestamptz(3)
+  lastUsedAt      DateTime?   @map("last_used_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, subjectIndex])
+  @@index([userId])
+  @@map("user_identities")
+}
+
+/// Una sesión es también la «familia» de refresh tokens: la reutilización de
+/// cualquier token ya rotado revoca la sesión completa (RS-003).
+model Session {
+  id             String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  /// SECRET · SHA-256 del token CSRF sincronizador ligado a la sesión
+  csrfHash       Bytes     @map("csrf_hash")
+  /// PII anonimizada · /24 en IPv4, /48 en IPv6
+  ipPrefix       String    @map("ip_prefix")
+  /// PII seudonimizada · SHA-256 del User-Agent
+  userAgentHash  String    @map("user_agent_hash")
+  /// INTERNAL · «Chrome en Windows»
+  deviceLabel    String    @map("device_label")
+  authMethod     String    @map("auth_method")
+  remember       Boolean   @default(false)
+  elevatedUntil  DateTime? @map("elevated_until") @db.Timestamptz(3)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  lastSeenAt     DateTime  @default(now()) @map("last_seen_at") @db.Timestamptz(3)
+  idleExpiresAt  DateTime  @map("idle_expires_at") @db.Timestamptz(3)
+  expiresAt      DateTime  @map("expires_at") @db.Timestamptz(3)
+  revokedAt      DateTime? @map("revoked_at") @db.Timestamptz(3)
+  /// logout · rotation_reuse · password_change · user_revoked · logout_all · account_deleted
+  revokedReason  String?   @map("revoked_reason")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokens RefreshToken[]
+
+  @@index([userId, revokedAt])
+  @@map("sessions")
+}
+
+model RefreshToken {
+  id        String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  sessionId String    @map("session_id") @db.Uuid
+  /// SECRET · SHA-256 de un secreto de 256 bits; nunca en claro
+  tokenHash Bytes     @map("token_hash")
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  /// Si no es NULL, el token ya se rotó: volver a verlo es una reutilización
+  usedAt    DateTime? @map("used_at") @db.Timestamptz(3)
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz(3)
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("refresh_tokens")
+}
+
+/// Retos de corta duración: segundo factor pendiente y flujo OIDC (state, nonce, PKCE).
+model AuthChallenge {
+  id         String        @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId     String?       @map("user_id") @db.Uuid
+  kind       ChallengeKind
+  /// SECRET · SHA-256 del secreto entregado en la cookie
+  secretHash Bytes         @map("secret_hash")
+  /// INTERNAL · nunca contiene contraseñas
+  data       Json          @default("{}")
+  attempts   Int           @default(0) @db.SmallInt
+  expiresAt  DateTime      @map("expires_at") @db.Timestamptz(3)
+  consumedAt DateTime?     @map("consumed_at") @db.Timestamptz(3)
+  createdAt  DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_challenges")
+}
+
+model EmailToken {
+  id        String            @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId    String            @map("user_id") @db.Uuid
+  purpose   EmailTokenPurpose
+  /// SECRET · SHA-256 de un secreto de 256 bits
+  tokenHash Bytes             @unique @map("token_hash")
+  expiresAt DateTime          @map("expires_at") @db.Timestamptz(3)
+  usedAt    DateTime?         @map("used_at") @db.Timestamptz(3)
+  createdAt DateTime          @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@map("email_tokens")
+}
+
+model MfaMethod {
+  id              String    @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  type            MfaType
+  /// ENCRYPTED · secreto TOTP cifrado con AES-256-GCM (AAD = userId)
+  secretEncrypted Bytes?    @map("secret_encrypted")
+  /// SECRET · SHA-256 del código de respaldo
+  codeHash        Bytes?    @map("code_hash")
+  label           String    @default("")
+  /// Último paso de 30 s aceptado: impide reutilizar un código TOTP
+  lastUsedStep    BigInt?   @map("last_used_step")
+  confirmedAt     DateTime? @map("confirmed_at") @db.Timestamptz(3)
+  lastUsedAt      DateTime? @map("last_used_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("mfa_methods")
+}
+
+/// Contador de fallos por correo (exista o no la cuenta), para que el bloqueo
+/// no revele qué correos están registrados (T-A09).
+model LoginThrottle {
+  /// INTERNAL · SHA-256 del correo normalizado
+  keyHash         Bytes     @id @map("key_hash")
+  failedCount     Int       @default(0) @map("failed_count")
+  windowStartedAt DateTime  @default(now()) @map("window_started_at") @db.Timestamptz(3)
+  lockedUntil     DateTime? @map("locked_until") @db.Timestamptz(3)
+
+  @@map("login_throttle")
+}
+
+model EditorPreferences {
+  userId    String   @id @map("user_id") @db.Uuid
+  /// PUBLIC · tema, tipografía, atajos…
+  prefs     Json     @default("{}")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("editor_preferences")
+}
+
+// ─────────────────────────────── Auditoría ───────────────────────────────
+
+/// Append-only y encadenada por hash: h(n) = SHA-256(h(n-1) ‖ evento(n)).
+model AuditEvent {
+  seq           BigInt   @id @default(autoincrement())
+  id            String   @unique @default(dbgenerated("uuidv7()")) @db.Uuid
+  occurredAt    DateTime @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  traceId       String   @map("trace_id")
+  eventType     String   @map("event_type")
+  severity      String
+  actorUserId   String?  @map("actor_user_id") @db.Uuid
+  /// PII anonimizada
+  actorIpPrefix String?  @map("actor_ip_prefix")
+  /// PII seudonimizada
+  actorUaHash   String?  @map("actor_ua_hash")
+  targetType    String?  @map("target_type")
+  targetId      String?  @map("target_id")
+  outcome       String
+  reason        String?
+  /// INTERNAL · nunca contenido de documentos ni secretos
+  metadata      Json     @default("{}")
+  prevHash      Bytes    @map("prev_hash")
+  hash          Bytes
+
+  @@index([actorUserId, occurredAt])
+  @@index([eventType, occurredAt])
+  @@map("audit_events")
+}
+
+// ─────────────────────────── Proyectos y acceso ───────────────────────────
+
+model Project {
+  id             String         @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  ownerId        String         @map("owner_id") @db.Uuid
+  /// INTERNAL · contenido controlado por el usuario: se escapa siempre al renderizar
+  name           String
+  compiler       CompilerEngine @default(pdflatex)
+  /// ENCRYPTED (C3c)
+  mainFile       String         @map("main_file")
+  confidential   Boolean        @default(false)
+  archivedAt     DateTime?      @map("archived_at") @db.Timestamptz(3)
+  trashedAt      DateTime?      @map("trashed_at") @db.Timestamptz(3)
+  lastActivityAt DateTime       @default(now()) @map("last_activity_at") @db.Timestamptz(3)
+  createdAt      DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt      DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     ProjectMember[]
+  invitations Invitation[]
+  tags        ProjectTag[]
+  key         ProjectKey?
+  files       ProjectFile[]
+  collabState ProjectCollabState?
+  versions    ProjectFileVersion[]
+
+  @@index([ownerId])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String      @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  projectId String      @map("project_id") @db.Uuid
+  userId    String      @map("user_id") @db.Uuid
+  role      ProjectRole
+  invitedBy String?     @map("invited_by") @db.Uuid
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  revokedAt DateTime?   @map("revoked_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation("MemberUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId, revokedAt])
+  @@map("project_members")
+}
+
+model Invitation {
+  id          String           @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  projectId   String           @map("project_id") @db.Uuid
+  /// ENCRYPTED (C3c)
+  email       String
+  /// INTERNAL · índice ciego del correo invitado; RLS lo compara con el del usuario
+  emailIndex  String           @map("email_index")
+  role        ProjectRole
+  invitedBy   String           @map("invited_by") @db.Uuid
+  status      InvitationStatus @default(pending)
+  expiresAt   DateTime         @map("expires_at") @db.Timestamptz(3)
+  respondedAt DateTime?        @map("responded_at") @db.Timestamptz(3)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([emailIndex, status])
+  @@index([projectId])
+  @@map("invitations")
+}
+
+/// Las etiquetas son privadas de cada usuario (P-12).
+model Tag {
+  id        String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  /// ENCRYPTED (C3c)
+  name      String
+  /// INTERNAL · índice ciego del nombre normalizado (unicidad por usuario)
+  nameIndex String   @map("name_index")
+  color     String   @default("blue")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  user     User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projects ProjectTag[]
+
+  @@unique([userId, nameIndex])
+  @@map("tags")
+}
+
+model ProjectTag {
+  tagId     String @map("tag_id") @db.Uuid
+  projectId String @map("project_id") @db.Uuid
+
+  tag     Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@id([tagId, projectId])
+  @@index([projectId])
+  @@map("project_tags")
+}
+
+// ───────────────────── Archivos cifrados (C3 reposo · C4 integridad) ─────────────────────
+
+/// Clave de proyecto (KEK). Borrarla hace irrecuperable todo el contenido del
+/// proyecto, también en las copias de seguridad: crypto-shredding (F-045).
+model ProjectKey {
+  projectId  String   @id @map("project_id") @db.Uuid
+  /// SECRET · KEK de 256 bits envuelta con la clave maestra (AES-256-KW, RFC 3394)
+  wrappedKek Bytes    @map("wrapped_kek")
+  /// Versión de la clave maestra que la envuelve (rotación)
+  masterVersion Int   @default(1) @map("master_version") @db.SmallInt
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_keys")
+}
+
+model ProjectFile {
+  id         String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  projectId  String   @map("project_id") @db.Uuid
+  /// ENCRYPTED (C3c) · ruta relativa validada por SafeFilePath
+  path       String
+  /// INTERNAL · índice ciego de la ruta (unicidad dentro del proyecto)
+  pathIndex  String   @map("path_index")
+  /// INTERNAL · tex, bib, cls, sty, txt
+  kind       String
+  /// INTERNAL · tamaño del texto plano en bytes
+  size       Int
+  /// Se incrementa en cada escritura; forma parte de la AAD y del control de concurrencia
+  version    Int      @default(1)
+  /// SECRET · DEK de 256 bits envuelta con la KEK del proyecto (AES-256-KW)
+  wrappedDek Bytes    @map("wrapped_dek")
+  /// INTERNAL · nonce de 96 bits, único por cifrado
+  nonce      Bytes
+  /// ENCRYPTED · AES-256-GCM(contenido) ‖ etiqueta de 128 bits
+  ciphertext Bytes
+  /// INTERNAL · HMAC-SHA-256 sobre nonce ‖ cifrado ‖ AAD, verificado ANTES de descifrar
+  mac        Bytes
+  createdBy  String   @map("created_by") @db.Uuid
+  updatedBy  String   @map("updated_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, pathIndex])
+  @@map("project_files")
+}
+
+/// Estado CRDT (Yjs) de la sala de colaboración, cifrado como un archivo más
+/// (C3 + C4). Cargar la sala desde él, y no reinsertando el texto, conserva la
+/// identidad de cada operación: un cliente que se reconecta tras un reinicio
+/// del servidor no duplica el documento.
+model ProjectCollabState {
+  projectId  String   @id @map("project_id") @db.Uuid
+  /// Se incrementa en cada guardado; forma parte de la AAD
+  version    Int      @default(1)
+  wrappedDek Bytes    @map("wrapped_dek")
+  nonce      Bytes
+  ciphertext Bytes
+  mac        Bytes
+  updatedBy  String   @map("updated_by") @db.Uuid
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_collab_states")
+}
+
+/// Historial de versiones (F-150): instantáneas cifradas del contenido de un
+/// archivo, con autor y fecha. Solo se insertan y se podan; nunca se modifican.
+model ProjectFileVersion {
+  id         String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  projectId  String   @map("project_id") @db.Uuid
+  fileId     String   @map("file_id") @db.Uuid
+  /// ENCRYPTED (C3c) · ruta del archivo en ese momento
+  path       String
+  size       Int
+  wrappedDek Bytes    @map("wrapped_dek")
+  nonce      Bytes
+  ciphertext Bytes
+  mac        Bytes
+  createdBy  String   @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, fileId, createdAt])
+  @@map("project_file_versions")
+}
