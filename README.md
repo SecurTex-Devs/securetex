@@ -27,20 +27,18 @@ Next 15 (App Router) · React 19 · Tailwind 4 con los tokens «Papel y tinta» 
 
 ### Qué funciona de verdad
 
-- **Acceso**: registro, verificación por correo, inicio de sesión con bloqueo tras intentos fallidos, recuperación, Google/Microsoft, segundo factor TOTP y códigos de recuperación.
+- **Acceso**: registro, verificación por correo, inicio de sesión con bloqueo tras intentos fallidos, recuperación, Google/Microsoft (si se configuran, ver el README del backend), segundo factor TOTP y códigos de recuperación.
 - **Proyectos**: listado con filtros, búsqueda, etiquetas, vista en cuadrícula o lista; crear en blanco o desde las 5 plantillas del equipo; archivar, papelera, compartir por correo con roles.
-- **Editor**: los archivos llegan descifrados del servidor y se **autoguardan cifrados** 700 ms después de dejar de escribir. Si otra pestaña o persona guardó antes, aparece un aviso de conflicto con «Usar la del servidor» / «Conservar la mía»; nada se pisa en silencio. Árbol de archivos con carpetas, crear, renombrar/mover, duplicar, descargar, eliminar y documento principal. Si el servidor detecta un archivo alterado (HMAC), se muestra la pantalla de integridad (P-50) en lugar del contenido.
+- **Editor colaborativo**: varias personas en el mismo archivo a la vez (Yjs), con cursores y selecciones de cada una, avatares de quién está conectado y en qué archivo, y deshacer que solo deshace lo propio. Sin conexión se sigue escribiendo y se sincroniza al volver. Si te revocan el acceso, la sala se cierra al instante.
+- **Paleta de comandos LaTeX** (botón «Comandos» de la barra): búsqueda por nombre o comando, vista previa, y al hacer clic el comando se inserta con el cursor en el primer hueco por rellenar (Tab salta al siguiente; si había texto seleccionado, ocupa el primer hueco). **Personalizable**: cada persona puede cambiar la plantilla de cualquier comando, crear los suyos u ocultar los que no usa; se guardan cifrados en su cuenta y la siguen en cualquier equipo.
+- **Cifrado de extremo a extremo con el servicio**: todo lo que se escribe viaja en tramas C1 (AES-256-GCM) dentro de C2 (X25519 + ChaCha20-Poly1305) y se verifica al recibir (C5) antes de mostrarse. El indicador «Guardado y cifrado» explica las cinco capas.
 - **Compilar**: el servidor analiza el proyecto (P-47 si bloquea, con la línea exacta y una alternativa); si no hay nada bloqueante, la vista previa tipográfica se compone en el navegador con SyncTeX en ambos sentidos.
-- **Cuenta**: perfil, sesiones activas, actividad, preferencias del editor, cuentas vinculadas y exportación de todos tus datos (perfil, etiquetas y proyectos con sus archivos) en JSON.
+- **Cuenta**: perfil, sesiones activas, actividad, preferencias del editor, vincular y desvincular Google/Microsoft, y exportación de todos tus datos en JSON (llegan sellados y se abren en el navegador).
 - **Administración**: resumen calculado con datos reales, gestión de cuentas (suspender/reactivar) y auditoría con verificación de la cadena.
-
-### Seguridad en el cliente
-
-CSP con nonce por petición (sin `'unsafe-inline'` para estilos ni scripts); CodeMirror y Radix reciben el nonce **del documento**, también tras navegaciones de cliente. Cookies HttpOnly, token CSRF en cabecera, proxy same-origin `/api/v1`. El HTML de KaTeX pasa por DOMPurify. Ocultar acciones según el rol es cortesía visual: la API y RLS deciden.
 
 ### Fuera del alcance
 
-Chat, comentarios, control de cambios, historial de versiones, presencia y cursores remotos, modo confidencial (C1/C2/C5), importación .zip/GitHub, subida de imágenes, tokens de aplicación, passkeys, SAML, métricas y moderación. Los mockups de `Docs/mockups` siguen describiendo el diseño completo como referencia.
+Chat, comentarios, control de cambios, historial de versiones, modo confidencial (clave que el servidor nunca recibe), importación .zip/GitHub, subida de imágenes, tokens de aplicación, passkeys, SAML, métricas y moderación. Los mockups de `Docs/mockups` siguen describiendo el diseño completo como referencia.
 
 ---
 
