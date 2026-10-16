@@ -9,6 +9,7 @@ import {
   keymap, lineNumbers, rectangularSelection,
 } from '@codemirror/view';
 import { tags as t } from '@lezer/highlight';
+import { yUndoManagerKeymap } from 'y-codemirror.next';
 import { KNOWN_COMMANDS } from './diagnostics';
 
 export const latexHighlight = HighlightStyle.define([
@@ -123,6 +124,8 @@ export interface SetupOptions {
   readonly onCompile: () => void;
   readonly onSave: () => void;
   readonly extra?: readonly Extension[];
+  /** Enlace con Yjs (yCollab). Con colaboración, deshacer lo gestiona Y.UndoManager y no el historial local. */
+  readonly collab?: Extension;
   readonly prefs: { readonly wrap: boolean; readonly lineNumbers: boolean; readonly autocomplete: boolean; readonly autoclose: boolean };
 }
 
@@ -133,7 +136,7 @@ export function baseExtensions(o: SetupOptions): Extension[] {
     highlightActiveLineGutter(),
     foldGutter({ markerDOM: (open) => { const s = document.createElement('span'); s.textContent = open ? '▾' : '▸'; return s; } }),
     highlightSpecialChars(),
-    history(),
+    o.collab ? [] : history(),
     drawSelection(),
     dropCursor(),
     EditorState.allowMultipleSelections.of(true),
@@ -155,8 +158,9 @@ export function baseExtensions(o: SetupOptions): Extension[] {
       { key: 'Mod-s', run: () => { o.onSave(); return true; }, preventDefault: true },
       { key: 'Mod-b', run: (v) => wrapSelection(v, '\\textbf{', '}', 'texto') },
       { key: 'Mod-i', run: (v) => wrapSelection(v, '\\emph{', '}', 'texto') },
-      ...closeBracketsKeymap, ...defaultKeymap, ...searchKeymap, ...historyKeymap, ...completionKeymap, indentWithTab,
+      ...closeBracketsKeymap, ...defaultKeymap, ...searchKeymap, ...(o.collab ? yUndoManagerKeymap : historyKeymap), ...completionKeymap, indentWithTab,
     ]),
     ...(o.extra ?? []),
+    o.collab ?? [],
   ];
 }

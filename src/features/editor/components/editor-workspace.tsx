@@ -2,7 +2,7 @@
 
 import type { EditorView } from '@codemirror/view';
 import { useQuery } from '@tanstack/react-query';
-import { Eye, GitMerge, ShieldAlert, WifiOff } from 'lucide-react';
+import { DoorClosed, Eye, ShieldAlert, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isApiError } from '@/shared/api/errors';
@@ -14,7 +14,8 @@ import { Button } from '@/shared/ui/button';
 import { ErrorState, Skeleton } from '@/shared/ui/states';
 import { toast } from '@/shared/ui/toast';
 import { NotFoundView } from '@/shared/ui/not-found-view';
-import { filesApi } from '../api';
+import { filesApi, type FileMeta } from '../api';
+import { collabUrl } from '../collab';
 import { useEditor } from '../store';
 import { CodeEditor } from './code-editor';
 import { CompileLog } from './compile-log';
@@ -28,14 +29,12 @@ import { ShareDialog } from './share-dialog';
 import { StatusBar } from './status-bar';
 
 /** P-14 · editor a tres paneles (Docs/04 §3.1). */
-export function EditorWorkspace({ projectId }: { readonly projectId: string }) {
+export function EditorWorkspace({ projectId, collabPort }: { readonly projectId: string; readonly collabPort: string }) {
   const project = useProject(projectId);
-  // El contenido se pide una sola vez al abrir: después manda la copia de trabajo.
+  // Solo metadatos por REST: el contenido llega por la colaboración en tiempo real.
   const files = useQuery({
-    // Fuera de ['projects', …] a propósito: invalidar el proyecto no debe recargar
-    // el contenido y pisar la copia de trabajo.
     queryKey: ['project-files', projectId],
-    queryFn: () => filesApi.all(projectId),
+    queryFn: () => filesApi.list(projectId),
     enabled: project.isSuccess,
     staleTime: Infinity,
     gcTime: 0,
@@ -45,14 +44,13 @@ export function EditorWorkspace({ projectId }: { readonly projectId: string }) {
   if (project.isLoading || (project.isSuccess && files.isLoading)) return <EditorSkeleton />;
   const error = project.error ?? files.error;
   if (error) {
-    if (isApiError(error) && error.code === 'integrity_violation') return <IntegrityView />;
     if (isApiError(error) && (error.kind === 'not_found' || error.kind === 'forbidden' || error.kind === 'validation')) {
       // 404 y 403 se muestran igual a propósito (T-P07).
       return <NotFoundView project />;
     }
     return <ErrorState error={error} onRetry={() => void (project.error ? project.refetch() : files.refetch())} />;
   }
-  return project.data && files.data ? <Workspace project={project.data} files={files.data} /> : null;
+  return project.data && files.data ? <Workspace project={project.data} files={files.data} collabPort={collabPort} /> : null;
 }
 
 function useOnline(): boolean {
@@ -68,7 +66,7 @@ function useOnline(): boolean {
   return online;
 }
 
-function Workspace({ project, files: initialFiles }: { readonly project: Project; readonly files: Parameters<ReturnType<typeof useEditor.getState>['init']>[1] }) {
+function Workspace({ project, files: initialFiles, collabPort }: { readonly project: Project; readonly files: readonly FileMeta[]; readonly collabPort: string }) {
   const t = getT('editor');
   const view = useEditor((s) => s.view);
   const logOpen = useEditor((s) => s.logOpen);
@@ -76,40 +74,41 @@ function Workspace({ project, files: initialFiles }: { readonly project: Project
   const files = useEditor((s) => s.files);
   const autoCompile = useEditor((s) => s.autoCompile);
   const compile = useEditor((s) => s.compile);
-  const flush = useEditor((s) => s.flush);
-  const pending = useEditor((s) => Object.keys(s.unsaved).length > 0);
-  const conflictPath = useEditor((s) => s.conflictPath);
+  const connection = useEditor((s) => s.connection);
+  const synced = useEditor((s) => s.synced);
+  const pending = useEditor((s) => s.saveState !== 'saved');
+  const readOnly = useEditor((s) => s.readOnly);
+  const notice = useEditor((s) => s.notice);
   const loadedId = useEditor((s) => s.projectId);
   const viewRef = useRef<EditorView | null>(null);
   const container = useRef<HTMLDivElement>(null);
   const [treeWidth, setTreeWidth] = useState(244);
   const [editorWidth, setEditorWidth] = useState(560);
   const [dialog, setDialog] = useState<'share' | 'settings' | null>(null);
-  const online = useOnline();
+  const online = useOnline() && connection !== 'offline';
   const wide = useMediaQuery('(min-width: 1024px)');
-  // Cortesía visual: el servidor rechaza cualquier escritura de un lector o revisor.
-  const readOnly = !project.allowedActions.includes('edit_content');
-  const ready = loadedId === project.id;
+  const ready = loadedId === project.id && synced;
 
   useEffect(() => {
-    useEditor.getState().init(project.id, initialFiles, project.mainFile, readOnly);
-    // Solo al abrir el proyecto: después la copia de trabajo es la referencia.
+    // Cortesía visual inicial: el servidor confirma el rol en el saludo del socket.
+    const ro = !project.allowedActions.includes('edit_content');
+    useEditor.getState().start(project.id, collabUrl(project.id, collabPort), initialFiles, project.mainFile, ro);
+    return () => useEditor.getState().stop();
+    // Solo al abrir el proyecto.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [project.id, initialFiles]);
+  }, [project.id, initialFiles, collabPort]);
 
-  // Autoguardado (F-157): 700 ms después de la última tecla, cifrado en el servidor.
   useEffect(() => {
-    if (!ready || !pending || readOnly || conflictPath) return;
-    const id = window.setTimeout(() => void flush(), 700);
-    return () => window.clearTimeout(id);
-  }, [files, pending, ready, readOnly, conflictPath, flush]);
+    if (connection === 'unauthenticated') {
+      window.location.assign(`/entrar?next=${encodeURIComponent(window.location.pathname)}&motivo=sesion`);
+    }
+  }, [connection]);
 
-  // Al recuperar la conexión se reintenta lo pendiente.
   useEffect(() => {
-    if (online && ready && pending) void flush();
-  }, [online, ready, pending, flush]);
+    if (notice) toast.error(notice.message);
+  }, [notice]);
 
-  // Aviso del navegador si se intenta cerrar con cambios sin guardar.
+  // Aviso del navegador si se intenta cerrar con cambios que el servidor aún no confirmó.
   useEffect(() => {
     if (!pending) return;
     const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); };
@@ -117,7 +116,7 @@ function Workspace({ project, files: initialFiles }: { readonly project: Project
     return () => window.removeEventListener('beforeunload', warn);
   }, [pending]);
 
-  // Primera compilación al abrir y tamaño inicial del editor según el ancho disponible.
+  // Primera compilación al sincronizar y tamaño inicial del editor según el ancho disponible.
   useEffect(() => {
     if (!ready) return;
     const w = container.current?.clientWidth ?? 1200;
@@ -125,25 +124,22 @@ function Workspace({ project, files: initialFiles }: { readonly project: Project
     if (useEditor.getState().status === 'idle') void useEditor.getState().compile();
   }, [ready]);
 
-  // Autocompilación: 1,5 s después de dejar de escribir (F-121).
+  // Autocompilación: 1,5 s después de dejar de escribir (F-121), también ante cambios de los demás.
   useEffect(() => {
     if (!autoCompile || !ready) return;
     const id = window.setTimeout(() => void compile(), 1500);
     return () => window.clearTimeout(id);
   }, [files, autoCompile, ready, compile]);
 
-  // Estable (sin dependencias): si cambiara en cada render, CodeMirror
-  // reconstruiría su estado en cada pulsación.
+  // Estable (sin dependencias): si cambiara en cada render, CodeMirror reconstruiría su estado.
   const onSave = useCallback(() => {
-    const started = performance.now();
-    void useEditor.getState().flush().then(() => {
-      const e = getT('editor');
-      if (useEditor.getState().saveState === 'saved') {
-        toast.security(e('crypto.savedToast'), e('crypto.savedHint', { ms: Math.max(1, Math.round(performance.now() - started)) }));
-      }
-    });
+    useEditor.getState().flush();
+    const e = getT('editor');
+    toast.security(e('crypto.savedToast'), e('crypto.savedHint'));
   }, []);
 
+  if (connection === 'integrity') return <IntegrityView />;
+  if (connection === 'denied') return <RevokedView />;
   if (!ready) return <EditorSkeleton />;
   // Docs/04 §4: por debajo de 1024 px, un panel cada vez.
   const effective = !wide && view === 'split' ? 'code' : view;
@@ -159,7 +155,6 @@ function Workspace({ project, files: initialFiles }: { readonly project: Project
           <WifiOff className="size-4 text-warn" strokeWidth={1.75} aria-hidden="true" />{t('offlineBanner')}
         </div>
       )}
-      {conflictPath && <ConflictBanner path={conflictPath} />}
       {readOnly && (
         <div role="status" className="flex items-center gap-2 border-b border-line bg-surface-2 px-4 py-1.5 text-[12.5px] text-fg-2">
           <Eye className="size-4 text-fg-3" strokeWidth={1.75} aria-hidden="true" />{t('readonly.banner')}
@@ -193,23 +188,17 @@ function Workspace({ project, files: initialFiles }: { readonly project: Project
   );
 }
 
-/** 409 al guardar: otra pestaña o persona guardó antes. Nada se pisa sin decidirlo. */
-function ConflictBanner({ path }: { readonly path: string }) {
+/** El servidor cerró la sala: acceso revocado o proyecto en la papelera (T-P04). */
+function RevokedView() {
   const t = getT('editor');
-  const [busy, setBusy] = useState<'mine' | 'theirs' | null>(null);
-  const resolve = (keep: 'mine' | 'theirs') => {
-    setBusy(keep);
-    useEditor.getState().resolveConflict(keep).then(
-      () => toast.success(keep === 'mine' ? t('conflict.keptMine') : t('conflict.keptTheirs')),
-      (e: unknown) => toast.error(isApiError(e) ? e.message : t('files.failed')),
-    ).finally(() => setBusy(null));
-  };
   return (
-    <div role="alert" className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line bg-warn-soft px-4 py-2 text-[13px] text-fg">
-      <GitMerge className="size-4 shrink-0 text-warn" strokeWidth={1.75} aria-hidden="true" />
-      <span className="min-w-0 flex-1">{t('conflict.body', { file: path })}</span>
-      <Button size="sm" loading={busy === 'theirs'} disabled={busy !== null} onClick={() => resolve('theirs')}>{t('conflict.theirs')}</Button>
-      <Button size="sm" variant="primary" loading={busy === 'mine'} disabled={busy !== null} onClick={() => resolve('mine')}>{t('conflict.mine')}</Button>
+    <div className="grid min-h-dvh place-items-center bg-bg px-6">
+      <div className="max-w-[520px] animate-rise" role="alert">
+        <div className="grid size-14 place-items-center rounded-[16px] bg-warn-soft text-warn"><DoorClosed className="size-7" strokeWidth={1.5} aria-hidden="true" /></div>
+        <h1 className="mt-5 font-serif text-[30px] font-medium leading-tight tracking-[-0.02em] text-fg">{t('revoked.title')}</h1>
+        <p className="mt-2.5 text-[14px] leading-relaxed text-fg-2">{t('revoked.body')}</p>
+        <Button asChild variant="primary" className="mt-6"><Link href="/proyectos">{t('back')}</Link></Button>
+      </div>
     </div>
   );
 }

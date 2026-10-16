@@ -1,28 +1,25 @@
 'use client';
 
-import { Check, CloudOff, GitMerge, Lock, LockKeyhole, TriangleAlert } from 'lucide-react';
+import { Check, CloudOff, Lock, LockKeyhole } from 'lucide-react';
 import { getT } from '@/shared/i18n';
 import { cn } from '@/shared/lib/cn';
-import { Button } from '@/shared/ui/button';
 import { Popover } from '@/shared/ui/menu';
 import { Spinner } from '@/shared/ui/spinner';
 import { useEditor } from '../store';
 
-const LAYERS = ['c3', 'c4', 'rls', 'occ'] as const;
+const LAYERS = ['c1', 'c2', 'c3', 'c4', 'c5'] as const;
 
 /**
- * P-48 · estado de guardado y qué protege el contenido. Solo describe lo que
- * está implementado: cifrado en reposo (C3), integridad (C4), RLS y control
- * de versiones. El cifrado en el navegador (C1/C2/C5) no forma parte de esta entrega.
+ * P-48 · estado de guardado y las cinco capas criptográficas que recorre
+ * cada cambio (securtex-docs · 14-Criptografia-Multicapa).
  */
 export function CryptoStatus({ online }: { readonly online: boolean }) {
   const t = getT('editor');
   const state = useEditor((s) => s.saveState);
-  const pending = useEditor((s) => Object.keys(s.unsaved).length);
-  const effective = !online && pending ? 'offline' : state;
+  const effective = online ? state : 'offline';
   const label = t(`save.${effective}`);
-  const warn = effective === 'offline' || effective === 'conflict' || effective === 'error';
-  const Icon = effective === 'offline' ? CloudOff : effective === 'conflict' ? GitMerge : TriangleAlert;
+  const warn = effective === 'offline';
+  const Icon = CloudOff;
   return (
     <Popover
       align="start"
@@ -50,12 +47,7 @@ export function CryptoStatus({ online }: { readonly online: boolean }) {
           </li>
         ))}
       </ol>
-      {(effective === 'offline' || effective === 'error') && (
-        <div className="mt-4 flex items-center justify-between gap-3 rounded-[8px] bg-warn-soft px-3 py-2 text-xs text-fg">
-          <span>{t('save.pending', { n: pending })}</span>
-          <Button size="sm" onClick={() => void useEditor.getState().flush()}>{t('save.retry')}</Button>
-        </div>
-      )}
+      {effective === 'offline' && <p className="mt-4 rounded-[8px] bg-warn-soft px-3 py-2 text-xs text-fg">{t('save.offlineHint')}</p>}
     </Popover>
   );
 }

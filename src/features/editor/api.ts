@@ -2,26 +2,28 @@
 
 import { api, unwrap } from '@/shared/api/client';
 import type { components } from '@/shared/api/generated';
+import { envelopeContext, sealForServer } from '@/shared/crypto/transport';
 
 type Schemas = components['schemas'];
 export type FileMeta = Schemas['FileMetaDto'];
-export type FileWithContent = Schemas['FileWithContentDto'];
 export type Analysis = Schemas['AnalysisDto'];
 export type ServerFinding = Schemas['SecurityFindingDto'];
 
 /**
- * Archivos del proyecto en el servidor. Se guardan cifrados (C3) y el servidor
- * verifica su HMAC antes de descifrarlos (C4); aquí solo viajan por HTTPS.
+ * Metadatos y operaciones de archivo por REST. El CONTENIDO viaja por la
+ * colaboración en tiempo real; cuando sale por REST (crear un archivo), va en
+ * un sobre C1 + C2.
  */
 const path = (projectId: string) => ({ params: { path: { projectId } } });
 const filePath = (projectId: string, fileId: string) => ({ params: { path: { projectId, fileId } } });
 
 export const filesApi = {
-  all: (projectId: string) => unwrap(api.GET('/api/v1/projects/{projectId}/files/contents', path(projectId))),
-  one: (projectId: string, fileId: string) => unwrap(api.GET('/api/v1/projects/{projectId}/files/{fileId}', filePath(projectId, fileId))),
-  create: (projectId: string, body: Schemas['CreateFileDto']) => unwrap(api.POST('/api/v1/projects/{projectId}/files', { ...path(projectId), body })),
-  write: (projectId: string, fileId: string, body: Schemas['WriteFileDto']) =>
-    unwrap(api.PUT('/api/v1/projects/{projectId}/files/{fileId}/content', { ...filePath(projectId, fileId), body })),
+  list: (projectId: string) => unwrap(api.GET('/api/v1/projects/{projectId}/files', path(projectId))),
+  create: async (projectId: string, newPath: string, content: string) =>
+    unwrap(api.POST('/api/v1/projects/{projectId}/files', {
+      ...path(projectId),
+      body: { path: newPath, envelope: await sealForServer(content, envelopeContext(projectId, 'file:create')) },
+    })),
   rename: (projectId: string, fileId: string, newPath: string) =>
     unwrap(api.PATCH('/api/v1/projects/{projectId}/files/{fileId}', { ...filePath(projectId, fileId), body: { path: newPath } })),
   remove: (projectId: string, fileId: string) => unwrap(api.DELETE('/api/v1/projects/{projectId}/files/{fileId}', filePath(projectId, fileId))),

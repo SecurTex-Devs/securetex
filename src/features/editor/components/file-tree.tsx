@@ -137,7 +137,6 @@ function FileNode({ file, depth, canEdit, onDialog }: {
   const t = getT('editor');
   const active = useEditor((s) => s.activeFile === file.path);
   const isMain = useEditor((s) => s.mainFile === file.path);
-  const unsaved = useEditor((s) => file.path in s.unsaved);
   const open = useEditor((s) => s.open);
   const name = baseName(file.path);
   const Icon = ICON[file.kind];
@@ -165,7 +164,6 @@ function FileNode({ file, depth, canEdit, onDialog }: {
       >
         <Icon className={cn('size-4 shrink-0', ICON_COLOR[file.kind])} strokeWidth={1.5} aria-hidden="true" />
         <span className="truncate">{name}</span>
-        {unsaved && <span className="size-1.5 shrink-0 rounded-full bg-warn" title={t('files.unsaved')} aria-label={t('files.unsaved')} />}
         {isMain && <Badge size="sm" tone="brand" className="ml-auto">{t('files.main')}</Badge>}
       </button>
       <span className="opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">

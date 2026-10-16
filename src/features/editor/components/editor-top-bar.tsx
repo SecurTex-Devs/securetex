@@ -12,6 +12,7 @@ import { LogoMark } from '@/shared/ui/logo';
 import { Menu, MenuLabel, Tooltip } from '@/shared/ui/menu';
 import { useEditor, type ViewMode } from '../store';
 import { CryptoStatus } from './crypto-popover';
+import { PresenceBar } from './presence-bar';
 
 export function EditorTopBar({ project, online, onShare, onSettings }: {
   readonly project: Project;
@@ -39,6 +40,7 @@ export function EditorTopBar({ project, online, onShare, onSettings }: {
       <div className="hidden md:block"><CryptoStatus online={online} /></div>
 
       <div className="ml-auto flex items-center gap-2">
+        <PresenceBar />
         <Segmented<ViewMode> size="sm" label={t('views.label')} value={view} onValueChange={setView} options={[
           { value: 'code', label: '', icon: <Code2 className="size-3.5" strokeWidth={1.75} />, title: t('views.code') },
           { value: 'split', label: '', icon: <Columns2 className="size-3.5" strokeWidth={1.75} />, title: t('views.split') },

@@ -14,7 +14,19 @@ const SESSION_COOKIES = ['stx_at', 'stx_rt', '__Host-stx_at', '__Secure-stx_rt']
 /** Páginas que reciben un token en el fragmento: no deben filtrar nada por Referer. */
 const NO_REFERRER_PATHS = ['/verificar', '/nueva-contrasena'];
 
-function contentSecurityPolicy(nonce: string, dev: boolean): string {
+/**
+ * Origen del WebSocket de colaboración: el MISMO host con el que se abrió la
+ * página (localhost o la IP de la red local) y el puerto del servicio. El
+ * host se valida antes de escribirlo en la cabecera (sin inyección en la CSP).
+ */
+function collabSource(host: string | null): string {
+  const port = process.env['COLLAB_PUBLIC_PORT'] ?? '4000';
+  const hostname = (host ?? '').replace(/:\d+$/, '');
+  if (!/^[a-z0-9.-]{1,253}$/i.test(hostname) || !/^\d{2,5}$/.test(port)) return '';
+  return ` ws://${hostname}:${port} wss://${hostname}:${port}`;
+}
+
+function contentSecurityPolicy(nonce: string, dev: boolean, collab: string): string {
   return [
     "default-src 'none'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ''}`,
@@ -24,7 +36,7 @@ function contentSecurityPolicy(nonce: string, dev: boolean): string {
     "style-src-attr 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
-    `connect-src 'self'${dev ? ' ws: wss:' : ''}`,
+    `connect-src 'self'${collab}${dev ? ' ws: wss:' : ''}`,
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     "frame-ancestors 'none'",
@@ -47,7 +59,7 @@ export function middleware(request: NextRequest) {
   }
 
   const nonce = btoa(crypto.randomUUID());
-  const csp = contentSecurityPolicy(nonce, process.env.NODE_ENV !== 'production');
+  const csp = contentSecurityPolicy(nonce, process.env.NODE_ENV !== 'production', collabSource(request.headers.get('host')));
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-nonce', nonce);
