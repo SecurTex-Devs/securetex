@@ -6,6 +6,7 @@ import { loadEnv } from '../../config/env';
 const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
 const UUID_HEX = /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i;
 const TREE_DOMAIN = 'securtex:c4b:tree:v1';
+const SYNCTEX_DOMAIN = Buffer.from('securtex:c4b:synctex:v1', 'utf8');
 
 export interface SourceTreeInput {
   readonly engine: string;
@@ -16,6 +17,11 @@ export interface SourceTreeInput {
 export interface ArtifactSignature {
   readonly pdfSha256: Buffer;
   readonly signature: Buffer;
+}
+
+function idBytes(compilationId: string): Buffer {
+  if (!UUID_HEX.test(compilationId)) throw new Error('compilationId debe ser un UUID');
+  return Buffer.from(compilationId.replace(/-/g, ''), 'hex');
 }
 
 const sha256 = (...parts: readonly (string | Uint8Array)[]) => {
@@ -37,6 +43,13 @@ const sha256 = (...parts: readonly (string | Uint8Array)[]) => {
  * propósito: ese contenedor ejecuta código hostil, y kpathsea expande
  * variables de entorno en los nombres de archivo (`\input{$CLAVE}` la
  * imprimiría en el registro). El sandbox no tiene ningún secreto que filtrar.
+ *
+ * El mapa SyncTeX que acompaña al PDF lleva su propia firma, separada por
+ * dominio y atada al PDF de la misma compilación:
+ *
+ *   firma = Ed25519("securtex:c4b:synctex:v1" ‖ SHA-256(mapa) ‖ compilationId ‖ SHA-256(pdf))
+ *
+ * Así la firma del PDF no cambia y un mapa no se puede pegar a otro PDF.
  */
 @Injectable()
 export class ArtifactSigner {
@@ -75,9 +88,15 @@ export class ArtifactSigner {
   }
 
   sign(pdf: Uint8Array, compilationId: string, sourceTreeHash: Buffer): ArtifactSignature {
-    if (!UUID_HEX.test(compilationId)) throw new Error('compilationId debe ser un UUID');
     const pdfSha256 = sha256(pdf);
-    const message = Buffer.concat([pdfSha256, Buffer.from(compilationId.replace(/-/g, ''), 'hex'), sourceTreeHash]);
+    const message = Buffer.concat([pdfSha256, idBytes(compilationId), sourceTreeHash]);
     return { pdfSha256, signature: sign(null, message, this.privateKey) };
+  }
+
+  signSynctex(map: Uint8Array, compilationId: string, pdfSha256: Buffer): { readonly sha256: Buffer; readonly signature: Buffer } {
+    if (pdfSha256.length !== 32) throw new Error('pdfSha256 debe tener 32 bytes');
+    const digest = sha256(map);
+    const message = Buffer.concat([SYNCTEX_DOMAIN, digest, idBytes(compilationId), pdfSha256]);
+    return { sha256: digest, signature: sign(null, message, this.privateKey) };
   }
 }

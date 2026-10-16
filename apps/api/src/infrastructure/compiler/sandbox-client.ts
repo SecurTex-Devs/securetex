@@ -21,6 +21,8 @@ export interface SandboxOutcome {
   readonly durationMs: number;
   readonly log: string;
   readonly pdf: Buffer;
+  /** Mapa SyncTeX que calculó el trabajador (vacío si no hay). Sin validar todavía. */
+  readonly synctex: Buffer;
 }
 
 const STATUSES = new Set(['success', 'errors', 'failed', 'timeout', 'too_large']);
@@ -71,10 +73,14 @@ export class SandboxClient {
       }
     }
     // El sandbox no respondió ni con su propio plazo: se trata como plazo vencido.
-    return { status: 'timeout', runs: 0, durationMs: Date.now() - started, log: '', pdf: Buffer.alloc(0) };
+    return { status: 'timeout', runs: 0, durationMs: Date.now() - started, log: '', pdf: Buffer.alloc(0), synctex: Buffer.alloc(0) };
   }
 
-  /** u32be(longitud) ‖ cabecera JSON ‖ PDF. Cualquier desviación es un fallo, nunca un éxito. */
+  /**
+   * u32be(longitud) ‖ cabecera JSON ‖ PDF ‖ mapa SyncTeX, con `pdfBytes` y
+   * `synctexBytes` en la cabecera sumando exactamente el resto. Cualquier
+   * desviación es un fallo, nunca un éxito.
+   */
   private parse(raw: Buffer): SandboxOutcome {
     if (raw.length < 4) throw this.unavailable();
     const headerLength = raw.readUInt32BE(0);
@@ -87,12 +93,18 @@ export class SandboxClient {
     }
     const h = (header ?? {}) as Record<string, unknown>;
     const status = typeof h['status'] === 'string' && STATUSES.has(h['status']) ? (h['status'] as SandboxOutcome['status']) : 'failed';
+    const body = raw.subarray(4 + headerLength);
+    const pdfBytes = h['pdfBytes'];
+    const synctexBytes = h['synctexBytes'];
+    const sized = (n: unknown): n is number => typeof n === 'number' && Number.isSafeInteger(n) && n >= 0;
+    if (!sized(pdfBytes) || !sized(synctexBytes) || pdfBytes + synctexBytes !== body.length) throw this.unavailable();
     return {
       status,
       runs: typeof h['runs'] === 'number' ? h['runs'] : 0,
       durationMs: typeof h['durationMs'] === 'number' ? h['durationMs'] : 0,
       log: typeof h['log'] === 'string' ? h['log'] : '',
-      pdf: Buffer.from(raw.subarray(4 + headerLength)),
+      pdf: Buffer.from(body.subarray(0, pdfBytes)),
+      synctex: Buffer.from(body.subarray(pdfBytes)),
     };
   }
 

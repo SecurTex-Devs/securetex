@@ -2,6 +2,7 @@ import { createHash, createPublicKey, generateKeyPairSync, randomBytes, randomUU
 import { beforeAll, describe, expect, it } from 'vitest';
 import { parseCompileLog, pdfRejection, sanitizeCompileLog } from '../../src/domain/compile';
 import { COMPILE } from '../../src/domain/constants';
+import { validateSynctex } from '../../src/domain/synctex';
 
 const pdfOf = (body: string) => Buffer.from(`%PDF-1.5\n${body.padEnd(80, ' ')}\n%%EOF\n`, 'latin1');
 
@@ -133,5 +134,71 @@ describe('Firma Ed25519 de los artefactos (C4b)', () => {
 
   it('rechaza un compilationId que no es un UUID', () => {
     expect(() => signer.sign(pdfOf('x'), 'no-es-un-uuid', Buffer.alloc(32))).toThrow();
+  });
+
+  it('el mapa SyncTeX se firma aparte, atado al PDF y a la compilación', () => {
+    const map = Buffer.from('{"v":1,"files":["main.tex"],"pages":[]}');
+    const pdfSha256 = createHash('sha256').update(pdfOf('contenido')).digest();
+    const id = randomUUID();
+    const { sha256, signature } = signer.signSynctex(map, id, pdfSha256);
+    const msg = (m: Buffer, i: string, p: Buffer) => Buffer.concat([Buffer.from('securtex:c4b:synctex:v1'), createHash('sha256').update(m).digest(), Buffer.from(i.replace(/-/g, ''), 'hex'), p]);
+    expect(sha256.equals(createHash('sha256').update(map).digest())).toBe(true);
+    expect(verify(null, msg(map, id, pdfSha256), publicKey(), signature)).toBe(true);
+    expect(verify(null, msg(Buffer.from(map.toString().replace('main', 'otro')), id, pdfSha256), publicKey(), signature)).toBe(false);
+    expect(verify(null, msg(map, randomUUID(), pdfSha256), publicKey(), signature)).toBe(false);
+    expect(verify(null, msg(map, id, Buffer.alloc(32)), publicKey(), signature)).toBe(false);
+    // Separación de dominio: la firma del mapa nunca vale como firma de un PDF.
+    expect(verify(null, Buffer.concat([createHash('sha256').update(map).digest(), Buffer.from(id.replace(/-/g, ''), 'hex'), pdfSha256]), publicKey(), signature)).toBe(false);
+  });
+});
+
+describe('Validación del mapa SyncTeX del sandbox', () => {
+  const project = new Set(['main.tex', 'cap/intro.tex']);
+  const json = (o: unknown) => Buffer.from(JSON.stringify(o));
+  const good = { v: 1, files: ['main.tex', 'cap/intro.tex'], pages: [{ b: [0, 3, 1338, 1248, 3437, 100], r: [1, 2, 1338, 2000, 1925] }] };
+
+  it('acepta un mapa correcto y lo reserializa sin campos ajenos', () => {
+    const out = validateSynctex(json({ ...good, extra: '<script>', pages: [{ ...good.pages[0], z: 1 }] }), project);
+    expect('map' in out && JSON.parse(out.map.toString())).toEqual(good);
+  });
+
+  it('descarta rutas absolutas del contenedor, «..» y archivos ajenos al proyecto, con sus registros', () => {
+    const out = validateSynctex(json({
+      v: 1,
+      files: ['/work/0b1c/src/main.tex', 'main.tex', '../../etc/passwd', '/usr/share/texlive/texmf-dist/tex/latex/base/article.cls', 'otro.tex', 'C:/x.tex'],
+      pages: [{ b: [0, 1, 0, 0, 10, 10, 1, 2, 0, 0, 10, 10, 3, 9, 0, 0, 10, 10], r: [2, 1, 0, 0, 0, 4, 5, 0, 0, 0] }],
+    }), project);
+    expect('map' in out).toBe(true);
+    if (!('map' in out)) return;
+    const map = out.map.toString();
+    expect(JSON.parse(map)).toEqual({ v: 1, files: ['main.tex'], pages: [{ b: [0, 2, 0, 0, 10, 10], r: [] }] });
+    expect(map).not.toMatch(/\/work|\/usr|passwd|\.\./);
+  });
+
+  it('sin ningún archivo del proyecto no hay mapa', () => {
+    expect(validateSynctex(json({ v: 1, files: ['/etc/passwd'], pages: [] }), project)).toEqual({ rejection: 'path' });
+    expect(validateSynctex(Buffer.alloc(0), project)).toEqual({ rejection: 'empty' });
+  });
+
+  it.each([
+    ['no es JSON', Buffer.from('Input:1:/etc/passwd'), 'malformed'],
+    ['otra versión', json({ ...good, v: 2 }), 'malformed'],
+    ['cajas incompletas', json({ ...good, pages: [{ b: [0, 1, 2], r: [] }] }), 'malformed'],
+    ['índice de archivo fuera de rango', json({ ...good, pages: [{ b: [7, 1, 0, 0, 1, 1], r: [] }] }), 'out_of_bounds'],
+    ['línea cero', json({ ...good, pages: [{ b: [], r: [0, 0, 0, 0, 0] }] }), 'out_of_bounds'],
+    ['coordenada desmesurada', json({ ...good, pages: [{ b: [0, 1, 1e12, 0, 1, 1], r: [] }] }), 'out_of_bounds'],
+    ['número no entero', json({ ...good, pages: [{ b: [0, 1, 0.5, 0, 1, 1], r: [] }] }), 'out_of_bounds'],
+    ['ancho negativo', json({ ...good, pages: [{ b: [0, 1, 0, 0, -1, 1], r: [] }] }), 'out_of_bounds'],
+    ['tramo invertido', json({ ...good, pages: [{ b: [], r: [0, 1, 10, 5, 0] }] }), 'out_of_bounds'],
+    ['demasiadas páginas', json({ ...good, pages: Array.from({ length: COMPILE.SYNCTEX_MAX_PAGES + 1 }, () => ({ b: [], r: [] })) }), 'out_of_bounds'],
+    ['más bytes de los permitidos', Buffer.alloc(COMPILE.MAX_SYNCTEX_BYTES + 1, 0x20), 'too_large'],
+  ])('rechaza un mapa con %s', (_caso, raw, motivo) => {
+    expect(validateSynctex(raw, project)).toEqual({ rejection: motivo });
+  });
+
+  it('acota el total de registros aunque cada página sea pequeña', () => {
+    const page = { b: Array.from({ length: 6000 }, (_, i) => (i % 6 === 1 ? 1 : 0)), r: [] };
+    const pages = Array.from({ length: Math.ceil(COMPILE.SYNCTEX_MAX_NUMBERS / 6000) + 1 }, () => page);
+    expect(validateSynctex(json({ ...good, pages }), project)).toEqual({ rejection: 'out_of_bounds' });
   });
 });

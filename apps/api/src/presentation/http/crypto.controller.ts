@@ -30,7 +30,7 @@ export class CryptoController {
   @Get('artifact-key')
   @Policy('public')
   @SkipThrottle()
-  @ApiOperation({ summary: 'Clave pública de firma de artefactos (C4b)', description: 'Ed25519 en base64url. Firma = Ed25519(SHA-256(pdf) ‖ compilationId ‖ sourceTreeHash).' })
+  @ApiOperation({ summary: 'Clave pública de firma de artefactos (C4b)', description: 'Ed25519 en base64url. Firma = Ed25519(SHA-256(pdf) ‖ compilationId ‖ sourceTreeHash). El mapa SyncTeX se firma con la misma clave: Ed25519("securtex:c4b:synctex:v1" ‖ SHA-256(mapa) ‖ compilationId ‖ SHA-256(pdf)).' })
   artifactKey(): ArtifactKeyDto {
     return { alg: 'Ed25519', key: this.signer.publicKeyRaw.toString('base64url'), message: 'sha256(pdf) || compilationId[16] || sourceTreeHash[32]' };
   }

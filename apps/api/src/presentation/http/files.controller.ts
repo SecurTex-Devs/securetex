@@ -167,24 +167,27 @@ export class FilesController {
 }
 
 /**
- * Texto plano del sobre de una compilación: u32be(longitud) ‖ cabecera JSON ‖
- * bytes del PDF. Binario a propósito: un PDF de 16 MB no se infla con un
- * segundo base64 dentro del JSON.
+ * Texto plano del sobre de una compilación (v2): u32be(longitud) ‖ cabecera
+ * JSON ‖ bytes del PDF ‖ mapa SyncTeX. `pdfBytes` y `synctexBytes` delimitan
+ * cada parte. Binario a propósito: un PDF de 16 MB no se infla con un segundo
+ * base64 dentro del JSON. El mapa lleva su propia firma (`synctex.signature`).
  */
 function compileFrame(out: CompileOutput): Buffer {
   const b64 = (b: Buffer) => b.toString('base64url');
   const header = Buffer.from(JSON.stringify({
-    v: 1,
+    v: 2,
     compilationId: out.compilationId, status: out.status, engine: out.engine, mainFile: out.mainFile,
     durationMs: out.durationMs, runs: out.runs, log: out.log, diagnostics: out.diagnostics, warnings: out.warnings,
     pdfBytes: out.pdf?.length ?? 0,
     signature: out.signature
       ? { alg: out.signature.alg, pdfSha256: b64(out.signature.pdfSha256), sourceTreeHash: b64(out.signature.sourceTreeHash), value: b64(out.signature.value) }
       : null,
+    synctexBytes: out.synctex?.map.length ?? 0,
+    synctex: out.synctex ? { alg: 'Ed25519', sha256: b64(out.synctex.sha256), value: b64(out.synctex.signature) } : null,
   }), 'utf8');
   const length = Buffer.alloc(4);
   length.writeUInt32BE(header.length);
-  return Buffer.concat([length, header, out.pdf ?? Buffer.alloc(0)]);
+  return Buffer.concat([length, header, out.pdf ?? Buffer.alloc(0), out.synctex?.map ?? Buffer.alloc(0)]);
 }
 
 @ApiTags('Proyectos')
@@ -224,7 +227,7 @@ export class CompileController {
   @replyKeyHeader
   @ApiOperation({
     summary: 'Compilar el proyecto en el sandbox y devolver el PDF firmado',
-    description: 'Autoriza `compile`, repite el análisis de seguridad (422 `compile_blocked` si hay algo bloqueante) y compila en un contenedor sin red, de solo lectura, sin capacidades y con -no-shell-escape, openin_any=p, openout_any=p y un plazo de 30 s. El PDF se valida (firma %PDF, %%EOF, 16 MB), se firma con Ed25519 (C4b) y viaja en un sobre C1 + C2 con contexto `compile:pdf`: u32be(longitud) ‖ cabecera JSON ‖ PDF. 429 `compile_busy` si ya hay una compilación en curso; 503 `compiler_unavailable` si el sandbox no responde.',
+    description: 'Autoriza `compile`, repite el análisis de seguridad (422 `compile_blocked` si hay algo bloqueante) y compila en un contenedor sin red, de solo lectura, sin capacidades y con -no-shell-escape, openin_any=p, openout_any=p y un plazo de 30 s. El PDF se valida (firma %PDF, %%EOF, 16 MB), se firma con Ed25519 (C4b) y viaja en un sobre C1 + C2 con contexto `compile:pdf`: u32be(longitud) ‖ cabecera JSON ‖ PDF ‖ mapa SyncTeX (v2; `pdfBytes` y `synctexBytes` delimitan cada parte). El mapa SyncTeX (PDF ↔ archivo:línea, solo rutas del proyecto, 4 MB como mucho) se valida y se firma aparte: Ed25519("securtex:c4b:synctex:v1" ‖ SHA-256(mapa) ‖ compilationId ‖ SHA-256(pdf)). 429 `compile_busy` si ya hay una compilación en curso; 503 `compiler_unavailable` si el sandbox no responde.',
   })
   async compile(@Param('projectId', uuid) projectId: string, @Headers(REPLY_KEY) replyKey: string | undefined, @CurrentActor() actor: Actor, @Meta() meta: RequestMeta): Promise<SealedResponseDto> {
     if (!replyKey) throw new ValidationError({ replyKey: 'Falta la cabecera X-SecurTex-Reply-Key.' }, 'Falta la clave efímera del cliente para cifrar la respuesta.');

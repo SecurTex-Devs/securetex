@@ -7,6 +7,7 @@ import {
 import { COMPILE } from '../../domain/constants';
 import { CompileBlockedError, RateLimitedError, ValidationError } from '../../domain/errors';
 import type { SecurityFinding } from '../../domain/latex-analyzer';
+import { validateSynctex, type SynctexRejection } from '../../domain/synctex';
 import { SafeFilePath } from '../../domain/values';
 import { SandboxClient, type SandboxRequest } from '../../infrastructure/compiler/sandbox-client';
 import { ArtifactSigner } from '../../infrastructure/security/artifact-signer';
@@ -20,6 +21,13 @@ export interface CompileSignature {
   readonly pdfSha256: Buffer;
   readonly sourceTreeHash: Buffer;
   readonly value: Buffer;
+}
+
+/** Mapa SyncTeX validado y reserializado por la API, con su propia firma Ed25519. */
+export interface CompileSynctex {
+  readonly map: Buffer;
+  readonly sha256: Buffer;
+  readonly signature: Buffer;
 }
 
 export interface CompileOutput {
@@ -36,6 +44,7 @@ export interface CompileOutput {
   readonly warnings: readonly SecurityFinding[];
   readonly pdf: Buffer | null;
   readonly signature: CompileSignature | null;
+  readonly synctex: CompileSynctex | null;
 }
 
 interface Job {
@@ -92,11 +101,17 @@ export class CompileService {
       else pdf = outcome.pdf;
     }
     const signature = pdf ? this.sign(pdf, compilationId, job.request) : null;
-    await this.audit.record(this.auditEntry(actor, job, { compilationId, status, rejection, durationMs: outcome.durationMs, runs: outcome.runs, pdfBytes: pdf?.length ?? 0 }), m);
+    // El mapa solo acompaña a un PDF entregado, y solo si supera la validación.
+    const checked = pdf && signature ? validateSynctex(outcome.synctex, new Set(job.request.files.map((f) => f.path))) : null;
+    const synctex = checked && 'map' in checked && signature
+      ? { map: checked.map, ...this.signer.signSynctex(checked.map, compilationId, signature.pdfSha256) }
+      : null;
+    const synctexRejection = checked && 'rejection' in checked ? checked.rejection : null;
+    await this.audit.record(this.auditEntry(actor, job, { compilationId, status, rejection, durationMs: outcome.durationMs, runs: outcome.runs, pdfBytes: pdf?.length ?? 0, synctexBytes: synctex?.map.length ?? 0, synctexRejection }), m);
     return {
       compilationId, status, engine: job.request.engine, mainFile: job.request.mainFile,
       durationMs: outcome.durationMs, runs: outcome.runs, log, diagnostics: parseCompileLog(log),
-      warnings: job.warnings, pdf, signature,
+      warnings: job.warnings, pdf, signature, synctex,
     };
   }
 
@@ -106,7 +121,7 @@ export class CompileService {
     return { alg: 'Ed25519', pdfSha256, sourceTreeHash, value: signature };
   }
 
-  private auditEntry(actor: Actor, job: Job, r: { compilationId: string; status: CompileStatus; rejection: string | null; durationMs: number; runs: number; pdfBytes: number }): AuditEntry {
+  private auditEntry(actor: Actor, job: Job, r: { compilationId: string; status: CompileStatus; rejection: string | null; durationMs: number; runs: number; pdfBytes: number; synctexBytes: number; synctexRejection: SynctexRejection | null }): AuditEntry {
     const delivered = r.status === 'success' || r.status === 'errors';
     const suspicious = r.status === 'timeout' || r.status === 'too_large' || r.status === 'rejected';
     return {
@@ -117,7 +132,11 @@ export class CompileService {
       outcome: delivered ? 'success' : 'failure',
       ...(delivered ? {} : { reason: r.rejection ?? r.status }),
       // Nunca contenido del documento ni del registro (RS-052): solo metadatos.
-      metadata: { compilationId: r.compilationId, engine: job.request.engine, status: r.status, durationMs: r.durationMs, runs: r.runs, pdfBytes: r.pdfBytes },
+      metadata: {
+        compilationId: r.compilationId, engine: job.request.engine, status: r.status, durationMs: r.durationMs, runs: r.runs, pdfBytes: r.pdfBytes,
+        // 'empty' es lo normal sin mapa; cualquier otro motivo es un mapa del sandbox descartado.
+        synctexBytes: r.synctexBytes, ...(r.synctexRejection && r.synctexRejection !== 'empty' ? { synctexRejected: r.synctexRejection } : {}),
+      },
     };
   }
 

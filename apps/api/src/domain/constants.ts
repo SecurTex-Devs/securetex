@@ -121,6 +121,14 @@ export const COMPILE = {
   /** Registro que se devuelve a la interfaz, ya saneado. */
   MAX_LOG_CHARS: 200_000,
   MAX_DIAGNOSTICS: 200,
+  /** Mapa SyncTeX (PDF ↔ fuente): por encima de estos topes no se entrega, el PDF sí. */
+  MAX_SYNCTEX_BYTES: 4 * 1024 * 1024,
+  SYNCTEX_MAX_PAGES: 2000,
+  SYNCTEX_MAX_FILES: 200,
+  SYNCTEX_MAX_NUMBERS: 600_000,
+  SYNCTEX_MAX_LINE: 1_000_000,
+  /** Décimas de bp: 200 000 = 20 000 bp, más que la página PDF más grande (14 400 bp). */
+  SYNCTEX_MAX_COORD: 200_000,
   /** Compilaciones simultáneas en todo el servicio y por persona. */
   MAX_IN_FLIGHT: 4,
   MAX_IN_FLIGHT_PER_USER: 1,
