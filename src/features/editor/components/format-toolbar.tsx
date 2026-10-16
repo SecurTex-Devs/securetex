@@ -9,8 +9,10 @@ import { getT } from '@/shared/i18n';
 import { cn } from '@/shared/lib/cn';
 import { Button, IconButton } from '@/shared/ui/button';
 import { Popover, Tooltip } from '@/shared/ui/menu';
-import { insertText, wrapSelection } from '../lib/codemirror-setup';
+import { insertText } from '../lib/codemirror-setup';
+import { insertCommand } from '../lib/latex-commands';
 import { useEditor } from '../store';
+import { CommandPalette } from './command-palette';
 
 const SYMBOLS: Readonly<Record<'greek' | 'operators' | 'relations' | 'arrows', ReadonlyArray<readonly [string, string, string]>>> = {
   greek: [['α', '\\alpha', 'alfa'], ['β', '\\beta', 'beta'], ['γ', '\\gamma', 'gamma'], ['δ', '\\delta', 'delta'], ['ε', '\\epsilon', 'épsilon'], ['θ', '\\theta', 'theta'], ['λ', '\\lambda', 'lambda'], ['μ', '\\mu', 'mu'], ['π', '\\pi', 'pi'], ['σ', '\\sigma', 'sigma'], ['φ', '\\phi', 'fi'], ['ω', '\\omega', 'omega'], ['Δ', '\\Delta', 'delta mayúscula'], ['Σ', '\\Sigma', 'sigma mayúscula'], ['Ω', '\\Omega', 'omega mayúscula'], ['Φ', '\\Phi', 'fi mayúscula']],
@@ -29,14 +31,15 @@ export function FormatToolbar({ viewRef, readOnly }: { readonly viewRef: RefObje
   const run = (fn: (view: EditorView) => void) => () => { const view = v(); if (view) fn(view); };
 
   const actions = [
-    { label: t('toolbar.bold'), kbd: 'Ctrl+B', icon: Bold, fn: run((x) => wrapSelection(x, '\\textbf{', '}', 'texto')) },
-    { label: t('toolbar.italic'), kbd: 'Ctrl+I', icon: Italic, fn: run((x) => wrapSelection(x, '\\emph{', '}', 'texto')) },
-    { label: t('toolbar.section'), icon: Heading2, fn: run((x) => wrapSelection(x, '\\section{', '}', 'Título')) },
-    { label: t('toolbar.math'), icon: SquareFunction, fn: run((x) => wrapSelection(x, '$', '$', 'x^2')) },
-    { label: t('toolbar.list'), icon: List, fn: run((x) => insertText(x, '\\begin{itemize}\n  \\item \n\\end{itemize}\n')) },
-    { label: t('toolbar.cite'), icon: Quote, fn: run((x) => wrapSelection(x, '\\cite{', '}', '')) },
-    { label: t('toolbar.ref'), icon: Link2, fn: run((x) => wrapSelection(x, '\\ref{', '}', '')) },
-    { label: t('toolbar.figure'), icon: ImageIcon, fn: run((x) => insertText(x, '\\begin{figure}[h]\n  \\centering\n  \\includegraphics[width=0.8\\linewidth]{figuras/}\n  \\caption{}\n  \\label{fig:}\n\\end{figure}\n')) },
+    // Mismas plantillas que la paleta: el cursor queda en el hueco y Tab salta al siguiente.
+    { label: t('toolbar.bold'), kbd: 'Ctrl+B', icon: Bold, fn: run((x) => insertCommand(x, '\\textbf{${texto}}')) },
+    { label: t('toolbar.italic'), kbd: 'Ctrl+I', icon: Italic, fn: run((x) => insertCommand(x, '\\emph{${texto}}')) },
+    { label: t('toolbar.section'), icon: Heading2, fn: run((x) => insertCommand(x, '\\section{${Título}}')) },
+    { label: t('toolbar.math'), icon: SquareFunction, fn: run((x) => insertCommand(x, '$${x^2}$')) },
+    { label: t('toolbar.list'), icon: List, fn: run((x) => insertCommand(x, '\\begin{itemize}\n  \\item ${elemento}\n\\end{itemize}')) },
+    { label: t('toolbar.cite'), icon: Quote, fn: run((x) => insertCommand(x, '\\cite{${clave}}')) },
+    { label: t('toolbar.ref'), icon: Link2, fn: run((x) => insertCommand(x, '\\ref{${sec:nombre}}')) },
+    { label: t('toolbar.figure'), icon: ImageIcon, fn: run((x) => insertCommand(x, '\\begin{figure}[h]\n  \\centering\n  \\includegraphics[width=0.8\\linewidth]{${figuras/imagen}}\n  \\caption{${Descripción}}\n  \\label{fig:${nombre}}\n\\end{figure}')) },
   ];
 
   return (
@@ -47,6 +50,7 @@ export function FormatToolbar({ viewRef, readOnly }: { readonly viewRef: RefObje
         </Tooltip>
       ))}
       {!readOnly && <SymbolPalette onInsert={(cmd) => { const view = v(); if (view) insertText(view, cmd); }} />}
+      {!readOnly && <><span className="mx-1 h-4 w-px bg-line" aria-hidden="true" /><CommandPalette viewRef={viewRef} /></>}
       <span className="mx-1 h-4 w-px bg-line" aria-hidden="true" />
       <Tooltip content={`${t('toolbar.search')} · Ctrl+F`}>
         <IconButton size="sm" className="size-7" label={t('toolbar.search')} icon={<Search className="size-[15px]" strokeWidth={1.6} />} onClick={run((x) => openSearchPanel(x))} />

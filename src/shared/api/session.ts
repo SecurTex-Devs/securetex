@@ -51,6 +51,23 @@ export interface EditorPrefs {
 
 export const DEFAULT_EDITOR_PREFS: EditorPrefs = { fontSize: 14, lineHeight: 1.75, wrap: true, lineNumbers: true, autocomplete: true, autoclose: true };
 
+/** Todas las preferencias guardadas (cifradas en el servidor), tal cual. */
+export function useRawPreferences() {
+  return useQuery({ queryKey: ['me', 'preferences'], queryFn: () => unwrap(api.GET('/api/v1/me/preferences')), staleTime: 60_000 });
+}
+
+/** Guarda un cambio parcial sin perder las demás preferencias. */
+export function useSavePreferencesPatch() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (patch: Record<string, unknown>) => {
+      const current = (qc.getQueryData<{ prefs: Record<string, unknown> }>(['me', 'preferences'])?.prefs ?? {});
+      return unwrap(api.PUT('/api/v1/me/preferences', { body: { prefs: { ...current, ...patch } } }));
+    },
+    onSuccess: (data) => qc.setQueryData(['me', 'preferences'], data),
+  });
+}
+
 /** Preferencias del editor guardadas en la cuenta (F-021). Misma clave que en Ajustes. */
 export function useEditorPrefs(): EditorPrefs {
   const { data } = useQuery({ queryKey: ['me', 'preferences'], queryFn: () => unwrap(api.GET('/api/v1/me/preferences')), staleTime: 60_000 });
