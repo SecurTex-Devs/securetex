@@ -114,8 +114,12 @@ export const account = {
   'linked.local': 'Correo y contraseña',
   'linked.linkedOn': 'Vinculada el {date}',
   'linked.notLinked': 'No vinculada',
-  'linked.link': 'Vincular',
   'linked.unlink': 'Desvincular',
+  'linked.done': '{provider} vinculado a tu cuenta',
+  'linked.removed': 'Proveedor desvinculado',
+  'linked.taken': 'Esa cuenta del proveedor ya está vinculada a otro usuario.',
+  'linked.notConfigured': 'No configurado en este servidor',
+  'linked.link': 'Vincular',
   'linked.rule': 'Siempre debe quedarte una forma de entrar',
   'linked.ruleBody': 'No puedes desvincular tu último método si no tienes contraseña. Y nunca vinculamos una cuenta solo porque el correo coincida: hay que hacerlo desde aquí, con la sesión iniciada.',
 

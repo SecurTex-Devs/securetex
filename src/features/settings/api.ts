@@ -52,6 +52,25 @@ export function useIdentities() {
   return useQuery({ queryKey: accountKeys.identities, queryFn: () => unwrap(api.GET('/api/v1/me/identities')) });
 }
 
+export function useEnabledProviders() {
+  return useQuery({ queryKey: ['auth', 'providers'], queryFn: () => unwrap(api.GET('/api/v1/auth/providers')), staleTime: 300_000 });
+}
+
+/** Devuelve la URL del proveedor; el navegador va allí y vuelve a Ajustes ya vinculado. */
+export function useLinkProvider() {
+  return useMutation({
+    mutationFn: (provider: 'google' | 'microsoft') => unwrap(api.POST('/api/v1/auth/oidc/{provider}/link', { params: { path: { provider } } })),
+  });
+}
+
+export function useUnlinkIdentity() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (identityId: string) => unwrap(api.DELETE('/api/v1/me/identities/{identityId}', { params: { path: { identityId } } })),
+    onSuccess: () => qc.invalidateQueries({ queryKey: accountKeys.identities }),
+  });
+}
+
 export function useReauth() {
   const qc = useQueryClient();
   return useMutation({

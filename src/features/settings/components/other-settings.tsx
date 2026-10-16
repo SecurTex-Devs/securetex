@@ -14,7 +14,7 @@ import { Field, Input } from '@/shared/ui/field';
 import { Notice } from '@/shared/ui/notice';
 import { Skeleton } from '@/shared/ui/states';
 import { toast } from '@/shared/ui/toast';
-import { exportMyData, useDeleteAccount, useDeletionImpact, useIdentities, usePreferences, useSavePreferences } from '../api';
+import { exportMyData, useDeleteAccount, useDeletionImpact, useEnabledProviders, useIdentities, useLinkProvider, usePreferences, useSavePreferences, useUnlinkIdentity } from '../api';
 import { useSensitive } from './reauth';
 import { Panel, SettingsHeader } from './settings-shell';
 
@@ -24,10 +24,39 @@ const PROVIDERS = [
   { id: 'microsoft', label: 'Microsoft', icon: <span className="grid grid-cols-2 gap-px" aria-hidden="true">{['#F25022', '#7FBA00', '#00A4EF', '#FFB900'].map((c) => <span key={c} className="size-2" style={{ background: c }} />)}</span> },
 ] as const;
 
-/** P-30 · cuentas vinculadas (RF-005). */
+/** P-30 · cuentas vinculadas (RF-005). Vincular y desvincular exigen reautenticación. */
 export function LinkedAccounts() {
   const t = getT('account');
   const identities = useIdentities();
+  const enabled = useEnabledProviders();
+  const link = useLinkProvider();
+  const unlink = useUnlinkIdentity();
+  const sensitive = useSensitive();
+  const fail = (e: unknown) => toast.error(isApiError(e) ? e.message : getT('states')('error.title'));
+
+  // Vuelta del proveedor: ?vinculado=google o ?error=oidc_already_linked.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const linked = params.get('vinculado');
+    if (linked) toast.security(t('linked.done', { provider: linked === 'google' ? 'Google' : 'Microsoft' }));
+    if (params.get('error') === 'oidc_already_linked') toast.error(t('linked.taken'));
+    if (linked || params.get('error')) window.history.replaceState(null, '', window.location.pathname);
+  }, [t]);
+
+  const startLink = async (provider: 'google' | 'microsoft') => {
+    try {
+      const res = await sensitive(() => link.mutateAsync(provider));
+      // Solo se navega a una URL https del proveedor que devolvió nuestra API.
+      if (res && res.url.startsWith('https://')) window.location.assign(res.url);
+    } catch (e) { fail(e); }
+  };
+  const remove = async (identityId: string) => {
+    try {
+      await sensitive(() => unlink.mutateAsync(identityId));
+      toast.security(t('linked.removed'));
+    } catch (e) { fail(e); }
+  };
+
   return (
     <>
       <SettingsHeader title={t('linked.title')} subtitle={t('linked.subtitle')} />
@@ -36,15 +65,19 @@ export function LinkedAccounts() {
           <ul className="grid divide-y divide-line">
             {PROVIDERS.map((p) => {
               const linked = identities.data?.find((i) => i.provider === p.id);
+              const available = p.id === 'local' || (enabled.data?.providers ?? []).includes(p.id);
               return (
                 <li key={p.id} className="flex flex-wrap items-center gap-4 py-4 first:pt-0 last:pb-0">
                   <span className="grid size-10 place-items-center rounded-[11px] bg-surface-2 text-fg-2 shadow-[inset_0_0_0_1px_var(--border)]">{p.icon}</span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-fg">{p.id === 'local' ? t('linked.local') : p.label}</p>
-                    <p className="text-[13px] text-fg-3">{linked ? `${linked.providerEmail ?? ''} · ${t('linked.linkedOn', { date: shortDate(linked.linkedAt) })}` : t('linked.notLinked')}</p>
+                    <p className="text-[13px] text-fg-3">{linked ? `${linked.providerEmail ?? ''} · ${t('linked.linkedOn', { date: shortDate(linked.linkedAt) })}` : available ? t('linked.notLinked') : t('linked.notConfigured')}</p>
                   </div>
-                  {linked ? <Badge tone="ok" size="sm">{p.id === 'local' ? t('mfa.active') : t('linked.linkedOn', { date: shortDate(linked.linkedAt) })}</Badge>
-                    : <Button size="sm" onClick={() => window.location.assign(`/api/v1/auth/oidc/${p.id}`)}>{t('linked.link')}</Button>}
+                  {p.id === 'local' ? (linked && <Badge tone="ok" size="sm">{t('mfa.active')}</Badge>) : linked ? (
+                    <Button size="sm" variant="ghost" className="text-danger" loading={unlink.isPending} onClick={() => void remove(linked.id)}>{t('linked.unlink')}</Button>
+                  ) : (
+                    <Button size="sm" disabled={!available} loading={link.isPending && link.variables === p.id} onClick={() => void startLink(p.id)}>{t('linked.link')}</Button>
+                  )}
                 </li>
               );
             })}
