@@ -44,7 +44,7 @@ const colorFor = (userId: string) => COLORS[createHash('sha256').update(userId).
 @Injectable()
 export class CollabGateway implements OnModuleDestroy {
   private readonly logger = new Logger(CollabGateway.name);
-  private readonly allowedOrigin = new URL(loadEnv().APP_ORIGIN).origin;
+  private readonly allowedOrigins = new Set(loadEnv().APP_ORIGINS);
   private readonly wss = new WebSocketServer({ noServer: true, maxPayload: COLLAB.MAX_FRAME_BYTES, perMessageDeflate: false });
   private readonly perUser = new Map<string, number>();
 
@@ -74,7 +74,7 @@ export class CollabGateway implements OnModuleDestroy {
     }
     // Cross-Site WebSocket Hijacking: el navegador envía la cookie a cualquier
     // origen que abra el socket; solo el Origin distingue nuestra aplicación.
-    if (req.headers.origin !== this.allowedOrigin) {
+    if (!req.headers.origin || !this.allowedOrigins.has(req.headers.origin)) {
       socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
       socket.destroy();
       return;

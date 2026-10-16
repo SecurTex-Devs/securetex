@@ -16,7 +16,12 @@ const boolFromString = z
 const EnvSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().default(4000),
-  APP_ORIGIN: z.string().url(),
+  /**
+   * Orígenes de la aplicación web separados por comas. El primero es el
+   * canónico (enlaces de los correos, OIDC). Para la red local se añade la
+   * IP del equipo, p. ej. «http://192.168.1.50:3000,http://localhost:3000».
+   */
+  APP_ORIGIN: z.string().refine((v) => v.split(',').every((o) => URL.canParse(o.trim())), 'lista de URL separadas por comas'),
   TRUST_PROXY: z.string().default('loopback,uniquelocal'),
 
   DATABASE_URL_IDENTITY: z.string().url(),
@@ -50,7 +55,7 @@ const EnvSchema = z.object({
   API_DOCS_ENABLED: boolFromString,
 });
 
-export type Env = z.infer<typeof EnvSchema>;
+export type Env = z.infer<typeof EnvSchema> & { readonly APP_ORIGINS: readonly string[] };
 
 let cached: Env | undefined;
 
@@ -65,6 +70,7 @@ export function loadEnv(): Env {
   if (parsed.data.NODE_ENV === 'production' && parsed.data.API_DOCS_ENABLED) {
     throw new Error('La documentación de la API no puede servirse en producción (01-API §2.2).');
   }
-  cached = parsed.data;
+  const origins = parsed.data.APP_ORIGIN.split(',').map((o) => new URL(o.trim()).origin);
+  cached = { ...parsed.data, APP_ORIGIN: origins[0] ?? '', APP_ORIGINS: origins };
   return cached;
 }

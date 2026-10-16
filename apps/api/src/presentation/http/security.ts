@@ -70,7 +70,7 @@ const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 @Injectable()
 export class SecurityGuard implements CanActivate {
   private readonly logger = new Logger(SecurityGuard.name);
-  private readonly allowedOrigin = new URL(loadEnv().APP_ORIGIN).origin;
+  private readonly allowedOrigins = new Set(loadEnv().APP_ORIGINS);
 
   constructor(
     private readonly reflector: Reflector,
@@ -102,7 +102,7 @@ export class SecurityGuard implements CanActivate {
 
   private async enforceCsrf(ctx: ExecutionContext, req: SecuredRequest, actor: Actor | null): Promise<void> {
     const origin = req.headers.origin ?? refererOrigin(req.headers.referer);
-    if (origin !== this.allowedOrigin) {
+    if (!origin || !this.allowedOrigins.has(origin)) {
       throw new ForbiddenError('csrf_origin', 'Petición rechazada por seguridad. Recarga la página.');
     }
     const exempt = this.reflector.getAllAndOverride<boolean | undefined>(CSRF_EXEMPT_KEY, [ctx.getHandler(), ctx.getClass()]);

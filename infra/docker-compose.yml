@@ -20,7 +20,9 @@ name: securtex
 x-api-env: &api-env
   NODE_ENV: development
   PORT: "4000"
-  APP_ORIGIN: http://localhost:3000
+  # Varios orígenes separados por comas; el primero es el de los enlaces de los correos.
+  # Red local: APP_ORIGIN=http://<IP-del-equipo>:3000,http://localhost:3000 y PUBLISH_HOST=0.0.0.0
+  APP_ORIGIN: ${APP_ORIGIN:-http://localhost:3000}
   # La API solo confía en X-Forwarded-For si viene de la red interna (el proxy de Next).
   TRUST_PROXY: loopback,uniquelocal
   DATABASE_URL_IDENTITY: postgresql://securtex_identity:${DB_IDENTITY_PASSWORD:?ejecuta node infra/generate-env.mjs}@postgres:5432/securtex
@@ -89,7 +91,8 @@ services:
     image: securtex-api:local
     environment: *api-env
     ports:
-      - "127.0.0.1:4000:4000"
+      # La API y su WebSocket de colaboración. PUBLISH_HOST=0.0.0.0 la expone a la red local.
+      - "${PUBLISH_HOST:-127.0.0.1}:4000:4000"
     depends_on:
       migrate:
         condition: service_completed_successfully
@@ -108,8 +111,9 @@ services:
       context: ../../securtex-frontend
     environment:
       API_INTERNAL_URL: http://api:4000
+      COLLAB_PUBLIC_PORT: "4000"
     ports:
-      - "127.0.0.1:3000:3000"
+      - "${PUBLISH_HOST:-127.0.0.1}:3000:3000"
     depends_on:
       api:
         condition: service_healthy
