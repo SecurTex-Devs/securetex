@@ -20,6 +20,7 @@ describe('Cifrado de archivos en reposo (C3) con verificación previa (C4)', () 
       TRANSPORT_PRIVATE_KEY: generateKeyPairSync('x25519').privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64'),
       DATA_MASTER_KEY: randomBytes(32).toString('base64'),
       FILES_MASTER_KEY: randomBytes(32).toString('base64'),
+      COMPILER_SIGNING_KEY: generateKeyPairSync('ed25519').privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64'),
     });
     const { FileCrypto } = await import('../../src/infrastructure/security/envelope');
     crypto = new FileCrypto();

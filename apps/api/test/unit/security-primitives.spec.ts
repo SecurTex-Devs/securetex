@@ -38,6 +38,7 @@ describe('Cifrado autenticado de secretos (AES-256-GCM)', () => {
       TRANSPORT_PRIVATE_KEY: generateKeyPairSync('x25519').privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64'),
       DATA_MASTER_KEY: randomBytes(32).toString('base64'),
       FILES_MASTER_KEY: randomBytes(32).toString('base64'),
+      COMPILER_SIGNING_KEY: generateKeyPairSync('ed25519').privateKey.export({ format: 'der', type: 'pkcs8' }).toString('base64'),
     });
     const { SecretBox } = await import('../../src/infrastructure/security/secret-box');
     box = new SecretBox();

@@ -62,13 +62,18 @@ export function replyKeys() {
   return { privateKey, header: b64(rawOf(publicKey)), raw: rawOf(publicKey) };
 }
 
-export function open(envelope, keys, ctx) {
+/** Abre un sobre del servicio y devuelve los bytes (p. ej. la trama binaria de una compilación). */
+export function openBytes(envelope, keys, ctx) {
   const epk = Buffer.from(envelope.epk, 'base64url');
   const wrap = hkdf(diffieHellman({ privateKey: keys.privateKey, publicKey: toKey(epk) }), Buffer.concat([epk, keys.raw]), ctx, 32);
   const aad = Buffer.from(ctx, 'utf8');
   const dek = unchacha(wrap, Buffer.from(envelope.n1, 'base64url'), Buffer.from(envelope.wdek, 'base64url'), aad);
   const block = unchacha(wrap, Buffer.from(envelope.n2, 'base64url'), Buffer.from(envelope.body, 'base64url'), aad);
-  return ungcm(dek, block, aad).toString('utf8');
+  return ungcm(dek, block, aad);
+}
+
+export function open(envelope, keys, ctx) {
+  return openBytes(envelope, keys, ctx).toString('utf8');
 }
 
 /**
