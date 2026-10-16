@@ -83,17 +83,17 @@ Después: `docker compose -f infra/docker-compose.yml up -d --force-recreate api
 
 ### Fuera del alcance de esta entrega
 
-Chat del proyecto, comentarios y control de cambios, modo confidencial (DEK que el servidor nunca recibe y compilación en el navegador), importación desde .zip o GitHub, SyncTeX sobre el PDF real, tokens de aplicación, passkeys, SAML, métricas de servicio y moderación de plantillas.
+Chat del proyecto, comentarios y control de cambios, modo confidencial (DEK que el servidor nunca recibe y compilación en el navegador), importación desde .zip o GitHub, tokens de aplicación, passkeys, SAML, métricas de servicio y moderación de plantillas.
 
 ### Pruebas
 
 ```bash
 cd apps/api
-npx vitest run                              # 91 unitarias: dominio, primitivas, cifrado (bit-flip, AAD, KEK ajena), rutas, analizador, PDF, registro y firma C4b
-node --test "test/security/*.test.mjs"     # 61 casos de abuso contra la pila en marcha (Docker arriba)
+npx vitest run                              # unitarias: dominio, primitivas, cifrado (bit-flip, AAD, KEK ajena), rutas, analizador, PDF, registro, firma C4b y mapa SyncTeX
+node --test "test/security/*.test.mjs"     # 64 casos de abuso contra la pila en marcha (Docker arriba)
 ```
 
-Los casos de abuso cubren acceso cruzado e IDOR, rol insuficiente, recorrido de rutas, conflictos de versión, cuotas, el bloqueo de `\write18`, reutilización de refresh tokens, CSRF, fuerza bruta, MFA, sobres C2 manipulados o reubicados, y en la colaboración: CSWSH, sesión ausente, lector que intenta escribir, trama manipulada y revocación en caliente. En la compilación (`compile.test.mjs`): las cinco plantillas a PDF con firma válida, PDF manipulado, `\write18` directo (422) y ofuscado (el sandbox lo deja en `runsystem(…)...disabled`), `\input{/etc/passwd}` directo (422) y escondido en una macro (openin_any=p), bucle infinito (plazo de 30 s) y PDF enorme (RLIMIT_FSIZE). En figuras, historial y copias (`project-features.test.mjs`): «PNG» con HTML dentro, SVG, `.tex` subido como binario, lector y ajeno que suben, imagen sobrescrita como texto, historial de otro proyecto, lector que restaura y copia por un ajeno. `test/security/demo-maria.mjs` simula a una segunda persona escribiendo para verlo en el navegador.
+Los casos de abuso cubren acceso cruzado e IDOR, rol insuficiente, recorrido de rutas, conflictos de versión, cuotas, el bloqueo de `\write18`, reutilización de refresh tokens, CSRF, fuerza bruta, MFA, sobres C2 manipulados o reubicados, y en la colaboración: CSWSH, sesión ausente, lector que intenta escribir, trama manipulada y revocación en caliente. En la compilación (`compile.test.mjs`): las cinco plantillas a PDF con firma válida, PDF manipulado, `\write18` directo (422) y ofuscado (el sandbox lo deja en `runsystem(…)...disabled`), `\input{/etc/passwd}` directo (422) y escondido en una macro (openin_any=p), bucle infinito (plazo de 30 s) y PDF enorme (RLIMIT_FSIZE); y en SyncTeX: el mapa solo nombra archivos del proyecto (ni `/work`, ni TeX Live, ni el `.aux`), su firma propia no verifica si se toca el mapa, se pega a otro PDF o se cambia el compilationId, un `output.synctex.gz` falsificado desde el documento (`\synctex=0` + `\openout` ofuscado) no produce mapa, y sin PDF no hay mapa. En figuras, historial y copias (`project-features.test.mjs`): «PNG» con HTML dentro, SVG, `.tex` subido como binario, lector y ajeno que suben, imagen sobrescrita como texto, historial de otro proyecto, lector que restaura y copia por un ajeno. `test/security/demo-maria.mjs` simula a una segunda persona escribiendo para verlo en el navegador.
 
 ### Compilación en el sandbox
 
@@ -113,8 +113,9 @@ navegador ──C1+C2──▶ API ── análisis ──▶ volumen tmpfs comp
 | Directorio | Uno por trabajo en `/work` (tmpfs privado, `noexec`), borrado en `finally`: éxito, error, plazo o excepción. La API también borra sus archivos del volumen en `finally` |
 | Salida | La API valida el PDF por su contenido (`%PDF-1.x`/`2.x`, `%%EOF`, ≤ 16 MB), sanea el registro (sin rutas absolutas ni caracteres de control, acotado) y extrae los errores en formato `-file-line-error` |
 | Firma (C4b) | `Ed25519(SHA-256(pdf) ‖ compilationId[16] ‖ sourceTreeHash[32])` con `COMPILER_SIGNING_KEY`. La clave la tiene la API, no el sandbox: si el sandbox la tuviera, el propio documento hostil podría filtrarla. Clave pública en `GET /api/v1/crypto/artifact-key`; el navegador verifica antes de renderizar |
+| SyncTeX | TeX corre con `-synctex=1` (comprimido: sin comprimir podría chocar con RLIMIT_FSIZE). El trabajador descomprime el `.synctex.gz` con topes (8 MB comprimido, 64 MB descomprimido, 2000 páginas, 600 000 números, 4 MB de mapa) y lo reduce a un mapa mínimo en décimas de bp con rutas **relativas** y solo de archivos del proyecto: ni el `.synctex.gz` ni las rutas del sandbox salen del contenedor. La API lo trata como salida hostil: estructura exacta, enteros en rango, cada ruta por `SafeFilePath` y presente en el proyecto, y lo **reserializa** (nunca reenvía los bytes del sandbox). Viaja tras el PDF en la trama v2 (`pdfBytes`, `synctexBytes`) dentro del mismo sobre C1 + C2, con firma propia `Ed25519("securtex:c4b:synctex:v1" ‖ SHA-256(mapa) ‖ compilationId ‖ SHA-256(pdf))`: la del PDF no cambia y un mapa no se puede pegar a otro PDF. Un mapa inválido no rompe la compilación: el PDF llega sin mapa y la auditoría registra `synctexRejected` |
 | Coste | 12 compilaciones/min por cliente, una a la vez por persona y 4 en todo el servicio (429 `compile_busy`); 503 `compiler_unavailable` si el sandbox no reclama el trabajo en 10 s |
-| Auditoría | `compile.completed`, `compile.failed`, `compile.output_rejected` (plazo, tamaño, PDF inválido) y `compile.blocked`, con motor, duración, pasadas y bytes; nunca contenido |
+| Auditoría | `compile.completed`, `compile.failed`, `compile.output_rejected` (plazo, tamaño, PDF inválido) y `compile.blocked`, con motor, duración, pasadas y bytes (PDF y mapa SyncTeX); nunca contenido |
 
 **Riesgos residuales** (documentados, no resueltos en esta entrega):
 
