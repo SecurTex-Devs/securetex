@@ -104,11 +104,18 @@ const toEntry = (m: FileMeta): FileEntry => ({
 });
 const byPath = (list: readonly FileMeta[]) => Object.fromEntries(list.map((m) => [m.path, toEntry(m)]));
 
-/** Proyección ruta → texto del documento Yjs. */
-function project(collab: CollabClient, entries: Record<string, FileEntry>): Record<string, string> {
+/**
+ * Proyección ruta → texto del documento Yjs. Si ningún texto cambió devuelve
+ * `prev` tal cual: la autocompilación se programa por la identidad de `files`,
+ * y un objeto nuevo con el mismo contenido la relanzaría sin fin (y gastaría
+ * la cuota de análisis del servidor).
+ */
+function project(collab: CollabClient, entries: Record<string, FileEntry>, prev: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const e of Object.values(entries)) out[e.path] = collab.text(e.id).toString();
-  return out;
+  const keys = Object.keys(out);
+  const same = keys.length === Object.keys(prev).length && keys.every((k) => prev[k] === out[k]);
+  return same ? prev : out;
 }
 
 let projectionTimer: number | null = null;
@@ -153,14 +160,14 @@ export const useEditor = create<EditorState>((set, get) => ({
       onTree: () => void get().refreshTree(),
       onAccess: (ro) => set({ readOnly: ro }),
       onError: (code, message) => set({ notice: { code, message, at: Date.now() } }),
-      onSynced: () => set((s) => ({ synced: true, files: project(collab, s.entries) })),
+      onSynced: () => set((s) => ({ synced: true, files: project(collab, s.entries, s.files) })),
     });
     // La proyección se recalcula con un pequeño retardo: escribir no debe recorrer el proyecto en cada tecla.
     collab.doc.on('update', () => {
       if (projectionTimer !== null) window.clearTimeout(projectionTimer);
       projectionTimer = window.setTimeout(() => {
         const s = get();
-        if (s.collab === collab) set({ files: project(collab, s.entries) });
+        if (s.collab === collab) set({ files: project(collab, s.entries, s.files) });
       }, 120);
     });
     set({
@@ -185,7 +192,7 @@ export const useEditor = create<EditorState>((set, get) => ({
       const next = tabs.length ? tabs : [s.mainFile];
       return {
         entries,
-        files: project(collab, entries),
+        files: project(collab, entries, s.files),
         openTabs: next,
         activeFile: s.activeFile in entries ? s.activeFile : (next[next.length - 1] ?? s.mainFile),
       };
@@ -303,8 +310,8 @@ export const useEditor = create<EditorState>((set, get) => ({
       return;
     }
     set({ status: 'running', analysis: 'ok' });
-    const { mainFile, entries } = get();
-    const files = project(collab, entries);
+    const { mainFile, entries, files: prev } = get();
+    const files = project(collab, entries, prev);
     const diagnostics = diagnose(mainFile, files);
     const model = buildDocument(mainFile, files);
     const hasErrors = diagnostics.some((d) => d.level === 'error');
