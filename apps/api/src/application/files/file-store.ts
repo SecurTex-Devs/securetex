@@ -1,11 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import type { ProjectFile } from '@prisma/client';
+import type { ProjectFile, ProjectFileVersion } from '@prisma/client';
 import { NotFoundError } from '../../domain/errors';
 import type { SafeFilePath } from '../../domain/values';
 import type { AppTx } from '../../infrastructure/db/databases';
 import { FileCrypto } from '../../infrastructure/security/envelope';
 import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
+
+/** Estado CRDT de la sala y su época (linaje). */
+export interface CollabState {
+  readonly epoch: string;
+  readonly update: Uint8Array;
+}
 
 /** UUIDv7 generado en la aplicación: el id del archivo forma parte de la AAD antes de insertar. */
 export function uuidv7(): string {
@@ -53,13 +59,14 @@ export class EncryptedFileStore {
     return key.wrappedKek;
   }
 
-  async insert(tx: AppTx, projectId: string, actorId: string, path: SafeFilePath, content: string): Promise<ProjectFile> {
+  /** `size` permite registrar los bytes reales de un binario guardado en base64. */
+  async insert(tx: AppTx, projectId: string, actorId: string, path: SafeFilePath, content: string, size = Buffer.byteLength(content, 'utf8')): Promise<ProjectFile> {
     const kek = await this.wrappedKek(tx, projectId);
     const id = uuidv7();
     const sealed = this.crypto.seal(kek, { projectId, fileId: id, version: 1 }, content);
     return tx.projectFile.create({
       data: {
-        id, projectId, path: this.encryptPath(path.toString()), pathIndex: this.pathIndex(projectId, path.toString()), kind: path.extension, size: Buffer.byteLength(content, 'utf8'),
+        id, projectId, path: this.encryptPath(path.toString()), pathIndex: this.pathIndex(projectId, path.toString()), kind: path.extension, size,
         version: 1, ...sealed, createdBy: actorId, updatedBy: actorId,
       },
     });
@@ -74,6 +81,46 @@ export class EncryptedFileStore {
       where: { id: file.id },
       data: { ...sealed, version, size: Buffer.byteLength(content, 'utf8'), updatedBy: actorId },
     });
+  }
+
+  /**
+   * Estado Yjs de la sala, cifrado con la KEK del proyecto. Se guarda en base64
+   * dentro del mismo esquema que los archivos (C3 + C4); la AAD usa el id del
+   * proyecto, que nunca coincide con el de un archivo.
+   */
+  async loadCollabState(tx: AppTx, projectId: string): Promise<CollabState | null> {
+    const row = await tx.projectCollabState.findUnique({ where: { projectId } });
+    if (!row) return null;
+    const kek = await this.wrappedKek(tx, projectId);
+    const parsed = JSON.parse(this.crypto.open(kek, { projectId, fileId: projectId, version: row.version }, row)) as { e: string; s: string };
+    return { epoch: parsed.e, update: Buffer.from(parsed.s, 'base64') };
+  }
+
+  async saveCollabState(tx: AppTx, projectId: string, actorId: string, state: CollabState): Promise<void> {
+    const kek = await this.wrappedKek(tx, projectId);
+    const current = await tx.projectCollabState.findUnique({ where: { projectId }, select: { version: true } });
+    const version = (current?.version ?? 0) + 1;
+    const sealed = this.crypto.seal(kek, { projectId, fileId: projectId, version }, JSON.stringify({ e: state.epoch, s: Buffer.from(state.update).toString('base64') }));
+    await tx.projectCollabState.upsert({
+      where: { projectId },
+      create: { projectId, version, ...sealed, updatedBy: actorId },
+      update: { version, ...sealed, updatedBy: actorId },
+    });
+  }
+
+  /** Instantánea del historial: cifrada con su propia DEK; la AAD usa el id de la versión. */
+  async snapshot(tx: AppTx, projectId: string, fileId: string, path: string, actorId: string, content: string): Promise<void> {
+    const kek = await this.wrappedKek(tx, projectId);
+    const id = uuidv7();
+    const sealed = this.crypto.seal(kek, { projectId, fileId: id, version: 1 }, content);
+    await tx.projectFileVersion.create({
+      data: { id, projectId, fileId, path: this.encryptPath(path), size: Buffer.byteLength(content, 'utf8'), ...sealed, createdBy: actorId },
+    });
+  }
+
+  async readVersion(tx: AppTx, row: ProjectFileVersion): Promise<string> {
+    const kek = await this.wrappedKek(tx, row.projectId);
+    return this.crypto.open(kek, { projectId: row.projectId, fileId: row.id, version: 1 }, row);
   }
 
   async read(tx: AppTx, file: ProjectFile): Promise<string> {

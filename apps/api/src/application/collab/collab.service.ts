@@ -1,11 +1,12 @@
 import { Injectable, Logger, type OnModuleDestroy } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
 import * as Y from 'yjs';
 import { applyAwarenessUpdate, Awareness, encodeAwarenessUpdate, removeAwarenessStates } from 'y-protocols/awareness';
-import { COLLAB } from '../../domain/constants';
+import { COLLAB, HISTORY } from '../../domain/constants';
 import { IntegrityError, ValidationError } from '../../domain/errors';
 import { decide } from '../../domain/project-policy';
 import { SessionService } from '../auth/sessions';
-import { FilesService } from '../files/files.service';
+import { FilesService, isBinaryKind } from '../files/files.service';
 import { ProjectsService } from '../projects/projects.service';
 import type { Actor, RequestMeta } from '../request-meta';
 
@@ -14,7 +15,7 @@ import type { Actor, RequestMeta } from '../request-meta';
  * descifrado). El frontend usa los mismos valores.
  */
 export const MSG = {
-  SYNC1: 1, SYNC2: 2, UPDATE: 3, AWARENESS: 4, FLUSH: 5, SAVED: 6, TREE: 7, ERROR: 8, ACCESS: 9,
+  SYNC1: 1, SYNC2: 2, UPDATE: 3, AWARENESS: 4, FLUSH: 5, SAVED: 6, TREE: 7, ERROR: 8, ACCESS: 9, ROOM: 10,
 } as const;
 
 /** Una conexión autenticada y autorizada. El transporte cifrado lo pone la capa de presentación. */
@@ -33,6 +34,8 @@ export interface CollabPeer {
 
 interface Room {
   readonly projectId: string;
+  /** Linaje del documento: cambia solo si la sala se reconstruye sin estado guardado. */
+  readonly epoch: string;
   readonly doc: Y.Doc;
   readonly awareness: Awareness;
   readonly peers: Set<CollabPeer>;
@@ -41,6 +44,10 @@ interface Room {
   readonly dirty: Set<string>;
   readonly lastEditor: Map<string, string>;
   bytes: number;
+  /** El documento cambió desde el último guardado de su estado Yjs. */
+  stateDirty: boolean;
+  /** Última instantánea del historial por archivo: [momento, autor]. */
+  readonly lastSnapshot: Map<string, readonly [number, string]>;
   firstDirtyAt: number | null;
   timer: NodeJS.Timeout | null;
   revalidator: NodeJS.Timeout;
@@ -48,6 +55,19 @@ interface Room {
 }
 
 const textName = (fileId: string) => `file:${fileId}`;
+
+/** Sustituye el texto con un cambio mínimo (prefijo y sufijo comunes): no rompe los cursores de los demás. */
+function replaceText(text: Y.Text, next: string): void {
+  const current = text.toString();
+  if (current === next) return;
+  let start = 0;
+  while (start < current.length && start < next.length && current[start] === next[start]) start += 1;
+  let endA = current.length;
+  let endB = next.length;
+  while (endA > start && endB > start && current[endA - 1] === next[endB - 1]) { endA -= 1; endB -= 1; }
+  if (endA > start) text.delete(start, endA - start);
+  if (endB > start) text.insert(start, next.slice(start, endB));
+}
 const encode = (type: number, payload: Uint8Array) => {
   const out = new Uint8Array(payload.length + 1);
   out[0] = type;
@@ -83,6 +103,8 @@ export class CollabService implements OnModuleDestroy {
   async join(peer: CollabPeer, projectId: string, meta: RequestMeta): Promise<void> {
     const room = await this.room(projectId, peer.actor, meta);
     room.peers.add(peer);
+    // Primero la época: un cliente con una historia de otra época la descarta antes de sincronizar.
+    peer.send(json(MSG.ROOM, { epoch: room.epoch }));
     // El cliente pide el estado con SYNC1; el servidor pide además lo que el
     // cliente tenga y él no (ediciones hechas sin conexión).
     peer.send(encode(MSG.SYNC1, Y.encodeStateVector(room.doc)));
@@ -133,11 +155,7 @@ export class CollabService implements OnModuleDestroy {
     if (!room) return;
     room.files.add(fileId);
     room.persisted.set(fileId, content);
-    const text = room.doc.getText(textName(fileId));
-    room.doc.transact(() => {
-      if (text.length) text.delete(0, text.length);
-      text.insert(0, content);
-    }, 'server');
+    room.doc.transact(() => replaceText(room.doc.getText(textName(fileId)), content), 'server');
     this.broadcastTree(room);
   }
 
@@ -183,23 +201,45 @@ export class CollabService implements OnModuleDestroy {
 
   private async load(projectId: string, actor: Actor, meta: RequestMeta): Promise<Room> {
     // readAll autoriza, verifica el HMAC (C4) y descifra (C3); un fallo de integridad se audita allí.
-    const files = await this.files.readAll(actor, projectId, meta);
+    // Solo los archivos de texto entran en el CRDT; imágenes y PDF no se editan en vivo.
+    const files = (await this.files.readAll(actor, projectId, meta)).filter((f) => !isBinaryKind(f.kind));
     const doc = new Y.Doc({ gc: true });
+    // La sala se reconstruye desde su estado CRDT guardado: así cada operación
+    // conserva su identidad y un cliente que vuelve tras un reinicio no duplica
+    // el texto. Después se reconcilia con la base (cambios hechos por REST).
+    const saved = await this.files.loadCollabState(actor, projectId);
+    if (saved) Y.applyUpdate(doc, saved.update, 'server');
+    const epoch = saved?.epoch ?? randomUUID();
+    let reconciled = !saved;
     doc.transact(() => {
-      for (const f of files) doc.getText(textName(f.id)).insert(0, f.content);
+      for (const f of files) {
+        const text = doc.getText(textName(f.id));
+        if (text.toString() !== f.content) {
+          replaceText(text, f.content);
+          reconciled = true;
+        }
+      }
     }, 'server');
     const awareness = new Awareness(doc);
     awareness.setLocalState(null);
     const room: Room = {
-      projectId, doc, awareness, peers: new Set(),
+      projectId, epoch, doc, awareness, peers: new Set(),
       files: new Set(files.map((f) => f.id)),
       persisted: new Map(files.map((f) => [f.id, f.content])),
       dirty: new Set(), lastEditor: new Map(),
-      bytes: 0, firstDirtyAt: null, timer: null, saving: null,
+      bytes: 0, stateDirty: reconciled, lastSnapshot: new Map(), firstDirtyAt: null, timer: null, saving: null,
       revalidator: setInterval(() => void this.revalidateRoom(room), COLLAB.REVALIDATE_MS),
     };
     room.revalidator.unref();
+    // Sin estado previo, se fija ya la época en la base (si quien abre puede escribir).
+    if (!saved) {
+      await this.files.saveCollabState(actor.userId, projectId, { epoch, update: Y.encodeStateAsUpdate(doc) }).then(
+        () => { room.stateDirty = false; },
+        () => undefined,
+      );
+    }
     doc.on('update', (update: Uint8Array, origin: unknown) => {
+      room.stateDirty = true;
       if (origin === 'server') {
         for (const p of room.peers) p.send(encode(MSG.UPDATE, update));
         return;
@@ -291,31 +331,77 @@ export class CollabService implements OnModuleDestroy {
       if (!room.files.has(fileId)) continue;
       const content = room.doc.getText(textName(fileId)).toString();
       if (room.persisted.get(fileId) === content) continue;
-      const saved = await this.persistFile(room, fileId, content);
-      if (saved) room.persisted.set(fileId, content);
-      else room.dirty.add(fileId);
+      const editor = await this.persistFile(room, fileId, content);
+      if (editor) {
+        room.persisted.set(fileId, content);
+        await this.maybeSnapshot(room, fileId, editor, content);
+      } else room.dirty.add(fileId);
     }
+    await this.persistState(room);
     for (const [peer, applied] of acks) if (room.peers.has(peer)) peer.send(json(MSG.SAVED, { ack: applied, pending: room.dirty.size }));
   }
 
-  /** Se guarda en nombre de quien editó; si ya no puede (rol revocado), de otro editor conectado. */
-  private async persistFile(room: Room, fileId: string, content: string): Promise<boolean> {
+  /** Estado CRDT cifrado, guardado por un editor (RLS exige propietario o editor). */
+  private async persistState(room: Room): Promise<void> {
+    if (!room.stateDirty) return;
+    const candidates = [...room.lastEditor.values(), ...[...room.peers].filter((p) => !p.readOnly).map((p) => p.actor.userId)];
+    for (const userId of new Set(candidates)) {
+      try {
+        await this.files.saveCollabState(userId, room.projectId, { epoch: room.epoch, update: Y.encodeStateAsUpdate(room.doc) });
+        room.stateDirty = false;
+        return;
+      } catch {
+        this.logger.warn('No se pudo guardar el estado de la sala con el usuario actual; se prueba con otro editor.');
+      }
+    }
+  }
+
+  /** Historial: una instantánea si cambió el autor o pasó el intervalo mínimo desde la anterior. */
+  private async maybeSnapshot(room: Room, fileId: string, userId: string, content: string): Promise<void> {
+    const last = room.lastSnapshot.get(fileId);
+    if (last && last[1] === userId && Date.now() - last[0] < HISTORY.SNAPSHOT_MIN_INTERVAL_MS) return;
+    try {
+      await this.files.snapshotVersion(userId, room.projectId, fileId, content);
+      room.lastSnapshot.set(fileId, [Date.now(), userId]);
+    } catch {
+      this.logger.warn('No se pudo guardar una instantánea del historial.');
+    }
+  }
+
+  /**
+   * Restaurar una versión o escribir por REST con la sala abierta: el cambio
+   * entra en el CRDT (todos lo ven) y se guarda en nombre de quien lo pidió.
+   * Devuelve false si la sala no está abierta (el llamador escribe en la base).
+   */
+  async replaceFile(projectId: string, fileId: string, content: string, userId: string): Promise<boolean> {
+    const room = await this.rooms.get(projectId)?.catch(() => null);
+    if (!room || !room.files.has(fileId)) return false;
+    room.doc.transact(() => replaceText(room.doc.getText(textName(fileId)), content), 'server');
+    room.dirty.add(fileId);
+    room.lastEditor.set(fileId, userId);
+    room.lastSnapshot.delete(fileId);
+    await this.persist(room);
+    return true;
+  }
+
+  /** Se guarda en nombre de quien editó; si ya no puede (rol revocado), de otro editor conectado. Devuelve quién guardó. */
+  private async persistFile(room: Room, fileId: string, content: string): Promise<string | null> {
     const candidates = [room.lastEditor.get(fileId), ...[...room.peers].filter((p) => !p.readOnly).map((p) => p.actor.userId)]
       .filter((id): id is string => typeof id === 'string');
     for (const userId of new Set(candidates)) {
       try {
-        if (await this.files.persistFromCollab(userId, room.projectId, fileId, content)) return true;
+        if (await this.files.persistFromCollab(userId, room.projectId, fileId, content)) return userId;
         room.files.delete(fileId);
-        return true;
+        return null;
       } catch (e) {
         if (e instanceof ValidationError) {
           for (const p of room.peers) p.send(json(MSG.ERROR, { code: 'quota', message: e.message }));
-          return false;
+          return null;
         }
         this.logger.warn(`No se pudo persistir un archivo de la sala con el usuario actual; se prueba con otro editor.`);
       }
     }
-    return false;
+    return null;
   }
 
   private async revalidateRoom(room: Room): Promise<void> {
