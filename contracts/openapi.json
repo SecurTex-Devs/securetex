@@ -1617,7 +1617,7 @@
         ]
       },
       "post": {
-        "description": "Ruta validada por SafeFilePath; cuota de 1 MB por archivo y 20 MB por proyecto.",
+        "description": "Contenido en un sobre C1 + C2. Ruta validada por SafeFilePath; cuota de 1 MB por archivo y 20 MB por proyecto.",
         "operationId": "Files_create",
         "parameters": [
           {
@@ -1659,13 +1659,22 @@
     },
     "/api/v1/projects/{projectId}/files/contents": {
       "get": {
-        "description": "Verifica el HMAC de cada archivo antes de descifrarlo (C4).",
+        "description": "C4 (HMAC) → C3 (descifrado) en el servidor; después C1 + C2 hacia el cliente.",
         "operationId": "Files_contents",
         "parameters": [
           {
             "name": "projectId",
             "required": true,
             "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "X-SecurTex-Reply-Key",
+            "in": "header",
+            "description": "Clave pública X25519 efímera del cliente (base64url): la respuesta se sella para ella (C2).",
+            "required": true,
             "schema": {
               "type": "string"
             }
@@ -1677,16 +1686,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/FileWithContentDto"
-                  }
+                  "$ref": "#/components/schemas/SealedResponseDto"
                 }
               }
             }
           }
         },
-        "summary": "Todos los archivos descifrados",
+        "summary": "Todos los archivos, sellados para el cliente",
         "tags": [
           "Archivos"
         ]
@@ -1711,6 +1717,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "X-SecurTex-Reply-Key",
+            "in": "header",
+            "description": "Clave pública X25519 efímera del cliente (base64url): la respuesta se sella para ella (C2).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1719,13 +1734,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/FileWithContentDto"
+                  "$ref": "#/components/schemas/SealedResponseDto"
                 }
               }
             }
           }
         },
-        "summary": "Un archivo descifrado",
+        "summary": "Un archivo, sellado para el cliente",
         "tags": [
           "Archivos"
         ]
@@ -1818,7 +1833,7 @@
     },
     "/api/v1/projects/{projectId}/files/{fileId}/content": {
       "put": {
-        "description": "Concurrencia optimista: 409 si `baseVersion` no es la actual.",
+        "description": "Sobre C1 + C2. Concurrencia optimista: 409 si `baseVersion` no es la actual. El editor usa la colaboración en tiempo real; esta ruta es para clientes de la API.",
         "operationId": "Files_write",
         "parameters": [
           {
@@ -1860,7 +1875,7 @@
             }
           }
         },
-        "summary": "Guardar el contenido (autoguardado)",
+        "summary": "Guardar el contenido",
         "tags": [
           "Archivos"
         ]
@@ -1895,6 +1910,29 @@
         "summary": "Análisis de seguridad previo a la compilación",
         "tags": [
           "Compilación"
+        ]
+      }
+    },
+    "/api/v1/crypto/transport-key": {
+      "get": {
+        "description": "X25519 en base64url. Los clientes sellan con ella los sobres C1 + C2.",
+        "operationId": "Crypto_transportKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransportKeyDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Clave pública de transporte (C2)",
+        "tags": [
+          "Criptografía"
         ]
       }
     },
@@ -3199,40 +3237,55 @@
           "updatedAt"
         ]
       },
-      "FileWithContentDto": {
+      "EnvelopeDto": {
         "type": "object",
         "properties": {
-          "id": {
-            "type": "string"
+          "v": {
+            "type": "number",
+            "enum": [
+              1
+            ]
           },
-          "path": {
-            "type": "string"
+          "epk": {
+            "type": "string",
+            "maxLength": 64
           },
-          "kind": {
-            "type": "string"
+          "n1": {
+            "type": "string",
+            "maxLength": 32
           },
-          "size": {
-            "type": "number"
+          "wdek": {
+            "type": "string",
+            "maxLength": 128
           },
-          "version": {
-            "type": "number"
+          "n2": {
+            "type": "string",
+            "maxLength": 32
           },
-          "updatedAt": {
-            "format": "date-time",
-            "type": "string"
-          },
-          "content": {
-            "type": "string"
+          "body": {
+            "type": "string",
+            "description": "El contenido ocupa como mucho 1 MB; cifrado y en base64url, algo más.",
+            "maxLength": 1400000
           }
         },
         "required": [
-          "id",
-          "path",
-          "kind",
-          "size",
-          "version",
-          "updatedAt",
-          "content"
+          "v",
+          "epk",
+          "n1",
+          "wdek",
+          "n2",
+          "body"
+        ]
+      },
+      "SealedResponseDto": {
+        "type": "object",
+        "properties": {
+          "envelope": {
+            "$ref": "#/components/schemas/EnvelopeDto"
+          }
+        },
+        "required": [
+          "envelope"
         ]
       },
       "CreateFileDto": {
@@ -3243,22 +3296,25 @@
             "description": "Ruta relativa, p. ej. «capitulos/intro.tex».",
             "maxLength": 200
           },
-          "content": {
-            "type": "string",
-            "maxLength": 1000000
+          "envelope": {
+            "description": "Contenido inicial sellado (C1 + C2).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/EnvelopeDto"
+              }
+            ]
           }
         },
         "required": [
           "path",
-          "content"
+          "envelope"
         ]
       },
       "WriteFileDto": {
         "type": "object",
         "properties": {
-          "content": {
-            "type": "string",
-            "maxLength": 1000000
+          "envelope": {
+            "$ref": "#/components/schemas/EnvelopeDto"
           },
           "baseVersion": {
             "type": "number",
@@ -3267,7 +3323,7 @@
           }
         },
         "required": [
-          "content",
+          "envelope",
           "baseVersion"
         ]
       },
@@ -3348,6 +3404,29 @@
           "verdict",
           "findings",
           "analyzedFiles"
+        ]
+      },
+      "TransportKeyDto": {
+        "type": "object",
+        "properties": {
+          "alg": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string",
+            "description": "Clave pública de 32 bytes en base64url."
+          },
+          "contexts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "alg",
+          "key",
+          "contexts"
         ]
       },
       "AdminUserDto": {
