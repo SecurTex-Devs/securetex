@@ -321,6 +321,8 @@ model Project {
   members     ProjectMember[]
   invitations Invitation[]
   tags        ProjectTag[]
+  key         ProjectKey?
+  files       ProjectFile[]
 
   @@index([ownerId])
   @@map("projects")
@@ -387,4 +389,51 @@ model ProjectTag {
   @@id([tagId, projectId])
   @@index([projectId])
   @@map("project_tags")
+}
+
+// ───────────────────── Archivos cifrados (C3 reposo · C4 integridad) ─────────────────────
+
+/// Clave de proyecto (KEK). Borrarla hace irrecuperable todo el contenido del
+/// proyecto, también en las copias de seguridad: crypto-shredding (F-045).
+model ProjectKey {
+  projectId  String   @id @map("project_id") @db.Uuid
+  /// SECRET · KEK de 256 bits envuelta con la clave maestra (AES-256-KW, RFC 3394)
+  wrappedKek Bytes    @map("wrapped_kek")
+  /// Versión de la clave maestra que la envuelve (rotación)
+  masterVersion Int   @default(1) @map("master_version") @db.SmallInt
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_keys")
+}
+
+model ProjectFile {
+  id         String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  projectId  String   @map("project_id") @db.Uuid
+  /// INTERNAL · ruta relativa validada por SafeFilePath
+  path       String
+  /// INTERNAL · tex, bib, cls, sty, txt
+  kind       String
+  /// INTERNAL · tamaño del texto plano en bytes
+  size       Int
+  /// Se incrementa en cada escritura; forma parte de la AAD y del control de concurrencia
+  version    Int      @default(1)
+  /// SECRET · DEK de 256 bits envuelta con la KEK del proyecto (AES-256-KW)
+  wrappedDek Bytes    @map("wrapped_dek")
+  /// INTERNAL · nonce de 96 bits, único por cifrado
+  nonce      Bytes
+  /// ENCRYPTED · AES-256-GCM(contenido) ‖ etiqueta de 128 bits
+  ciphertext Bytes
+  /// INTERNAL · HMAC-SHA-256 sobre nonce ‖ cifrado ‖ AAD, verificado ANTES de descifrar
+  mac        Bytes
+  createdBy  String   @map("created_by") @db.Uuid
+  updatedBy  String   @map("updated_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, path])
+  @@map("project_files")
 }
