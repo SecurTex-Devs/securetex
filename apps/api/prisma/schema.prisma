@@ -328,6 +328,8 @@ model Project {
   tags        ProjectTag[]
   key         ProjectKey?
   files       ProjectFile[]
+  collabState ProjectCollabState?
+  versions    ProjectFileVersion[]
 
   @@index([ownerId])
   @@map("projects")
@@ -448,4 +450,46 @@ model ProjectFile {
 
   @@unique([projectId, pathIndex])
   @@map("project_files")
+}
+
+/// Estado CRDT (Yjs) de la sala de colaboración, cifrado como un archivo más
+/// (C3 + C4). Cargar la sala desde él, y no reinsertando el texto, conserva la
+/// identidad de cada operación: un cliente que se reconecta tras un reinicio
+/// del servidor no duplica el documento.
+model ProjectCollabState {
+  projectId  String   @id @map("project_id") @db.Uuid
+  /// Se incrementa en cada guardado; forma parte de la AAD
+  version    Int      @default(1)
+  wrappedDek Bytes    @map("wrapped_dek")
+  nonce      Bytes
+  ciphertext Bytes
+  mac        Bytes
+  updatedBy  String   @map("updated_by") @db.Uuid
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_collab_states")
+}
+
+/// Historial de versiones (F-150): instantáneas cifradas del contenido de un
+/// archivo, con autor y fecha. Solo se insertan y se podan; nunca se modifican.
+model ProjectFileVersion {
+  id         String   @id @default(dbgenerated("uuidv7()")) @db.Uuid
+  projectId  String   @map("project_id") @db.Uuid
+  fileId     String   @map("file_id") @db.Uuid
+  /// ENCRYPTED (C3c) · ruta del archivo en ese momento
+  path       String
+  size       Int
+  wrappedDek Bytes    @map("wrapped_dek")
+  nonce      Bytes
+  ciphertext Bytes
+  mac        Bytes
+  createdBy  String   @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, fileId, createdAt])
+  @@map("project_file_versions")
 }
