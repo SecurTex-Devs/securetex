@@ -29,6 +29,7 @@
     "@tanstack/react-query": "5.104.3",
     "clsx": "2.1.1",
     "dompurify": "3.4.17",
+    "fflate": "0.8.3",
     "katex": "0.16.47",
     "lucide-react": "0.577.0",
     "next": "15.5.28",

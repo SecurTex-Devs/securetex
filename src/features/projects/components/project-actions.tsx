@@ -1,10 +1,10 @@
 'use client';
 
-import { Archive, ArchiveRestore, ExternalLink, LogOut, MoreHorizontal, PencilLine, RotateCcw, Tags, Trash2 } from 'lucide-react';
+import { Archive, ArchiveRestore, Copy, Download, ExternalLink, LogOut, MoreHorizontal, PencilLine, RotateCcw, Tags, Trash2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 import { isApiError } from '@/shared/api/errors';
-import { useDeleteProject, useLeaveProject, useProjectLifecycle, useSetProjectTags, useTags, useUpdateProject } from '@/shared/api/projects';
+import { downloadProjectZip, useDeleteProject, useDuplicateProject, useLeaveProject, useProjectLifecycle, useSetProjectTags, useTags, useUpdateProject } from '@/shared/api/projects';
 import type { Project } from '@/shared/api/types';
 import { getT } from '@/shared/i18n';
 import { cn } from '@/shared/lib/cn';
@@ -16,7 +16,7 @@ import { Menu, MenuItem, MenuSeparator } from '@/shared/ui/menu';
 import { toast } from '@/shared/ui/toast';
 import { TAG_DOT } from './tag-colors';
 
-type Open = 'rename' | 'tags' | 'delete' | 'leave' | null;
+type Open = 'rename' | 'copy' | 'tags' | 'delete' | 'leave' | null;
 
 /**
  * Menú de acciones de un proyecto. Las opciones se ocultan según
@@ -53,6 +53,11 @@ export function ProjectActions({ project }: { readonly project: Project }) {
             <MenuItem icon={<ExternalLink strokeWidth={1.5} />} onSelect={() => router.push(`/proyecto/${project.id}`)}>{t('actions.open')}</MenuItem>
             {can('rename') && <MenuItem icon={<PencilLine strokeWidth={1.5} />} onSelect={() => setOpen('rename')}>{t('actions.rename')}</MenuItem>}
             <MenuItem icon={<Tags strokeWidth={1.5} />} onSelect={() => setOpen('tags')}>{t('actions.tags')}</MenuItem>
+            <MenuItem icon={<Copy strokeWidth={1.5} />} onSelect={() => setOpen('copy')}>{t('actions.copy')}</MenuItem>
+            <MenuItem icon={<Download strokeWidth={1.5} />} onSelect={() => {
+              toast.info(t('toast.zipPreparing'));
+              downloadProjectZip(project.id, project.name).catch(() => toast.error(getT('states')('error.title')));
+            }}>{t('actions.download')}</MenuItem>
             {can('archive') && (
               project.archived
                 ? <MenuItem icon={<ArchiveRestore strokeWidth={1.5} />} onSelect={() => run('unarchive', t('toast.unarchived'))}>{t('actions.unarchive')}</MenuItem>
@@ -65,10 +70,40 @@ export function ProjectActions({ project }: { readonly project: Project }) {
         )}
       </Menu>
       {open === 'rename' && <RenameDialog project={project} onClose={() => setOpen(null)} />}
+      {open === 'copy' && <CopyDialog project={project} onClose={() => setOpen(null)} />}
       {open === 'tags' && <TagsAssignDialog project={project} onClose={() => setOpen(null)} />}
       {open === 'delete' && <DeleteForeverDialog project={project} onClose={() => setOpen(null)} />}
       {open === 'leave' && <LeaveDialog project={project} onClose={() => setOpen(null)} />}
     </>
+  );
+}
+
+function CopyDialog({ project, onClose }: { readonly project: Project; readonly onClose: () => void }) {
+  const t = getT('projects');
+  const c = getT('common');
+  const router = useRouter();
+  const duplicate = useDuplicateProject();
+  const [name, setName] = useState(t('copy.default', { name: project.name }).slice(0, 120));
+  const [error, setError] = useState<string>();
+  const onSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    duplicate.mutate({ id: project.id, name }, {
+      onSuccess: (p) => { toast.success(t('toast.copied')); onClose(); router.push(`/proyecto/${p.id}`); },
+      onError: (err) => setError(isApiError(err) ? (err.fields['name'] ?? err.message) : undefined),
+    });
+  };
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()} title={t('copy.title')} description={t('copy.body')} width="sm">
+      <form onSubmit={onSubmit}>
+        <Field label={t('rename.label')} error={error}>
+          {(a) => <Input {...a} autoFocus maxLength={120} value={name} onChange={(e) => setName(e.target.value)} />}
+        </Field>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button onClick={onClose}>{c('cancel')}</Button>
+          <Button type="submit" variant="primary" loading={duplicate.isPending}>{t('copy.submit')}</Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { envelopeContext, fetchSealed } from '../crypto/transport';
 import { api, unwrap } from './client';
 import type { components } from './generated';
 import type { InvitableRole } from './types';
@@ -63,6 +64,43 @@ export function useUpdateProject(id: string) {
     mutationFn: (body: Schemas['UpdateProjectDto']) => unwrap(api.PATCH('/api/v1/projects/{projectId}', { params: { path: { projectId: id } }, body })),
     onSuccess: invalidate,
   });
+}
+
+/** «Hacer una copia»: proyecto nuevo propio, con su propia clave (el servidor recifra los archivos). */
+export function useDuplicateProject() {
+  const invalidate = useInvalidate();
+  return useMutation({
+    mutationFn: ({ id, name }: { id: string; name: string }) => unwrap(api.POST('/api/v1/projects/{projectId}/duplicate', { params: { path: { projectId: id } }, body: { name } })),
+    onSuccess: invalidate,
+  });
+}
+
+/**
+ * Código fuente en .zip, generado en el navegador: el contenido llega sellado
+ * (C1 + C2) y verificado (C5), y nunca pasa en claro por ningún intermediario.
+ */
+export async function downloadProjectZip(id: string, name: string): Promise<void> {
+  const { zipSync } = await import('fflate');
+  const files = await fetchSealed<Array<{ path: string; kind: string; content: string }>>(`/api/v1/projects/${id}/files/contents`, envelopeContext(id, 'files:contents'));
+  const binary = new Set(['png', 'jpg', 'jpeg', 'pdf']);
+  const enc = new TextEncoder();
+  const entries: Record<string, Uint8Array> = {};
+  for (const f of files) {
+    if (binary.has(f.kind)) {
+      const raw = atob(f.content);
+      const bytes = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i += 1) bytes[i] = raw.charCodeAt(i);
+      entries[f.path] = bytes;
+    } else entries[f.path] = enc.encode(f.content);
+  }
+  const zip = zipSync(entries, { level: 6 });
+  const url = URL.createObjectURL(new Blob([zip], { type: 'application/zip' }));
+  const a = document.createElement('a');
+  a.href = url;
+  // Nombre de archivo seguro a partir del nombre del proyecto.
+  a.download = `${name.normalize('NFD').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-').slice(0, 60) || 'proyecto'}.zip`;
+  a.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export type LifecycleAction = 'archive' | 'unarchive' | 'trash' | 'restore';
