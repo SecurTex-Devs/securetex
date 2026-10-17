@@ -26,11 +26,11 @@ while read -r ref_local sha_local ref_remoto sha_remoto; do
 
   if [ "$ref_remoto" = "refs/heads/$RAMA_PROTEGIDA" ]; then
     printf "\n${rojo}✕ Push directo a '%s' bloqueado${fin}\n\n" "$RAMA_PROTEGIDA" >&2
-    printf "  Todo cambio entra por pull request con una aprobación.\n" >&2
-    printf "  Lo tienes en CONTRIBUTING.md de este repositorio.\n\n" >&2
+    printf "  Los cambios se suben a develop; a main solo llega develop por pull request.\n" >&2
+    printf "  Lo tienes en el README.md de la raíz.\n\n" >&2
     printf "  ${verde}Qué hacer ahora:${fin}\n" >&2
-    printf "    git switch -c feat/lo-que-estas-haciendo\n" >&2
-    printf "    git push -u origin feat/lo-que-estas-haciendo\n" >&2
+    printf "    git switch develop && git merge -  (o git switch -c feat/lo-que-estas-haciendo)\n" >&2
+    printf "    git push origin develop\n" >&2
     printf "    gh pr create --fill\n\n" >&2
     printf "  ${amarillo}Si de verdad necesitas saltártelo (y sabes por qué):${fin}\n" >&2
     printf "    git push --no-verify\n\n" >&2

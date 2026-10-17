@@ -83,7 +83,14 @@ cd backend && pnpm contracts:generate
 cd frontend && pnpm api:sync
 ```
 
-Ramas `feat/`, `fix/`, `sec/`, `a11y/`, `docs/` y `chore/`. A `main` solo se llega por *pull request*. El hook local que bloquea el *push* directo a `main` se activa una vez con:
+**Ramas:** `main` es la versión estable y `develop` la de integración. Los cambios se suben a `develop`, directamente o desde una rama `feat/`, `fix/`, `sec/`, `a11y/`, `docs/` o `chore/` que sale de ella. A `main` solo llega `develop` por *pull request*.
+
+```bash
+git switch develop && git pull
+git switch -c feat/lo-que-sea      # opcional
+```
+
+El hook local que bloquea el *push* directo a `main` se activa una vez con:
 
 ```bash
 git config core.hooksPath .githooks

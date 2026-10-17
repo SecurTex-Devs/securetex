@@ -97,7 +97,7 @@ Antes de dar un cambio por terminado: compila (`typecheck`), pasan las pruebas d
 2. **Secretos:** nunca en el código, en las pruebas, en los registros ni en git. Solo en el `.env` local. `.env.example` lleva los nombres, nunca valores reales.
 3. **Un cambio de API toca los dos lados en el mismo PR:** `pnpm contracts:generate` en `backend/` y `pnpm api:sync` en `frontend/`.
 4. **Commits en español, modulares**, con prefijo: `feat`, `fix`, `sec`, `a11y`, `perf`, `refactor`, `test`, `docs`, `chore`, y el área entre paréntesis (`feat(editor): …`, `sec(compilador): …`).
-5. **Ramas:** `feat/`, `fix/`, `sec/`, `a11y/`, `docs/`, `chore/`. **Nunca se hace *push* a `main`**: todo entra por *pull request*. El hook se activa con `git config core.hooksPath .githooks`.
+5. **Ramas:** `main` es la versión estable y `develop` la de integración. El trabajo se hace en ramas `feat/`, `fix/`, `sec/`, `a11y/`, `docs/` o `chore/` que salen de `develop` y vuelven a ella; también se puede subir directamente a `develop`. **Nunca se hace *push* a `main`**: a `main` solo llega `develop` por *pull request*. El hook se activa con `git config core.hooksPath .githooks`.
 6. **No inventes valores.** Si falta un dato (un límite, una versión), márcalo como `⚠️ POR DEFINIR`.
 7. **Fuera del alcance de esta entrega** (no los implementes sin que se pida): chat, comentarios, control de cambios, modo confidencial, importar desde .zip o GitHub.
 
