@@ -60,14 +60,12 @@ mkdocs serve
 
 Abre `http://127.0.0.1:8000`: buscador, navegación lateral, modo oscuro y diagramas renderizados.
 
-**Opción 3 — Sitio publicado.** Cada push a `main` regenera el sitio con GitHub Actions.
-
 ---
 
 ## Cómo contribuir
 
-1. Rama desde `main`: `docs/<tema>`.
-2. Edita el documento correspondiente. **Un documento vive en un solo repositorio**: si el contenido es específico del frontend o del backend, va en su repositorio.
+1. Rama desde `develop`: `docs/<tema>`.
+2. Edita el documento correspondiente. **Un documento vive en un solo sitio**: si el contenido es específico del frontend o del backend, va en `frontend/Docs` o `backend/Docs`.
 3. Verifica en local: `mkdocs build --strict` (falla ante enlaces rotos).
 4. Abre un *pull request*. Requiere una aprobación.
 
