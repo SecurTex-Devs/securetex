@@ -56,7 +56,9 @@ Es gratis. Basta con registrar la aplicación en cada proveedor y copiar el ID y
 | `.env.example` | Todas las variables que necesita la pila, con el comando que genera cada secreto |
 | `infra/postgres/` | Script que crea los roles de PostgreSQL al inicializar la base |
 
-Los tres proyectos venían de repositorios separados y conservan todo su historial de git.
+Los tres proyectos venían de repositorios separados y conservan todo su historial de git. El mapa detallado (qué hay en cada subcarpeta y dónde buscar un endpoint, la criptografía o el editor) está en [`AGENTS.md`](AGENTS.md#2-dónde-está-cada-cosa).
+
+Las instrucciones para asistentes de IA están en `AGENTS.md` (raíz y cada carpeta). `CLAUDE.md`, `GEMINI.md` y `.github/copilot-instructions.md` remiten a ellas.
 
 | Si eres… | Abre |
 |---|---|

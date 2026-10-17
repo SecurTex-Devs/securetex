@@ -1,6 +1,6 @@
 # AGENTS.md — Instrucciones para agentes de IA · Frontend
 
-> Lo leen Claude Code, Cursor, Copilot, Codex y cualquier otro asistente antes de tocar este repositorio.
+> Lo leen Claude Code, Cursor, Copilot, Codex y cualquier otro asistente antes de tocar `frontend/`. Las reglas comunes a todo el repositorio están en el [`AGENTS.md` de la raíz](../AGENTS.md).
 > **Estas reglas son obligatorias.** Un cambio que las incumpla se rechaza en revisión, lo haya escrito una persona o una IA.
 
 ---
@@ -9,7 +9,7 @@
 
 **El cliente nunca es la frontera de seguridad.** El navegador está bajo control del usuario: puede editar el DOM, interceptar peticiones y leer todo lo que le enviemos.
 
-De ahí se deducen dos reglas que gobiernan todo este repositorio:
+De ahí se deducen dos reglas que gobiernan todo el frontend:
 
 1. **Ocultar un botón no es autorizar.** Toda restricción de la interfaz existe también en el servidor. Si escribes una comprobación de permisos aquí, es cortesía visual, no un control.
 2. **Nuestra responsabilidad es no crear vulnerabilidades**: no introducir XSS, no filtrar tokens y no dejar datos sensibles en el dispositivo.
@@ -221,7 +221,7 @@ Antes de dar por terminado un cambio: `pnpm lint && pnpm typecheck && pnpm test 
 | No sabes si algo compromete la seguridad | **Asume que sí.** Pregunta antes de implementarlo |
 | Necesitas una dependencia nueva | Justifícala en el PR: alternativas, mantenimiento, tamaño, dependencias transitivas |
 | El diseño de una pantalla no está definido | Añádela primero a los mockups y acuérdala; no improvises en el código |
-| Falta un endpoint en el backend | Ábrelo como *issue* en `securtex-backend`; no simules la respuesta en producción |
+| Falta un endpoint en el backend | Impleméntalo en `backend/` en el mismo PR (o abre un *issue*); no simules la respuesta en producción |
 | El contrato de la API te bloquea | Coordina el PR con el del backend; nunca escribas el tipo a mano |
 | Falta información (una medida, un texto) | Márcalo como `⚠️ POR DEFINIR`. **No inventes valores** |
 

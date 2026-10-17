@@ -1,14 +1,14 @@
 # AGENTS.md — Instrucciones para agentes de IA
 
-> Este archivo lo leen los asistentes de IA (Claude Code, Cursor, Copilot, Codex…) antes de trabajar en este repositorio. Las instrucciones son **obligatorias**, no sugerencias.
+> Este archivo lo leen los asistentes de IA (Claude Code, Cursor, Copilot, Codex…) antes de trabajar en `docs/`. Las reglas comunes a todo el repositorio están en el [`AGENTS.md` de la raíz](../AGENTS.md). Las instrucciones son **obligatorias**, no sugerencias.
 
 ---
 
-## 1. Qué es este repositorio
+## 1. Qué es esta carpeta
 
-`securtex-docs` es la **documentación de planificación** del proyecto SecurTex, un editor LaTeX colaborativo seguro. **No contiene código de aplicación.**
+`docs/` es la **documentación de planificación** del proyecto SecurTex, un editor LaTeX colaborativo seguro. **No contiene código de aplicación.**
 
-Los otros dos repositorios son `securtex-backend` y `securtex-frontend`, cada uno con su propio `AGENTS.md`.
+Junto a ella están `backend/` y `frontend/`, cada uno con su propio `AGENTS.md`.
 
 ---
 
@@ -79,7 +79,7 @@ Al crear un documento nuevo: usa el siguiente número libre, añádelo a `index.
 - ❌ Suavizar o eliminar advertencias de seguridad para que el texto "quede mejor"
 - ❌ Reescribir documentos completos cuando el cambio pedido es puntual
 - ❌ Cambiar la numeración de documentos existentes (rompe enlaces en los otros repositorios)
-- ❌ Crear código de aplicación aquí: va en `securtex-backend` o `securtex-frontend`
+- ❌ Crear código de aplicación aquí: va en `backend/` o `frontend/`
 - ❌ Prometer funcionalidades sin trazarlas a un `F-xxx` de [01-Analisis-Funcional-Overleaf.md](docs/01-Analisis-Funcional-Overleaf.md)
 
 ---

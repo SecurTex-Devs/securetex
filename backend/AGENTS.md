@@ -1,6 +1,6 @@
 # AGENTS.md — Instrucciones para agentes de IA · Backend
 
-> Lo leen Claude Code, Cursor, Copilot, Codex y cualquier otro asistente antes de tocar este repositorio.
+> Lo leen Claude Code, Cursor, Copilot, Codex y cualquier otro asistente antes de tocar `backend/`. Las reglas comunes a todo el repositorio están en el [`AGENTS.md` de la raíz](../AGENTS.md).
 > **Estas reglas son obligatorias.** Un cambio que las incumpla se rechaza en revisión, lo haya escrito una persona o una IA.
 
 ---
@@ -13,8 +13,8 @@ Si una propuesta tuya ignora esto, está mal, por muy elegante que sea.
 
 Antes de escribir código lee:
 
-1. [`securtex-docs` · 03-Arquitectura](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/03-Arquitectura.md)
-2. [`securtex-docs` · 05-Seguridad](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/05-Seguridad.md) ← el documento central
+1. [`docs` · 03-Arquitectura](../docs/docs/03-Arquitectura.md)
+2. [`docs` · 05-Seguridad](../docs/docs/05-Seguridad.md) ← el documento central
 3. [`Docs/02-Arquitectura-del-Backend.md`](Docs/02-Arquitectura-del-Backend.md)
 4. [`Docs/03-Estandares-de-Codigo.md`](Docs/03-Estandares-de-Codigo.md)
 
@@ -151,7 +151,7 @@ Checklist obligatorio:
 - [ ] Clasificación de cada columna (`PUBLIC` / `INTERNAL` / `PII` / `SECRET` / `ENCRYPTED`) en el comentario
 - [ ] Columnas `SECRET` o `ENCRYPTED`: nunca en claro; envelope encryption vía Vault
 - [ ] Migración reversible o con plan de reversión documentado
-- [ ] `Docs` y el modelo de datos de `securtex-docs` actualizados
+- [ ] `Docs` y el modelo de datos de `docs/` actualizados
 
 ### 3.3 Tocar el compilador o el sandbox
 
@@ -169,7 +169,7 @@ Checklist obligatorio:
 
 ⚠️ **Riesgo crítico.** Cobertura del **100 %** y revisión del responsable de seguridad + una segunda persona.
 
-Las cinco capas están especificadas en [`securtex-docs` · 14-Criptografia-Multicapa](https://github.com/SecurTex-Devs/securtex-docs/blob/main/docs/14-Criptografia-Multicapa.md). El backend implementa **C2 (apertura del sobre), C3 (reposo) y C4 (verificación)**; C1 y C5 son del cliente.
+Las cinco capas están especificadas en [`docs` · 14-Criptografia-Multicapa](../docs/docs/14-Criptografia-Multicapa.md). El backend implementa **C2 (apertura del sobre), C3 (reposo) y C4 (verificación)**; C1 y C5 son del cliente.
 
 - [ ] Todo pasa por `packages/security`; ningún servicio llama a una primitiva criptográfica directamente
 - [ ] **C2**: se abre el sobre con X25519 + HKDF-SHA-256 + ChaCha20-Poly1305; la clave derivada se zeroiza tras usarse
@@ -299,7 +299,7 @@ En el PR, responde siempre:
 ## 7. Comandos
 
 ```bash
-pnpm dev                  # Levanta todo el stack local
+docker compose up --build -d   # Desde la raíz: levanta todo el stack local
 pnpm test                 # Unitarias + integración
 pnpm test:security        # Suite de casos de abuso
 pnpm test:e2e             # Playwright
@@ -324,8 +324,8 @@ Antes de dar por terminado un cambio: `pnpm lint && pnpm typecheck && pnpm test 
 | Una regla de este documento te bloquea | No la incumplas: propón un ADR |
 | Necesitas una dependencia nueva | Justifícala en el PR: alternativas, mantenimiento, dependencias transitivas |
 | Falta información (una versión, un umbral) | Márcalo como `⚠️ POR DEFINIR`. **No inventes valores** |
-| El cambio afecta a la arquitectura | Actualiza el ADR en `securtex-docs` en un PR paralelo y enlázalo |
-| El cambio afecta al frontend | Regenera el contrato y avisa en el PR del otro repositorio |
+| El cambio afecta a la arquitectura | Actualiza el ADR en `docs/docs/adr/` en el mismo PR |
+| El cambio afecta al frontend | Regenera el contrato (`pnpm contracts:generate`) y, en el mismo PR, `pnpm api:sync` en `frontend/` |
 
 ---
 
