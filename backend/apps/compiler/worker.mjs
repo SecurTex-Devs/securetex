@@ -110,8 +110,11 @@ function runLimited(bin, args, cwd, deadline) {
   const remaining = deadline - Date.now();
   if (remaining <= 0) return Promise.resolve({ code: null, signal: 'SIGKILL', timedOut: true });
   const cpuSeconds = Math.ceil(remaining / 1000);
+  // Límite blando = plazo (SIGXCPU, que cuenta como timeout) y duro 1 s después:
+  // con ambos iguales, el kernel a veces mataba con SIGKILL antes que el temporizador
+  // y un bucle infinito se informaba como 'failed' en vez de 'timeout'.
   const argv = [
-    `--cpu=${cpuSeconds}`, `--as=${MAX_ADDRESS_SPACE}`, `--fsize=${MAX_PDF_BYTES}`,
+    `--cpu=${cpuSeconds}:${cpuSeconds + 1}`, `--as=${MAX_ADDRESS_SPACE}`, `--fsize=${MAX_PDF_BYTES}`,
     `--nofile=${MAX_OPEN_FILES}`, '--core=0', '--', bin, ...args,
   ];
   return new Promise((resolve) => {
