@@ -21,7 +21,7 @@ export const auth = {
   'login.register': 'Crear una cuenta',
   'login.invalid': 'El correo o la contraseña no son correctos.',
   'login.remaining': 'Te quedan {n} intentos antes de un bloqueo temporal de 15 minutos.',
-  'login.locked': 'Hemos pausado los intentos de acceso a esta cuenta por seguridad. Vuelve a intentarlo en {wait}.',
+  'login.locked': 'Hemos bloqueado el acceso a esta cuenta por seguridad tras varios intentos fallidos. Vuelve a intentarlo en {wait}; si se repite, el bloqueo será más largo.',
   'login.rateLimited': 'Demasiados intentos desde esta conexión. Espera {wait}.',
   'login.sessionExpired': 'Tu sesión ha caducado. Vuelve a iniciar sesión.',
   'login.oidc.oidc_link_required': 'Ya existe una cuenta con ese correo. Inicia sesión con tu contraseña y vincula el proveedor desde Ajustes.',

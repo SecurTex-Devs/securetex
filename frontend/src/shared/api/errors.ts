@@ -65,6 +65,13 @@ export function isApiError(e: unknown): e is ApiError {
 
 /** «2 min», «45 s»: tiempos de espera en lenguaje natural. */
 export function humanWait(seconds: number): string {
+  // Bloqueos de cuenta escalonados: hasta 24 h.
+  if (seconds >= 3600) {
+    const minutes = Math.ceil(seconds / 60);
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    return m === 0 ? `${h} h` : `${h} h ${m} min`;
+  }
   if (seconds >= 120) return `${Math.ceil(seconds / 60)} min`;
   if (seconds >= 60) return '1 min';
   return `${Math.max(1, Math.round(seconds))} s`;
