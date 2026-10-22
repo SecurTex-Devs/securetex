@@ -16,6 +16,7 @@ import {
 } from '../../infrastructure/security/tokens';
 import { AuditLog } from '../audit/audit-log';
 import type { Actor, RequestMeta } from '../request-meta';
+import { lockedError } from './login-throttle';
 
 export interface IssuedSession {
   readonly sessionId: string;
@@ -61,27 +62,45 @@ export class SessionService {
       this.db.identity.session.count({ where: { userId: user.id, userAgentHash: uaHash } }),
       this.db.identity.session.count({ where: { userId: user.id } }),
     ]);
-    const session = await this.db.identity.session.create({
-      data: {
-        userId: user.id,
-        csrfHash: sha256(csrfToken),
-        ipPrefix: this.cipher.encrypt(anonymizeIp(meta.ip), FIELD.sessionIp),
-        userAgentHash: uaHash,
-        deviceLabel: this.cipher.encrypt(deviceLabel(meta.userAgent), FIELD.sessionDevice),
-        authMethod,
-        remember,
-        // Acabar de autenticarse cuenta como reautenticación reciente (RS-006).
-        elevatedUntil: new Date(now + AUTH.ELEVATION_TTL_MS),
-        idleExpiresAt: new Date(now + AUTH.SESSION_IDLE_TTL_MS),
-        expiresAt: new Date(now + ttl),
-      },
-    });
+    const session = await this.db.identity.session
+      .create({
+        data: {
+          userId: user.id,
+          csrfHash: sha256(csrfToken),
+          ipPrefix: this.cipher.encrypt(anonymizeIp(meta.ip), FIELD.sessionIp),
+          userAgentHash: uaHash,
+          deviceLabel: this.cipher.encrypt(deviceLabel(meta.userAgent), FIELD.sessionDevice),
+          authMethod,
+          remember,
+          // Acabar de autenticarse cuenta como reautenticación reciente (RS-006).
+          elevatedUntil: new Date(now + AUTH.ELEVATION_TTL_MS),
+          idleExpiresAt: new Date(now + AUTH.SESSION_IDLE_TTL_MS),
+          expiresAt: new Date(now + ttl),
+        },
+      })
+      .catch((e: unknown) => this.rejectedByGuard(user.id, e));
     await this.db.identity.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date(now) } });
     const refreshToken = await this.newRefreshToken(session.id, session.expiresAt);
     const accessToken = await this.tokens.issue({ userId: user.id, sessionId: session.id });
     // Primer acceso desde este navegador (y no es la primera sesión de la cuenta): se avisa al titular.
     if (knownDevice === 0 && anyBefore > 0) await this.notifyNewDevice(user.id, deviceLabel(meta.userAgent));
     return { sessionId: session.id, accessToken, refreshToken, csrfToken, remember, expiresAt: session.expiresAt };
+  }
+
+  /**
+   * El trigger sessions_account_guard (migración s5) rechaza en la propia base
+   * las sesiones de cuentas bloqueadas, suspendidas o borradas, llegue por
+   * contraseña, segundo factor u OIDC. Aquí solo se traduce a un error de dominio.
+   */
+  private async rejectedByGuard(userId: string, e: unknown): Promise<never> {
+    const message = e instanceof Error ? e.message : '';
+    if (/account_locked/.test(message)) {
+      const [row] = await this.db.identity.$queryRaw<Array<{ until: Date | null }>>`
+        SELECT auth_user_locked_until(${userId}::uuid) AS until`;
+      throw lockedError(row?.until ?? new Date(Date.now() + AUTH.LOCK_FALLBACK_RETRY_MS));
+    }
+    if (/account_unavailable/.test(message)) throw new UnauthorizedError('account_unavailable');
+    throw e;
   }
 
   private async notifyNewDevice(userId: string, device: string): Promise<void> {

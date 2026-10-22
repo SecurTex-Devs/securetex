@@ -255,12 +255,17 @@ model MfaMethod {
 
 /// Contador de fallos por correo (exista o no la cuenta), para que el bloqueo
 /// no revele qué correos están registrados (T-A09).
+/// Solo la escribe y la lee el rol securtex_lockout, a través de las funciones
+/// auth_* de la migración s5: la API no tiene permisos sobre esta tabla.
 model LoginThrottle {
-  /// INTERNAL · SHA-256 del correo normalizado
+  /// INTERNAL · índice ciego del correo (16 bytes, el mismo que users.email_index)
   keyHash         Bytes     @id @map("key_hash")
   failedCount     Int       @default(0) @map("failed_count")
   windowStartedAt DateTime  @default(now()) @map("window_started_at") @db.Timestamptz(3)
   lockedUntil     DateTime? @map("locked_until") @db.Timestamptz(3)
+  /// INTERNAL · bloqueos sucesivos en 24 h: 15 min, 1 h, 6 h, 24 h
+  lockLevel       Int       @default(0) @map("lock_level")
+  lastLockedAt    DateTime? @map("last_locked_at") @db.Timestamptz(3)
 
   @@map("login_throttle")
 }

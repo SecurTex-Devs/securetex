@@ -31,14 +31,14 @@ export const AUTH = {
   MFA_MAX_ATTEMPTS: 5,
   /** Reto OIDC (state, nonce, PKCE) */
   OIDC_CHALLENGE_TTL_MS: 10 * MINUTE_MS,
-  /** RF-009 · fallos antes de avisar de los intentos restantes */
-  LOGIN_WARN_AFTER_FAILURES: 7,
-  /** RF-009 · fallos antes del bloqueo temporal */
-  LOGIN_LOCK_AFTER_FAILURES: 10,
-  /** RF-009 · duración del bloqueo */
-  LOGIN_LOCK_MS: 15 * MINUTE_MS,
-  /** Ventana en la que se cuentan los fallos */
-  LOGIN_WINDOW_MS: 15 * MINUTE_MS,
+  /**
+   * RF-009 · se avisa de los intentos restantes cuando quedan estos o menos.
+   * El umbral (10 fallos en 15 min) y la duración escalonada del bloqueo
+   * (15 min, 1 h, 6 h, 24 h) los decide PostgreSQL: migración s5, auth_register_login_failure.
+   */
+  LOGIN_WARN_WHEN_REMAINING: 3,
+  /** Si la base rechaza una sesión por bloqueo pero ya no informa del plazo (acaba de vencer) */
+  LOCK_FALLBACK_RETRY_MS: MINUTE_MS,
   /** RF-006 · códigos de respaldo */
   RECOVERY_CODE_COUNT: 10,
   /** Tokens de un solo uso: 256 bits del CSPRNG (AGENTS.md §3.5) */

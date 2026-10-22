@@ -12,7 +12,7 @@ import { AuditLog } from '../audit/audit-log';
 import type { Actor, RequestMeta } from '../request-meta';
 import { NewPasswordService } from './credentials';
 import { EmailTokenService } from './email-tokens';
-import { LoginThrottle } from './login-throttle';
+import { formatUntil, lockedError, LoginThrottle } from './login-throttle';
 import { MfaService, type SecondFactor } from './mfa';
 import { SessionService, type IssuedSession } from './sessions';
 
@@ -120,7 +120,7 @@ export class AuthService {
     }
     // Aquí `user` existe y es válido; TypeScript no lo deduce de failLogin(): never.
     const account = user as User;
-    await this.throttle.reset(email);
+    await this.throttle.registerSuccess(email);
     if (account.passwordHash && this.hasher.needsRehash(account.passwordHash)) {
       await this.db.identity.user.update({ where: { id: account.id }, data: { passwordHash: await this.hasher.hash(password) } });
     }
@@ -254,19 +254,21 @@ export class AuthService {
 
   private async failLogin(email: Email, userId: string | null, meta: RequestMeta): Promise<never> {
     const outcome = await this.throttle.registerFailure(email);
+    const locked = outcome.lockedUntil !== null;
     await this.audit.record(
       {
-        type: outcome.locked ? 'auth.login.locked' : 'auth.login.failure',
-        severity: outcome.locked ? 'warning' : 'notice',
+        type: locked ? 'auth.login.locked' : 'auth.login.failure',
+        severity: locked ? 'warning' : 'notice',
         actorUserId: userId,
         outcome: 'failure',
         reason: 'invalid_credentials',
+        ...(outcome.lockedUntil ? { metadata: { lockedUntil: outcome.lockedUntil.toISOString() } } : {}),
       },
       meta,
     );
-    if (outcome.locked) {
-      if (userId) await this.notifyLockout(email);
-      throw new RateLimitedError(Math.ceil(AUTH.LOGIN_LOCK_MS / 1000), 'account_locked', 'Hemos pausado los intentos de acceso a esta cuenta durante 15 minutos por seguridad.');
+    if (outcome.lockedUntil) {
+      if (userId) await this.notifyLockout(email, outcome.lockedUntil);
+      throw lockedError(outcome.lockedUntil);
     }
     throw new InvalidCredentialsError(outcome.remainingAttempts);
   }
@@ -297,12 +299,12 @@ export class AuthService {
     });
   }
 
-  private async notifyLockout(email: Email): Promise<void> {
+  private async notifyLockout(email: Email, until: Date): Promise<void> {
     await this.mailer.send({
       to: email.toString(),
       subject: 'Intentos de acceso bloqueados en tu cuenta',
       heading: 'Hemos pausado los intentos de acceso',
-      paragraphs: ['Hemos detectado varios intentos fallidos de iniciar sesión en tu cuenta y los hemos pausado durante 15 minutos.', 'Si no has sido tú, te recomendamos cambiar tu contraseña y activar la verificación en dos pasos.'],
+      paragraphs: [`Hemos detectado varios intentos fallidos de iniciar sesión en tu cuenta y la hemos bloqueado por seguridad. Podrás volver a entrar ${formatUntil(until)}; si se repite, el bloqueo será más largo.`, 'Si no has sido tú, te recomendamos cambiar tu contraseña y activar la verificación en dos pasos.'],
     });
   }
 }
