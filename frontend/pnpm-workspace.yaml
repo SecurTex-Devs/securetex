@@ -1,4 +1,7 @@
 # Solo estos paquetes pueden ejecutar scripts de instalación.
+overrides:
+  "postcss@<8.5.23": "8.5.33"
+
 allowBuilds:
   "sharp": true
   "@tailwindcss/oxide": true
