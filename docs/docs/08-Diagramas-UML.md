@@ -232,16 +232,16 @@ classDiagram
         <<value object>>
         -string value
         +SafeFileName of(raw) SafeFileName
-        note "Rechaza '..', '/', '\\', caracteres de control,<br/>nombres reservados; normaliza a NFC"
     }
+    note for SafeFileName "Rechaza '..', '/', '\\', caracteres de control,<br/>nombres reservados y normaliza a NFC"
 
     class ProjectAuthorizationPolicy {
         +canRead(actor, project) Decision
         +canWrite(actor, project) Decision
         +canComment(actor, project) Decision
         +canManage(actor, project) Decision
-        note "Único punto de decisión.<br/>Ningún caso de uso accede a datos sin pasar por aquí"
     }
+    note for ProjectAuthorizationPolicy "Único punto de decisión.<br/>Ningún caso de uso accede a datos sin pasar por aquí"
 
     Project "1" *-- "1..*" ProjectMember
     Project "1" *-- "0..*" ShareLink
@@ -250,7 +250,7 @@ classDiagram
     ProjectFile ..> SafeFileName
     Project ..> ProjectAuthorizationPolicy
 
-    style ProjectAuthorizationPolicy fill:#8b1a1a
+    cssClass "ProjectAuthorizationPolicy" security
 ```
 
 ### 2.3 Dominio de compilación
@@ -298,8 +298,8 @@ classDiagram
     class GVisorRunner {
         -ResourceLimits limits
         +run(spec) SandboxResult
-        note "network=none · readOnlyRootFS<br/>cap-drop=ALL · seccomp · efímero"
     }
+    note for GVisorRunner "network=none · readOnlyRootFS<br/>cap-drop=ALL · seccomp · efímero"
     class FirecrackerRunner {
         +run(spec) SandboxResult
     }
@@ -335,8 +335,7 @@ classDiagram
     SandboxRunner <|.. FirecrackerRunner
     GVisorRunner --> ResourceLimits
 
-    style LatexStaticAnalyzer fill:#8b1a1a
-    style OutputValidator fill:#8b1a1a
+    cssClass "LatexStaticAnalyzer,OutputValidator" security
 ```
 
 ### 2.4 Dominio de edición colaborativa
@@ -400,8 +399,8 @@ classDiagram
     class CollaborationTokenService {
         +issue(user, document, ttl) CollabToken
         +verify(token) Claims
-        note "Ed25519 · alcance limitado a un documento · TTL 5 min"
     }
+    note for CollaborationTokenService "Ed25519 · alcance limitado a un documento · TTL 5 min"
 
     DocumentRoom "1" *-- "0..*" CollaborationSession
     DocumentRoom --> YDoc
@@ -410,7 +409,7 @@ classDiagram
     DocumentRoom "1" *-- "0..*" Comment
     CollaborationSession ..> CollaborationTokenService
 
-    style CollaborationTokenService fill:#8b1a1a
+    cssClass "CollaborationTokenService" security
 ```
 
 ---
@@ -592,7 +591,7 @@ sequenceDiagram
     else Infectado
         AV-->>F: VIRUS
         F->>DB: UPDATE av_status='infected'
-        F->>F: bloquea el acceso; conserva en cuarentena
+        F->>F: bloquea el acceso y conserva en cuarentena
         F-->>W: 422 "Archivo rechazado por seguridad"
     end
 ```
