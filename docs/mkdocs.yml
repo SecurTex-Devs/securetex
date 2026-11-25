@@ -86,6 +86,7 @@ nav:
       - Plan de proyecto: 11-Plan-de-Proyecto.md
       - DevSecOps y testing: 12-DevSecOps-y-Testing.md
       - Infraestructura y despliegue: 13-Infraestructura-y-Despliegue.md
+      - Configuración de GitHub: 17-Configuracion-de-GitHub.md
   - Referencia:
       - Glosario: 15-Glosario.md
       - Decisiones (ADR):

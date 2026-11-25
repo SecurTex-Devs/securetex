@@ -65,6 +65,7 @@ El punto de partida técnico es incómodo y por eso interesante: **LaTeX es un l
 | 11 | [Plan de proyecto](11-Plan-de-Proyecto.md) | Roles, ceremonias, riesgos, Definición de Terminado, entregables |
 | 12 | [DevSecOps y testing](12-DevSecOps-y-Testing.md) | Pipeline, controles automáticos, estrategia de pruebas |
 | 13 | [Infraestructura y despliegue](13-Infraestructura-y-Despliegue.md) | Entornos, IaC, operación, copias de seguridad |
+| 17 | [Configuración de GitHub](17-Configuracion-de-GitHub.md) | Permisos y protección de ramas; estado documentado de la organización |
 | 15 | [Glosario](15-Glosario.md) | Términos y acrónimos |
 
 ### Decisiones
