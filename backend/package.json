@@ -7,6 +7,7 @@
     "dev:down": "docker compose -f ../docker-compose.yml down",
     "build": "pnpm --filter @securtex/api build",
     "test": "pnpm --filter @securtex/api test",
+    "test:coverage": "pnpm --filter @securtex/api test:coverage",
     "test:security": "pnpm --filter @securtex/api test:security",
     "typecheck": "pnpm --filter @securtex/api typecheck",
     "contracts:generate": "pnpm --filter @securtex/api contracts:generate",
