@@ -68,7 +68,7 @@ jobs:
           docker compose exec -T api node dist/scripts/seed-demo.js
       - name: Contrato generado sin diferencias
         run: |
-          docker compose run --rm --no-deps --tmpfs /repo/contracts:rw,uid=1000,gid=1000,mode=0700 api sh -c 'node dist/scripts/generate-openapi.js >/dev/null && cat /repo/contracts/openapi.json' >/tmp/openapi.generated.json
+          docker compose -f docker-compose.yml -f tools/ci/contracts.compose.yml run --rm --no-deps api sh -c 'node dist/scripts/generate-openapi.js >/dev/null && cat /repo/contracts/openapi.json' >/tmp/openapi.generated.json
           cmp /tmp/openapi.generated.json backend/contracts/openapi.json
           pnpm --dir frontend api:check
           git diff --exit-code -- backend/contracts/openapi.json frontend/contracts/openapi.json frontend/src/shared/api/generated.ts

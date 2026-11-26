@@ -1,0 +1,4 @@
+services:
+  api:
+    tmpfs:
+      - /repo/contracts:rw,uid=1000,gid=1000,mode=0700
