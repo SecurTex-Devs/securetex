@@ -1,4 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Post, Req, Res } from '@nestjs/common';
+import { AllowDemo } from './demo-access';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import type { FastifyReply } from 'fastify';
@@ -36,6 +37,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @AllowDemo()
   @HttpCode(202)
   @Policy('public')
   @Throttle({ default: { limit: 5, ttl: HOUR } })
@@ -46,6 +48,7 @@ export class AuthController {
   }
 
   @Post('verify-email')
+  @AllowDemo()
   @HttpCode(200)
   @Policy('public')
   @Throttle({ default: { limit: 10, ttl: HOUR } })
@@ -65,6 +68,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @AllowDemo()
   @HttpCode(200)
   @Policy('public')
   @Throttle({ default: { limit: 20, ttl: 15 * MINUTE } })
@@ -80,6 +84,7 @@ export class AuthController {
   }
 
   @Post('mfa/verify')
+  @AllowDemo()
   @HttpCode(200)
   @Policy('public')
   @Throttle({ default: { limit: 10, ttl: 10 * MINUTE } })
@@ -92,6 +97,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @AllowDemo()
   @HttpCode(200)
   @Policy('public')
   @CsrfExempt()
@@ -109,6 +115,7 @@ export class AuthController {
   }
 
   @Post('logout')
+  @AllowDemo()
   @HttpCode(200)
   @Policy('authenticated')
   @ApiOperation({ summary: 'Cerrar la sesión actual' })
@@ -128,6 +135,7 @@ export class AuthController {
   }
 
   @Post('password/forgot')
+  @AllowDemo()
   @HttpCode(202)
   @Policy('public')
   @Throttle({ default: { limit: 5, ttl: HOUR } })
@@ -138,6 +146,7 @@ export class AuthController {
   }
 
   @Post('password/reset')
+  @AllowDemo()
   @HttpCode(200)
   @Policy('public')
   @Throttle({ default: { limit: 5, ttl: HOUR } })
@@ -211,6 +220,7 @@ export class AuthController {
   }
 
   @Get('providers')
+  @AllowDemo()
   @Policy('public')
   @ApiOperation({ summary: 'Proveedores de identidad configurados' })
   providers(): ProvidersDto {
@@ -218,6 +228,7 @@ export class AuthController {
   }
 
   @Get('oidc/:provider')
+  @AllowDemo()
   @Policy('public')
   @Throttle({ default: { limit: 20, ttl: HOUR } })
   @ApiOperation({ summary: 'Iniciar el flujo OIDC (Google o Microsoft)', description: 'Authorization Code + PKCE S256, state y nonce de un solo uso.' })
@@ -249,6 +260,7 @@ export class AuthController {
   }
 
   @Get('oidc/:provider/callback')
+  @AllowDemo()
   @Policy('public')
   @ApiOperation({ summary: 'Retorno del proveedor OIDC' })
   async oidcCallback(@Param('provider') provider: string, @Req() req: SecuredRequest, @Meta() meta: RequestMeta, @Res() reply: FastifyReply): Promise<void> {

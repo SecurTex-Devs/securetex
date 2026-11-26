@@ -38,6 +38,8 @@ x-api-env: &api-env
   SMTP_PORT: "1025"
   HIBP_ENABLED: ${HIBP_ENABLED:-true}
   API_DOCS_ENABLED: "true"
+  REGISTRATION_ENABLED: "true"
+  DEMO_ENABLED: ${DEMO_ENABLED:-false}
   GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
   GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
   MICROSOFT_CLIENT_ID: ${MICROSOFT_CLIENT_ID:-}
@@ -166,6 +168,26 @@ services:
     security_opt:
       - no-new-privileges:true
     cap_drop: [ALL]
+    restart: unless-stopped
+
+  demo-reset:
+    profiles: [demo]
+    image: securtex-api:local
+    environment: *api-env
+    command: ["node", "dist/scripts/seed-demo.js", "--watch"]
+    # Este proceso no sirve HTTP; no hereda la sonda HTTP de la imagen de la API.
+    healthcheck:
+      disable: true
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 192m
+    cpus: 0.25
+    pids_limit: 32
     restart: unless-stopped
 
 volumes:

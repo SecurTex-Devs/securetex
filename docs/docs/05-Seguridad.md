@@ -639,4 +639,4 @@ security/
 - [03-Arquitectura.md](03-Arquitectura.md) — fronteras de confianza y despliegue
 - [04-Stack-Tecnologico.md](04-Stack-Tecnologico.md) — justificación de cada tecnología
 - [12-DevSecOps-y-Testing.md](12-DevSecOps-y-Testing.md) — pipeline y estrategia de pruebas
-- [`../SECURITY.md`](../SECURITY.md) — política de divulgación responsable
+- [SECURITY.md](https://github.com/SecurTex-Devs/securetex/blob/main/docs/SECURITY.md) — política de divulgación responsable

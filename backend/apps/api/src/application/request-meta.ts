@@ -13,4 +13,6 @@ export interface Actor {
   readonly emailVerified: boolean;
   readonly isSystemAdmin: boolean;
   readonly elevatedUntil: Date | null;
+  readonly isDemo?: boolean;
+  readonly demoProjectId?: string;
 }

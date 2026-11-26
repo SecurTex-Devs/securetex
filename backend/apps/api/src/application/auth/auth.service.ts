@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import type { User } from '@prisma/client';
+import { loadEnv } from '../../config/env';
+import { isDemoEmail } from '../../domain/demo';
+import { requirePublicRegistration } from '../../domain/registration';
 import { AUTH } from '../../domain/constants';
 import { ForbiddenError, InvalidCredentialsError, RateLimitedError, UnauthorizedError, ValidationError } from '../../domain/errors';
 import { Email } from '../../domain/values';
@@ -51,7 +54,9 @@ export class AuthService {
    * avisa por correo a su titular: quien intenta registrarse no aprende nada.
    */
   async register(input: RegisterInput, meta: RequestMeta): Promise<void> {
+    requirePublicRegistration(loadEnv().REGISTRATION_ENABLED);
     const email = Email.of(input.email);
+    if (isDemoEmail(email.toString())) return;
     const passwordHash = await this.newPasswords.validateAndHash(input.password, email);
     // Búsqueda por índice ciego: el correo está cifrado en la base (C3c).
     const existing = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email.toString()) } });
@@ -111,6 +116,8 @@ export class AuthService {
 
   async login(rawEmail: string, password: string, remember: boolean, meta: RequestMeta): Promise<LoginResult> {
     const email = Email.of(rawEmail);
+    // Las identidades sin contraseña no participan en el bloqueo de cuentas normales.
+    if (isDemoEmail(email.toString())) throw new InvalidCredentialsError(null);
     await this.throttle.assertNotLocked(email);
     const user = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email.toString()) } });
     const valid = user?.passwordHash ? await this.hasher.verify(user.passwordHash, password) : await this.burn(password);
@@ -179,6 +186,7 @@ export class AuthService {
   /** P-06 · respuesta idéntica exista o no la cuenta (RF-007). */
   async forgotPassword(rawEmail: string, meta: RequestMeta): Promise<void> {
     const email = Email.of(rawEmail);
+    if (isDemoEmail(email.toString())) return;
     const user = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email.toString()) } });
     if (!user || user.status === 'suspended' || user.status === 'deleted') return;
     const link = await this.emailTokens.issue(user.id, 'reset_password');

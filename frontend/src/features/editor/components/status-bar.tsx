@@ -39,7 +39,7 @@ export function StatusBar({ engine, online, readOnly }: { readonly engine: Compi
   })();
 
   return (
-    <footer className="flex h-[30px] shrink-0 items-center gap-4 overflow-hidden whitespace-nowrap border-t border-line bg-surface px-3 text-[11.5px] text-fg-2">
+    <footer className="relative flex h-[30px] shrink-0 items-center gap-2 overflow-hidden whitespace-nowrap border-t border-line bg-surface px-3 text-[11.5px] text-fg-2 sm:gap-4">
       <span className={cn('flex items-center gap-1.5 font-medium', state.tone)} role="status" aria-live="polite">
         {state.icon}{state.label}
       </span>
@@ -55,9 +55,9 @@ export function StatusBar({ engine, online, readOnly }: { readonly engine: Compi
       <span className="ml-auto hidden items-center gap-1 whitespace-nowrap text-sec xl:flex"><ShieldCheck className="size-3.5" strokeWidth={1.75} aria-hidden="true" />{t('compile.serverAnalysis')}</span>
       <span className="hidden whitespace-nowrap lg:inline">{ENGINE[engine]}</span>
       <span className="ml-auto hidden whitespace-nowrap tabular md:inline xl:ml-0" title={t('words.hint')}>{t('words.count', { n: words.toLocaleString('es') })}</span>
-      <span className="whitespace-nowrap tabular">{activeFile.split('/').pop()} · {t('editor.position', { line: cursor.line, col: cursor.col })}</span>
+      <span className="min-w-0 truncate tabular" title={`${activeFile} · ${t('editor.position', { line: cursor.line, col: cursor.col })}`}>{activeFile.split('/').pop()} · {t('editor.position', { line: cursor.line, col: cursor.col })}</span>
       {readOnly && <span className="font-medium text-warn">{t('editor.readonly')}</span>}
-      <span className={cn('flex items-center gap-1', online ? 'text-ok' : 'text-warn')}>
+      <span className={cn('relative flex shrink-0 items-center gap-1', online ? 'text-ok' : 'text-warn')}>
         {online ? <Wifi className="size-3.5" strokeWidth={1.75} aria-hidden="true" /> : <WifiOff className="size-3.5" strokeWidth={1.75} aria-hidden="true" />}
         <span className="sr-only">{online ? 'En línea' : t('offline')}</span>
       </span>

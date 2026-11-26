@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { User } from '@prisma/client';
+import { loadEnv } from '../../config/env';
+import { DEMO, demoProjectId, isDemoEmail } from '../../domain/demo';
 import { AUTH } from '../../domain/constants';
 import { UnauthorizedError } from '../../domain/errors';
 import { Databases } from '../../infrastructure/db/databases';
@@ -55,7 +57,9 @@ export class SessionService {
 
   async create(user: Pick<User, 'id'>, authMethod: string, remember: boolean, meta: RequestMeta): Promise<IssuedSession> {
     const now = Date.now();
-    const ttl = remember ? AUTH.SESSION_REMEMBER_TTL_MS : AUTH.SESSION_DEFAULT_TTL_MS;
+    const demo = demoProjectId(authMethod) !== null;
+    if (demo) remember = false;
+    const ttl = demo ? DEMO.SESSION_TTL_MS : remember ? AUTH.SESSION_REMEMBER_TTL_MS : AUTH.SESSION_DEFAULT_TTL_MS;
     const csrfToken = randomSecret();
     const uaHash = hashUserAgent(meta.userAgent);
     const [knownDevice, anyBefore] = await Promise.all([
@@ -73,7 +77,7 @@ export class SessionService {
           authMethod,
           remember,
           // Acabar de autenticarse cuenta como reautenticación reciente (RS-006).
-          elevatedUntil: new Date(now + AUTH.ELEVATION_TTL_MS),
+          elevatedUntil: demo ? null : new Date(now + AUTH.ELEVATION_TTL_MS),
           idleExpiresAt: new Date(now + AUTH.SESSION_IDLE_TTL_MS),
           expiresAt: new Date(now + ttl),
         },
@@ -83,7 +87,7 @@ export class SessionService {
     const refreshToken = await this.newRefreshToken(session.id, session.expiresAt);
     const accessToken = await this.tokens.issue({ userId: user.id, sessionId: session.id });
     // Primer acceso desde este navegador (y no es la primera sesión de la cuenta): se avisa al titular.
-    if (knownDevice === 0 && anyBefore > 0) await this.notifyNewDevice(user.id, deviceLabel(meta.userAgent));
+    if (!demo && knownDevice === 0 && anyBefore > 0) await this.notifyNewDevice(user.id, deviceLabel(meta.userAgent));
     return { sessionId: session.id, accessToken, refreshToken, csrfToken, remember, expiresAt: session.expiresAt };
   }
 
@@ -177,14 +181,21 @@ export class SessionService {
     if (!session || session.userId !== claims.userId || session.revokedAt) return null;
     if (session.expiresAt <= now || session.idleExpiresAt <= now) return null;
     if (session.user.status === 'suspended' || session.user.status === 'deleted') return null;
+    const email = this.cipher.decrypt(session.user.primaryEmail, FIELD.userEmail);
+    const scope = demoProjectId(session.authMethod);
+    const demo = scope !== null;
+    if (demo && (!loadEnv().DEMO_ENABLED || !isDemoEmail(email) || session.user.isSystemAdmin)) return null;
+    if (isDemoEmail(email) && !demo) return null;
     await this.touch(session.id, session.lastSeenAt, now);
     return {
       userId: session.user.id,
       sessionId: session.id,
-      email: this.cipher.decrypt(session.user.primaryEmail, FIELD.userEmail),
+      email,
       emailVerified: session.user.emailVerifiedAt !== null,
       isSystemAdmin: session.user.isSystemAdmin,
       elevatedUntil: session.elevatedUntil,
+      isDemo: demo,
+      ...(scope ? { demoProjectId: scope } : {}),
     };
   }
 

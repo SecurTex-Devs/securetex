@@ -1,4 +1,5 @@
 export const editor = {
+  'demo.notice': 'Demo compartida. Puedes editar y compilar; se reinicia cada noche. Usa solo datos de ejemplo.',
   'back': 'Volver a mis proyectos',
   'views.label': 'Distribución de paneles',
   'views.code': 'Código',

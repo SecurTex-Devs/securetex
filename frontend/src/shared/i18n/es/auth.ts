@@ -1,4 +1,8 @@
 export const auth = {
+  'registration.loading': 'Comprobando disponibilidad',
+  'registration.closed': 'El registro está cerrado',
+  'registration.demo': 'Puedes conocer el editor con la demostración, sin crear una cuenta.',
+  'registration.back': 'Volver a la portada',
   'aside.quote': 'Una tesis se escribe durante meses. Merece un lugar donde nadie más pueda leerla sin permiso.',
   'aside.points.isolation': 'Antes de compilar, el servidor bloquea lo que podría ejecutar comandos.',
   'aside.points.crypto': 'Cada proyecto se cifra en reposo con su propia clave.',

@@ -1,6 +1,58 @@
 {
   "openapi": "3.0.0",
   "paths": {
+    "/api/v1/auth/demo": {
+      "get": {
+        "operationId": "Demo_config",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoConfigDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Disponibilidad de la demo y del registro público",
+        "tags": [
+          "Demostración"
+        ]
+      },
+      "post": {
+        "description": "Sesión de 30 minutos, sin contraseña, elevación ni acceso a cuentas, administración o proyectos nuevos. Exige Origin válido.",
+        "operationId": "Demo_start",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DemoSessionDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Origin o CSRF rechazado"
+          },
+          "404": {
+            "description": "Demo no disponible"
+          },
+          "429": {
+            "description": "Límite por IP o global alcanzado"
+          }
+        },
+        "summary": "Entrar en el documento público de demostración",
+        "tags": [
+          "Demostración"
+        ]
+      }
+    },
     "/api/v1/auth/register": {
       "post": {
         "description": "Respuesta idéntica exista o no el correo (T-A09). Envía el enlace de verificación.",
@@ -2479,6 +2531,42 @@
       }
     },
     "schemas": {
+      "DemoConfigDto": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "registrationEnabled": {
+            "type": "boolean"
+          },
+          "sessionMinutes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "registrationEnabled",
+          "sessionMinutes"
+        ]
+      },
+      "DemoSessionDto": {
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "projectId",
+          "expiresAt"
+        ]
+      },
       "RegisterDto": {
         "type": "object",
         "properties": {
@@ -2794,6 +2882,10 @@
       "ProfileDto": {
         "type": "object",
         "properties": {
+          "isDemo": {
+            "type": "boolean",
+            "description": "Presente al consultar la sesión; las acciones de cuenta se deniegan en la demo."
+          },
           "id": {
             "type": "string"
           },
