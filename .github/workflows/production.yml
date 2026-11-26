@@ -14,6 +14,9 @@ jobs:
   checks:
     name: Validación
     runs-on: ubuntu-24.04-arm
+    concurrency:
+      group: securetex-checks-${{ github.event.pull_request.number || github.sha }}
+      cancel-in-progress: true
     timeout-minutes: 40
     env:
       NEXT_TELEMETRY_DISABLED: '1'
@@ -42,7 +45,7 @@ jobs:
         run: |
           npm --prefix tools/ci run lint
           bash -n infra/deploy.sh infra/ssh-deploy.sh infra/install-gvisor.sh
-          python -m py_compile infra/provision-env.py
+          python -m py_compile infra/provision-env.py infra/check-neighbors.py
           node infra/check-migrations.mjs backend/apps/api/prisma/migrations infra/migrations-approved.json
       - name: Análisis de dependencias y secretos
         run: |

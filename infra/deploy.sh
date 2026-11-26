@@ -40,8 +40,9 @@ previous=$(cat current 2>/dev/null || true)
 step=preparación
 switched=false
 old_stopped=false
-mkdir -p gateway/releases backups releases
+mkdir -p gateway/releases backups releases ops
 chmod 755 gateway gateway/releases
+python3 infra/check-neighbors.py --capture ops/neighbors-before-deploy.json
 
 say() { step=$1; echo "[SecureTex] $step"; }
 owned() { [[ $(docker inspect -f "{{index .Config.Labels \"$label\"}}" "$1" 2>/dev/null) == securetex ]]; }
@@ -110,6 +111,7 @@ rollback() {
     remove "$web_name" || true
     remove "$compiler_name" || true
   fi
+  python3 infra/check-neighbors.py --check ops/neighbors-before-deploy.json || true
   exit "$status"
 }
 trap rollback ERR
@@ -238,6 +240,7 @@ else
   owned securetex-tunnel
 fi
 printf '%s\n' "$sha" >current.next
+python3 infra/check-neighbors.py --check ops/neighbors-before-deploy.json
 mv current.next current
 printf '%s\n' "$sha" >"releases/$sha"
 # Tras confirmar salud, la limpieza es secundaria: un fallo no debe cortar la web.
