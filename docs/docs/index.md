@@ -67,6 +67,7 @@ El punto de partida técnico es incómodo y por eso interesante: **LaTeX es un l
 | 13 | [Infraestructura y despliegue](13-Infraestructura-y-Despliegue.md) | Entornos, IaC, operación, copias de seguridad |
 | 17 | [Configuración de GitHub](17-Configuracion-de-GitHub.md) | Permisos y protección de ramas; estado documentado de la organización |
 | 18 | [Revisión local para la publicación](18-Revision-Local.md) | Pruebas ejecutadas, cobertura medida y límites del estado implementado |
+| 19 | [Validación de la demo](19-Validacion-Demo.md) | Regresión de cuentas normales, demo, reinicio y medidas locales de interfaz |
 | 15 | [Glosario](15-Glosario.md) | Términos y acrónimos |
 
 ### Decisiones
@@ -83,6 +84,7 @@ El punto de partida técnico es incómodo y por eso interesante: **LaTeX es un l
 | [ADR-0008](adr/ADR-0008-documentacion-de-api-code-first.md) | Documentación de API *code-first* verificada por contrato |
 | [ADR-0009](adr/ADR-0009-tres-repositorios-y-documentacion-central.md) | Tres repositorios independientes con documentación central |
 | [ADR-0010](adr/ADR-0010-criptografia-multicapa-y-modo-e2ee.md) | Criptografía multicapa y modo de cifrado extremo a extremo |
+| [ADR-0011](adr/ADR-0011-demo-publica-limitada.md) | Acceso público de demostración con sesión y proyecto limitados |
 
 ---
 
