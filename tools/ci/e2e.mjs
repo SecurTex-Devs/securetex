@@ -127,4 +127,3 @@ try {
   console.error(error.message); console.error('Firefox:', pageB.url(), await pageB.getByRole('alert').allTextContents());
   process.exitCode = 1;
 } finally { await a.close(); await b.close(); }
-
