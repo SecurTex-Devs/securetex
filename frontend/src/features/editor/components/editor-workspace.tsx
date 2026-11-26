@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isApiError } from '@/shared/api/errors';
 import { useProject } from '@/shared/api/projects';
+import { useMe } from '@/shared/api/session';
 import type { Project } from '@/shared/api/types';
 import { useMediaQuery } from '@/shared/hooks/use-media-query';
 import { getT } from '@/shared/i18n';
@@ -69,6 +70,7 @@ function useOnline(): boolean {
 }
 
 function Workspace({ project, files: initialFiles, collabPort }: { readonly project: Project; readonly files: readonly FileMeta[]; readonly collabPort: string }) {
+  const isDemo = useMe().data?.isDemo === true;
   const t = getT('editor');
   const view = useEditor((s) => s.view);
   const logOpen = useEditor((s) => s.logOpen);
@@ -94,6 +96,14 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
   const wide = useMediaQuery('(min-width: 1024px)');
   const xl = useMediaQuery('(min-width: 1280px)');
   const ready = loadedId === project.id && synced;
+
+  useEffect(() => {
+    if (!isDemo || !ready) return;
+    const previousAutoCompile = useEditor.getState().autoCompile;
+    useEditor.getState().setAutoCompile(false);
+    void build();
+    return () => useEditor.getState().setAutoCompile(previousAutoCompile);
+  }, [isDemo, ready, build]);
 
   useEffect(() => {
     // Cortesía visual inicial: el servidor confirma el rol en el saludo del socket.
@@ -160,7 +170,8 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
 
   return (
     <div className="flex h-dvh flex-col bg-bg">
-      <EditorTopBar project={project} online={online} onShare={() => setDialog('share')} onSettings={() => setDialog('settings')} />
+      <EditorTopBar project={project} online={online} isDemo={isDemo} onShare={() => setDialog('share')} onSettings={() => setDialog('settings')} />
+      {isDemo && <p className="border-b border-line bg-brand-soft px-3 py-2 text-[12px] leading-snug text-fg-2">{t('demo.notice')}</p>}
       {!online && (
         <div role="status" className="flex items-center gap-2 border-b border-line bg-warn-soft px-4 py-1.5 text-[13px] text-fg">
           <WifiOff className="size-4 text-warn" strokeWidth={1.75} aria-hidden="true" />{t('offlineBanner')}
@@ -173,7 +184,7 @@ function Workspace({ project, files: initialFiles, collabPort }: { readonly proj
       )}
       <div ref={container} className="relative flex min-h-0 flex-1 overflow-hidden">
         <nav aria-label={t('files.label')} className="hidden shrink-0 border-r border-line bg-surface lg:block" style={{ width: treeWidth }}>
-          <FileTree canEdit={!readOnly} />
+          <FileTree canEdit={!readOnly && !isDemo} />
         </nav>
         <div className="hidden lg:flex"><ResizeHandle label={t('files.label')} value={treeWidth} min={180} max={380} onChange={setTreeWidth} /></div>
 

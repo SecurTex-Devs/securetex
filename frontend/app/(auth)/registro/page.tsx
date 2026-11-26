@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
-import { RegisterForm } from '@/features/auth/components/register-form';
+import { RegistrationGate } from '@/features/auth/components/registration-gate';
 
 export const metadata: Metadata = { title: 'Crear cuenta' };
 
 export default function RegisterPage() {
-  return <RegisterForm />;
+  return <RegistrationGate />;
 }

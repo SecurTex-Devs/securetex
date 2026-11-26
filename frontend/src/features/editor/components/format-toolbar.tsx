@@ -44,7 +44,7 @@ export function FormatToolbar({ viewRef, readOnly }: { readonly viewRef: RefObje
   ];
 
   return (
-    <div role="toolbar" aria-label={t('toolbar.label')} className="flex h-9 shrink-0 items-center gap-0.5 border-b border-line bg-surface px-2">
+    <div role="toolbar" aria-label={t('toolbar.label')} className="flex h-9 min-w-0 shrink-0 items-center gap-0.5 overflow-x-auto border-b border-line bg-surface px-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {!readOnly && actions.map((a) => (
         <Tooltip key={a.label} content={a.kbd ? `${a.label} · ${a.kbd}` : a.label}>
           <IconButton size="sm" className="size-7" label={a.label} icon={<a.icon className="size-[15px]" strokeWidth={1.6} />} onClick={a.fn} />
