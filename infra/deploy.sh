@@ -86,6 +86,20 @@ reset_worker() {
     --tmpfs /tmp:rw,noexec,nosuid,nodev,size=16m --memory 192m --memory-swap 192m --cpus 0.1 --pids-limit 32 \
     --restart unless-stopped --no-healthcheck "${api_env[@]}" "$repository-api:$1" node dist/scripts/seed-demo.js --watch >/dev/null
 }
+start_controller() {
+  local revision=$1
+  local name="securetex-compiler-$revision" volume="securetex-jobs-$revision"
+  [[ $(docker volume inspect -f "{{index .Labels \"$label\"}}" "$volume") == securetex ]]
+  remove "$name"
+  docker run -d --name "$name" "${common[@]}" "${harden[@]}" --network securetex-edge --user 1000:1000 \
+    --label dev.securetex.controller=true --add-host securetex-host:host-gateway \
+    --mount "type=volume,source=$volume,target=/jobs" \
+    --tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m,mode=0700,uid=1000,gid=1000 \
+    -e "COMPILER_REVISION=$revision" -e SANDBOX_SSH_KEY_B64 -e SANDBOX_KNOWN_HOSTS \
+    --memory 320m --memory-swap 320m --cpus 0.1 --pids-limit 32 --stop-timeout 45 --ulimit core=0 \
+    --restart unless-stopped "$controller" >/dev/null
+  wait_health "$name"
+}
 rollback() {
   local status=$?
   trap - ERR
@@ -203,15 +217,20 @@ if ! docker volume inspect "$job_volume" >/dev/null 2>&1; then
     --opt o=size=128m,uid=1000,gid=1000,mode=0700,noexec,nosuid,nodev "$job_volume" >/dev/null
 fi
 [[ $(docker volume inspect -f "{{index .Labels \"$label\"}}" "$job_volume") == securetex ]]
-docker run -d --name "$compiler_name" "${common[@]}" "${harden[@]}" --network securetex-edge --user 1000:1000 \
-  --add-host securetex-host:host-gateway --mount "type=volume,source=$job_volume,target=/jobs" \
-  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m,mode=0700,uid=1000,gid=1000 \
-  -e "COMPILER_REVISION=$sha" -e SANDBOX_SSH_KEY_B64 -e SANDBOX_KNOWN_HOSTS \
-  --memory 320m --memory-swap 320m --cpus 0.1 --pids-limit 32 --stop-timeout 45 --ulimit core=0 \
-  --restart unless-stopped "$controller" >/dev/null
-wait_health "$compiler_name"
+start_controller "$sha"
 say 'compilación real en contenedor efímero'
 docker exec -i "$compiler_name" node --input-type=module - <infra/check-sandbox.mjs
+# La primera entrega privada también protege la versión a la que revertiría.
+# Una cookie emitida por la candidata puede seguir siendo válida tras volver.
+if [[ -n "$previous" ]]; then
+  previous_compiler="securetex-compiler-$previous"
+  if [[ $(docker inspect -f '{{index .Config.Labels "dev.securetex.controller"}}' "$previous_compiler" 2>/dev/null || true) != true ]]; then
+    say 'aislamiento de la versión anterior antes de abrir cuentas'
+    start_controller "$previous"
+    docker exec -i "$previous_compiler" node --input-type=module - <infra/check-sandbox.mjs
+    printf '%s\n' "$controller_sha" >controller-current
+  fi
+fi
 docker run -d --name "$api_name" "${common[@]}" "${harden[@]}" --network securetex-app \
   --mount "type=volume,source=$job_volume,target=/jobs" --tmpfs /tmp:rw,noexec,nosuid,nodev,size=32m \
   "${api_env[@]}" --memory 512m --memory-swap 512m --cpus 0.75 --pids-limit 128 --stop-timeout 45 --restart unless-stopped "$api" >/dev/null

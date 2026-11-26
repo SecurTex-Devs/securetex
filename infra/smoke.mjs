@@ -22,6 +22,19 @@ try {
     });
     assert.equal(denied.status, 403);
   }
+  step = 'redirecciones OIDC y conectividad con proveedores';
+  const available = await visitor.get('/auth/providers');
+  assert.equal(available.status, 200);
+  for (const [provider, issuer] of [['google', 'https://accounts.google.com'], ['microsoft', 'https://login.microsoftonline.com']]) {
+    if (!process.env[`${provider.toUpperCase()}_CLIENT_ID`] || !process.env[`${provider.toUpperCase()}_CLIENT_SECRET`]) continue;
+    assert.ok(available.body.providers.includes(provider));
+    const start = await fetch(`${API}/api/v1/auth/oidc/${provider}`, { redirect: 'manual', signal: AbortSignal.timeout(12_000) });
+    assert.equal(start.status, 302);
+    const url = new URL(start.headers.get('location'));
+    assert.equal(url.origin, issuer);
+    assert.equal(url.searchParams.get('redirect_uri'), `${process.env.APP_ORIGIN}/api/v1/auth/oidc/${provider}/callback`);
+    assert.equal(url.searchParams.get('code_challenge_method'), 'S256');
+  }
   step = 'sesión y alcance de demo';
   const started = await visitor.post('/auth/demo');
   assert.equal(started.status, 201);

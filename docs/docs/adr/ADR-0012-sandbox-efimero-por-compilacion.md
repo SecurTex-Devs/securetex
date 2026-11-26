@@ -16,6 +16,8 @@ El host permite una compilación simultánea, limita la espera y elimina el cont
 
 Se conserva el protocolo del buzón para permitir revertir las imágenes anteriores. Si una revisión antigua no tiene imagen de controlador, se reutiliza la última imagen de control validada, con el mismo aislamiento. Nunca se vuelve al trabajador persistente por ese motivo. La infraestructura del host sigue requiriendo revisión y actualización administrativa; el código de aplicación se publica automáticamente.
 
+Antes de activar la primera candidata con cuentas reales se sustituye también el compilador de la versión anterior por un controlador, después de comprobar la candidata con un PDF real. Así, una reversión no devuelve el buzón compartido a un trabajador persistente: las sesiones ya emitidas por la candidata podrían seguir siendo válidas en la API anterior.
+
 ## Consecuencias
 
 Cada compilación añade el coste de crear gVisor y de una conexión SSH local. Con concurrencia global uno, una compilación larga puede rechazar otra por ocupación; no se acumulan trabajadores junto a los demás servicios de Oracle. El controlador es un componente de confianza con acceso al buzón: una vulnerabilidad en él sigue siendo un riesgo, por lo que no analiza JSON o PDF y sus lecturas no siguen enlaces.
