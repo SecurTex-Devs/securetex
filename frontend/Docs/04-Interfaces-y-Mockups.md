@@ -202,7 +202,7 @@ El objetivo en móvil no es escribir una tesis: es **revisar, comentar y compila
 
 | Pantalla | Mockup | Comportamiento |
 |---|---|---|
-| P-51 · Demo | [09-demo.html](mockups/09-demo.html) | Portada con el estilo existente, captura real y entrada directa al documento de ejemplo. Sesión limitada; editor normal preservado para las demás cuentas. |
+| P-51 · Demo | [09-demo.html](mockups/09-demo.html) | Portada de producto con recorrido real, vistas seleccionables, plantillas del catálogo y preguntas breves. Demo directa, cuenta opcional, microinteracciones y nota académica al pie. Sesión limitada; editor normal preservado. |
 
 Los estados de carga, error, límite de uso y registro cerrado están anotados en el mockup. Los detalles del aislamiento pertenecen a la documentación técnica, no al recorrido de producto de la portada.
 
