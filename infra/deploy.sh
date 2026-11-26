@@ -239,6 +239,8 @@ if ! docker container inspect securetex-tunnel >/dev/null 2>&1; then
 else
   owned securetex-tunnel
 fi
+say 'HTTPS público antes de confirmar la versión'
+python3 infra/check-public.py "$sha"
 printf '%s\n' "$sha" >current.next
 python3 infra/check-neighbors.py --check ops/neighbors-before-deploy.json
 mv current.next current
