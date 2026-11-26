@@ -279,7 +279,7 @@ export class AuthController {
         return;
       }
       setSessionCookies(reply, result.session);
-      void reply.redirect(`${this.origin}/proyectos`, 302);
+      void reply.redirect(`${this.origin}/${result.verificationRequired ? 'verificar' : 'proyectos'}`, 302);
     } catch (error: unknown) {
       void reply.redirect(this.loginErrorUrl(error), 302);
     }

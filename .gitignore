@@ -12,6 +12,7 @@ secrets/
 # Dependencias y builds
 node_modules/
 .pnpm-store/
+__pycache__/
 
 # Sistema operativo y editores
 .DS_Store

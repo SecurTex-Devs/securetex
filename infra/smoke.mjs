@@ -10,16 +10,18 @@ try {
   const status = await health.json();
   assert.equal(status.status, 'ok');
   assert.equal(status.database, true);
-  step = 'registro cerrado';
+  step = 'configuración del registro';
   const visitor = new Client();
   const config = await visitor.get('/auth/demo');
   assert.equal(config.body.enabled, true);
-  assert.equal(config.body.registrationEnabled, false);
-  const denied = await visitor.post('/auth/register', {
-    email: `smoke.${randomBytes(6).toString('hex')}@example.com`, password: randomBytes(24).toString('base64url'),
-    firstName: 'Prueba', lastName: 'Demo', acceptTerms: true,
-  });
-  assert.equal(denied.status, 403);
+  assert.equal(config.body.registrationEnabled, process.env.REGISTRATION_ENABLED === 'true');
+  if (!config.body.registrationEnabled) {
+    const denied = await visitor.post('/auth/register', {
+      email: `smoke.${randomBytes(6).toString('hex')}@example.com`, password: randomBytes(24).toString('base64url'),
+      firstName: 'Prueba', lastName: 'Demo', acceptTerms: true,
+    });
+    assert.equal(denied.status, 403);
+  }
   step = 'sesión y alcance de demo';
   const started = await visitor.post('/auth/demo');
   assert.equal(started.status, 201);
@@ -50,7 +52,7 @@ try {
     console.log(`[SecureTex] PDF real y firma Ed25519 comprobados (${pdf.length} bytes).`);
   }
   assert.equal((await visitor.post('/auth/logout')).status, 200);
-  console.log('[SecureTex] API, base, demo limitada y registro cerrado comprobados.');
+  console.log('[SecureTex] API, base, demo limitada y configuración del registro comprobados.');
 } catch {
   console.error(`[SecureTex] Falló la comprobación: ${step}.`);
   process.exitCode = 1;

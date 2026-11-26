@@ -34,7 +34,12 @@ export class Mailer {
   constructor() {
     const env = loadEnv();
     this.from = env.MAIL_FROM;
-    this.transport = createTransport({ host: env.SMTP_HOST, port: env.SMTP_PORT, secure: false });
+    this.transport = createTransport({
+      host: env.SMTP_HOST, port: env.SMTP_PORT, secure: env.SMTP_SECURE,
+      requireTLS: env.NODE_ENV === 'production' && !env.SMTP_SECURE,
+      ...(env.SMTP_USER && env.SMTP_PASSWORD ? { auth: { user: env.SMTP_USER, pass: env.SMTP_PASSWORD } } : {}),
+      connectionTimeout: 5000, greetingTimeout: 5000, socketTimeout: 10000,
+    });
   }
 
   async send(message: MailMessage): Promise<void> {

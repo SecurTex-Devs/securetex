@@ -286,7 +286,8 @@ export class AuthService {
     return false;
   }
 
-  private async sendVerification(userId: string, to: string, firstName: string): Promise<void> {
+  /** Solo casos de uso internos: conserva la misma verificación para altas OIDC pendientes. */
+  async sendVerification(userId: string, to: string, firstName: string): Promise<void> {
     const link = await this.emailTokens.issue(userId, 'verify_email');
     await this.mailer.send({
       to,
