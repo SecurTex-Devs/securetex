@@ -92,6 +92,7 @@ nav:
       - Configuración de GitHub: 17-Configuracion-de-GitHub.md
       - Revisión local: 18-Revision-Local.md
       - Validación de la demo: 19-Validacion-Demo.md
+      - Hosting y preflight: 20-Hosting-y-Preflight.md
   - Referencia:
       - Glosario: 15-Glosario.md
       - Decisiones (ADR):
