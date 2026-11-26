@@ -2,6 +2,8 @@
 
 URL: <https://securetex.dayle.dev>. Oracle ARM64, `~/securetex`, sin puertos publicados; Cloudflare Tunnel propio. El resto de servicios del servidor no forma parte del despliegue.
 
+El SHA del commit identifica las tres imágenes y la revisión que devuelve la web.
+
 - **Disparador:** PR a `develop`; después PR de `develop` a `main`. El workflow «Validación y producción» comprueba lint, tipos, unitarias/cobertura, casos de abuso, navegadores, accesibilidad, contrato, documentación, dependencias y secretos. Solo un `push` a `main` que pase publica las tres imágenes ARM64 en GHCR, etiquetadas con su SHA, y despliega esa versión.
 - **Acceso:** environment `production`; `DEPLOY_SSH_KEY` y `DEPLOY_KNOWN_HOSTS` en Secrets, `DEPLOY_HOST` en Variables. Clave SSH exclusiva con comando forzado `infra/ssh-deploy.sh` y `restrict`; sin shell ni reenvíos. GHCR usa el `GITHUB_TOKEN` de corta duración, guardado en RAM durante el despliegue.
 - **Cambio de versión:** copia de PostgreSQL, migraciones revisadas, candidata aislada, prueba de demo y permisos, cambio de gateway, comprobación interna y por HTTPS público de `/health` (incluida la base), landing y SHA. La sonda pública sale desde Oracle; la llamada directa desde el runner de GitHub recibió un 403. Si falla, restaura la anterior; los cambios colaborativos se vacían antes de detener cada API. Conserva las últimas tres versiones y sus copias; limpia únicamente recursos de SecureTex.
