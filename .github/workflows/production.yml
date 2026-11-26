@@ -45,7 +45,7 @@ jobs:
         run: |
           npm --prefix tools/ci run lint
           bash -n infra/deploy.sh infra/ssh-deploy.sh infra/install-gvisor.sh
-          python -m py_compile infra/provision-env.py infra/check-neighbors.py
+          python -m py_compile infra/provision-env.py infra/check-neighbors.py infra/check-public.py
           node infra/check-migrations.mjs backend/apps/api/prisma/migrations infra/migrations-approved.json
       - name: Análisis de dependencias y secretos
         run: |
@@ -179,7 +179,9 @@ jobs:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 15
-    environment: production
+    environment:
+      name: production
+      url: https://securetex.dayle.dev
     concurrency:
       group: securetex-production
       cancel-in-progress: false
@@ -215,18 +217,7 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" >"$hosts"
           printf '%s\n%s\n' "$GITHUB_ACTOR" "$REGISTRY_TOKEN" |
             ssh -i "$key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$hosts" -o ConnectTimeout=15 "ubuntu@$DEPLOY_HOST" "deploy $GITHUB_SHA"
-      - name: HTTPS público y revisión desplegada
+      - name: Confirmar la sonda de HTTPS público de la entrega
         if: steps.revision.outputs.current == 'true'
         run: |
-          for attempt in $(seq 1 15); do
-            curl --retry 2 --fail --silent --show-error https://securetex.dayle.dev/health --output /tmp/health.json
-            curl --retry 2 --fail --silent --show-error --dump-header /tmp/headers https://securetex.dayle.dev/ --output /tmp/landing.html
-            if python3 -c 'import json; h=json.load(open("/tmp/health.json")); assert h["status"]=="ok" and h["database"] is True' &&
-              grep -qi "x-securetex-revision: $GITHUB_SHA" /tmp/headers && grep -q 'Probar la demo' /tmp/landing.html; then
-              echo "Producción comprobada por HTTPS: $GITHUB_SHA"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo '::error::La verificación pública de salud o revisión ha fallado.'
-          exit 1
+          echo "La entrega ha comprobado API, base, landing y SHA por HTTPS público: $GITHUB_SHA"
