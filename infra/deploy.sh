@@ -22,6 +22,8 @@ cloudflared='cloudflare/cloudflared@sha256:55c7e3e8d89d5e8d20b75a82f3602cbf98e06
 api="$repository-api:$sha"
 web="$repository-web:$sha"
 compiler="$repository-compiler:$sha"
+controller_sha=$sha
+controller="$repository-compiler-controller:$sha"
 api_name="securetex-api-$sha"
 web_name="securetex-web-$sha"
 compiler_name="securetex-compiler-$sha"
@@ -125,6 +127,20 @@ for image in "$api" "$web" "$compiler"; do
     [[ $(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$image") == "$sha" ]]
   fi
 done
+# El buzón mantiene el protocolo anterior. Al revertir una versión previa a
+# este controlador se conserva su última imagen validada, también aislada.
+controller_available() {
+  if $local_images; then docker image inspect "$controller" >/dev/null 2>&1
+  else docker pull --platform linux/arm64 "$controller" >/dev/null 2>&1; fi
+}
+if ! controller_available; then
+  controller_sha=$(cat controller-current)
+  [[ $controller_sha =~ ^[0-9a-f]{40}$ ]]
+  controller="$repository-compiler-controller:$controller_sha"
+fi
+[[ $(docker image inspect -f '{{.Architecture}}' "$controller") == arm64 ]]
+[[ $(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$controller") == "$controller_sha" ]]
+[[ -n ${SANDBOX_SSH_KEY_B64:-} && -n ${SANDBOX_KNOWN_HOSTS:-} ]]
 for image in "$postgres" "$nginx" "$cloudflared"; do docker pull --platform linux/arm64 "$image" >/dev/null; done
 for network in securetex-app securetex-edge; do
   if docker network inspect "$network" >/dev/null 2>&1; then
@@ -187,13 +203,15 @@ if ! docker volume inspect "$job_volume" >/dev/null 2>&1; then
     --opt o=size=128m,uid=1000,gid=1000,mode=0700,noexec,nosuid,nodev "$job_volume" >/dev/null
 fi
 [[ $(docker volume inspect -f "{{index .Labels \"$label\"}}" "$job_volume") == securetex ]]
-docker run -d --name "$compiler_name" "${common[@]}" "${harden[@]}" --runtime securetex-runsc --network none --user 1000:1000 \
-  --mount "type=volume,source=$job_volume,target=/jobs" --tmpfs /work:rw,noexec,nosuid,nodev,size=256m,mode=0700,uid=1000,gid=1000 \
-  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m,mode=1777 -e JOBS_DIR=/jobs -e WORK_DIR=/work \
-  -e COMPILE_TIMEOUT_MS=30000 -e COMPILE_MAX_PDF_BYTES=16777216 -e COMPILE_CONCURRENCY=1 \
-  --memory 1536m --memory-swap 1536m --cpus 1.5 --pids-limit 64 --ulimit core=0 --ulimit nofile=1024:1024 \
-  --restart unless-stopped "$compiler" >/dev/null
+docker run -d --name "$compiler_name" "${common[@]}" "${harden[@]}" --network securetex-edge --user 1000:1000 \
+  --add-host securetex-host:host-gateway --mount "type=volume,source=$job_volume,target=/jobs" \
+  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m,mode=0700,uid=1000,gid=1000 \
+  -e "COMPILER_REVISION=$sha" -e SANDBOX_SSH_KEY_B64 -e SANDBOX_KNOWN_HOSTS \
+  --memory 192m --memory-swap 192m --cpus 0.1 --pids-limit 32 --stop-timeout 45 \
+  --restart unless-stopped "$controller" >/dev/null
 wait_health "$compiler_name"
+say 'compilación real en contenedor efímero'
+docker exec -i "$compiler_name" node --input-type=module - <infra/check-sandbox.mjs
 docker run -d --name "$api_name" "${common[@]}" "${harden[@]}" --network securetex-app \
   --mount "type=volume,source=$job_volume,target=/jobs" --tmpfs /tmp:rw,noexec,nosuid,nodev,size=32m \
   "${api_env[@]}" --memory 512m --memory-swap 512m --cpus 0.75 --pids-limit 128 --stop-timeout 45 --restart unless-stopped "$api" >/dev/null
@@ -251,15 +269,17 @@ python3 infra/check-public.py "$sha"
 printf '%s\n' "$sha" >current.next
 python3 infra/check-neighbors.py --check ops/neighbors-before-deploy.json
 mv current.next current
+printf '%s\n' "$controller_sha" >controller-current
 printf '%s\n' "$sha" >"releases/$sha"
 # Tras confirmar salud, la limpieza es secundaria: un fallo no debe cortar la web.
 trap - ERR
 say 'conservación de tres versiones'
 mapfile -t retained < <(find releases -maxdepth 1 -type f -printf '%T@ %f\n' | sort -rn | head -3 | cut -d' ' -f2)
-for component in api web compiler; do
+for component in api web compiler compiler-controller; do
   while read -r tag; do
     [[ $tag =~ ^[0-9a-f]{40}$ ]] || continue
     [[ " ${retained[*]} " == *" $tag "* ]] && continue
+    [[ $component == compiler-controller && $tag == "$controller_sha" ]] && continue
     name="securetex-$component-$tag"
     if docker container inspect "$name" >/dev/null 2>&1; then
       remove "$name" || { echo "[SecureTex] No se pudo retirar $name." >&2; continue; }
