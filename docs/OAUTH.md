@@ -13,6 +13,8 @@ En `~/securetex/.env` del servidor, con permisos 600: `GOOGLE_CLIENT_ID`, `GOOGL
 
 El correo transaccional requiere `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_SECURE` y `MAIL_FROM`. Por ejemplo, Resend admite SMTP TLS en 465, usuario `resend` y una clave como contraseña; hay que verificar primero el dominio remitente con los registros que indique su consola. No cambiar los MX del dominio principal: usar un subdominio propio de envío. En 587 la aplicación exige STARTTLS en producción. No se desactiva la validación de certificados.
 
+El dominio elegido en Resend es `securetex.dayle.dev`; el remitente previsto es `SecureTex <no-reply@securetex.dayle.dev>`. Añadir solamente los registros de verificación y envío que solicite Resend bajo ese subdominio, sin modificar el CNAME de la aplicación ni el correo de `dayle.dev`.
+
 Antes de poner `REGISTRATION_ENABLED=true`: comprobar autenticación SMTP, entrega y enlace de verificación; acceso Google y Microsoft; alta pendiente si Microsoft no afirma `email_verified`; rechazo de operaciones que exigen correo verificado; acceso cruzado entre cuentas; compilación efímera y PDF firmado. El guard de arranque rechaza registro público de producción sin SMTP autenticado externo. Mailpit queda reservado al Compose local.
 
 Una coincidencia de correo nunca vincula identidades automáticamente. Las identidades existentes pueden seguir entrando con las altas cerradas. Los nuevos usuarios de Microsoft que no traigan confirmación de correo reciben la verificación habitual y quedan sin permisos de cuenta verificada hasta completarla.
