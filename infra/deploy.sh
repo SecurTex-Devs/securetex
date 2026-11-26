@@ -97,7 +97,13 @@ rollback() {
   if [[ -n "$previous" ]] && $switched; then
     activate "$previous" || echo 'Revisa el gateway de SecureTex.' >&2
     reset_worker "$previous" || true
-    echo "[SecureTex] Reversión a $previous solicitada."
+    printf '%s\n' "$previous" >current.next
+    mv current.next current
+    if check_api "securetex-api-$previous"; then
+      echo "[SecureTex] Reversión comprobada: API y base de datos disponibles ($previous)."
+    else
+      echo '[SecureTex] ERROR: la versión anterior necesita revisión.' >&2
+    fi
   fi
   if [[ "$sha" != "$previous" ]]; then
     remove "$api_name" || true
@@ -113,6 +119,9 @@ docker info --format '{{json .Runtimes}}' | python3 -c 'import json,sys; assert 
 for image in "$api" "$web" "$compiler"; do
   if ! $local_images; then docker pull --platform linux/arm64 "$image" >/dev/null; fi
   [[ $(docker image inspect --format '{{.Architecture}}' "$image") == arm64 ]]
+  if ! $local_images; then
+    [[ $(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$image") == "$sha" ]]
+  fi
 done
 for image in "$postgres" "$nginx" "$cloudflared"; do docker pull --platform linux/arm64 "$image" >/dev/null; done
 for network in securetex-app securetex-edge; do
@@ -146,6 +155,11 @@ else
   owned securetex-postgres
 fi
 wait_health securetex-postgres
+
+say 'compatibilidad de migraciones para poder revertir'
+docker run --rm -i "${common[@]}" "${harden[@]}" --network none --memory 128m --cpus 0.25 --pids-limit 32 \
+  --mount "type=bind,source=$root/infra/migrations-approved.json,target=/approved.json,readonly" \
+  "$api" node --input-type=module - /repo/apps/api/prisma/migrations /approved.json <infra/check-migrations.mjs
 
 say 'copia y migraciones'
 if [[ ! -s "backups/$sha.dump" ]]; then
@@ -216,9 +230,6 @@ say 'salud después del cambio'
 check_api "$api_name"
 docker exec "$web_name" node -e "(async()=>{for(let i=0;i<10;i++){try{const r=await fetch('http://securetex-gateway:8080/health',{signal:AbortSignal.timeout(3000)});const h=await r.json();if(r.ok&&h.status==='ok'&&h.database===true)return}catch{}await new Promise(r=>setTimeout(r,1000))}process.exit(1)})()"
 docker exec "$web_name" node -e "fetch('http://securetex-gateway:8080/').then(async r=>{if(!r.ok||r.headers.get('x-securetex-revision')!=='$sha'||!(await r.text()).includes('Probar la demo'))process.exit(1)}).catch(()=>process.exit(1))"
-printf '%s\n' "$sha" >current.next
-mv current.next current
-printf '%s\n' "$sha" >"releases/$sha"
 say 'túnel propio'
 if ! docker container inspect securetex-tunnel >/dev/null 2>&1; then
   docker run -d --name securetex-tunnel "${common[@]}" "${harden[@]}" --network securetex-edge -e TUNNEL_TOKEN \
@@ -226,4 +237,37 @@ if ! docker container inspect securetex-tunnel >/dev/null 2>&1; then
 else
   owned securetex-tunnel
 fi
+printf '%s\n' "$sha" >current.next
+mv current.next current
+printf '%s\n' "$sha" >"releases/$sha"
+# Tras confirmar salud, la limpieza es secundaria: un fallo no debe cortar la web.
+trap - ERR
+say 'conservación de tres versiones'
+mapfile -t retained < <(find releases -maxdepth 1 -type f -printf '%T@ %f\n' | sort -rn | head -3 | cut -d' ' -f2)
+for component in api web compiler; do
+  while read -r tag; do
+    [[ $tag =~ ^[0-9a-f]{40}$ ]] || continue
+    [[ " ${retained[*]} " == *" $tag "* ]] && continue
+    name="securetex-$component-$tag"
+    if docker container inspect "$name" >/dev/null 2>&1; then
+      remove "$name" || { echo "[SecureTex] No se pudo retirar $name." >&2; continue; }
+    fi
+    docker image rm "$repository-$component:$tag" >/dev/null || echo "[SecureTex] Imagen antigua pendiente: $component:$tag" >&2
+  done < <(docker image ls "$repository-$component" --format '{{.Tag}}')
+done
+for marker in releases/*; do
+  tag=${marker##*/}
+  [[ $tag =~ ^[0-9a-f]{40}$ ]] || continue
+  [[ " ${retained[*]} " == *" $tag "* ]] && continue
+  if docker volume inspect "securetex-jobs-$tag" >/dev/null 2>&1; then
+    [[ $(docker volume inspect -f "{{index .Labels \"$label\"}}" "securetex-jobs-$tag") == securetex ]] && \
+      docker volume rm "securetex-jobs-$tag" >/dev/null || echo '[SecureTex] Volumen antiguo aún en uso.' >&2
+  fi
+  rm -f -- "$marker" "backups/$tag.dump" "gateway/releases/$tag.conf"
+done
+for name in $(docker ps -a --filter "label=$label=securetex" --format '{{.Names}}'); do
+  if [[ $name =~ ^securetex-(api|web|compiler)-([0-9a-f]{40})$ && ${BASH_REMATCH[2]} != "$sha" ]]; then
+    remove "$name" || echo "[SecureTex] Contenedor anterior pendiente: $name" >&2
+  fi
+done
 echo "[SecureTex] Versión activa: $sha"
