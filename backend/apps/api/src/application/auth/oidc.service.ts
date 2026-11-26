@@ -156,7 +156,7 @@ export class OidcService {
       await this.db.identity.userIdentity.update({ where: { id: identity.id }, data: { lastUsedAt: new Date() } });
       return { id: identity.userId, verificationRequired: !identity.user.emailVerifiedAt };
     }
-    // Microsoft no garantiza email_verified: nunca se convierte su ausencia en true.
+    // Microsoft confirma la identidad; SecureTex comprueba el correo por separado.
     const { email, verified } = oidcRegistrationEmail(provider, rawEmail, emailVerified);
     const existing = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email) } });
     if (existing) {

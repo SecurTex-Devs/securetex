@@ -6,5 +6,6 @@ export function oidcRegistrationEmail(provider: 'google' | 'microsoft', raw: unk
   if (typeof raw !== 'string' || (provider === 'google' && verified !== true)) {
     throw new UnauthorizedError('oidc_email_unverified', 'Tu proveedor no ha confirmado tu correo. Regístrate con correo y contraseña.');
   }
-  return { email: Email.of(raw).toString(), verified: verified === true };
+  // Microsoft no garantiza la titularidad de email en su contrato de claims.
+  return { email: Email.of(raw).toString(), verified: provider === 'google' && verified === true };
 }

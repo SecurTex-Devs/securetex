@@ -50,8 +50,8 @@ describe('Alta y acceso por proveedor', () => {
     expect(f.identity.user.create.mock.calls[0]?.[0]).toMatchObject({ data: { status: 'active', emailVerifiedAt: expect.any(Date) } });
     expect(f.auth.sendVerification).not.toHaveBeenCalled();
   });
-  it('Microsoft sin confirmación crea una cuenta pendiente y envía la verificación', async () => {
-    state.claims.email_verified = undefined;
+  it.each([undefined, true])('Microsoft crea una cuenta pendiente y envía la verificación con claim %s', async (claim) => {
+    state.claims.email_verified = claim;
     const f = fixture('microsoft');
     expect(await f.callback()).toMatchObject({ kind: 'session', verificationRequired: true });
     expect(f.identity.user.create.mock.calls[0]?.[0]).toMatchObject({ data: { status: 'pending', emailVerifiedAt: null } });
