@@ -1,6 +1,8 @@
 # SecurTex
 
-Editor LaTeX colaborativo y seguro, al estilo de Overleaf: edición en tiempo real cifrada de extremo a extremo, compilación real en un sandbox sin red, PDF firmado y todos los datos de la base cifrados.
+Editor LaTeX colaborativo: escribe en equipo, compila y revisa el PDF sin salir del editor. El contenido se cifra desde el navegador y en reposo; la compilación se realiza en un sandbox sin red y la aplicación verifica la firma del PDF antes de mostrarlo o descargarlo.
+
+La API puede descifrar el documento para compilarlo. La firma verificada por la aplicación es Ed25519; el archivo descargado no contiene una firma PAdES. El alcance y los riesgos residuales están en la [revisión local](docs/docs/18-Revision-Local.md).
 
 > Proyecto final de la asignatura *Seguridad de Software* · Universidad Técnica de Ambato
 
@@ -42,6 +44,24 @@ En el `.env`, pon `PUBLISH_HOST=0.0.0.0` y `APP_ORIGIN=http://<IP-de-este-equipo
 ### Inicio de sesión con Google o Microsoft (opcional)
 
 Es gratis. Basta con registrar la aplicación en cada proveedor y copiar el ID y el secreto al `.env`. Los pasos están en [backend/README.md](backend/README.md).
+
+Las credenciales locales se conservan al activar la demo. No publiques el `.env` ni reutilices sus claves de cifrado para una base distinta. El estado de prueba de cada proveedor y sus cuentas permitidas se configuran en su consola; tener las variables no acredita un inicio de sesión completo. El dominio de producción necesitará su propio URI de retorno autorizado.
+
+### Demo sin contraseña
+
+Añade `DEMO_ENABLED=true` al `.env` y ejecuta:
+
+```bash
+docker compose --profile demo up --build -d
+```
+
+La portada ofrece **Probar la demo**: abre un currículum sintético que se puede editar, compartir en vivo y compilar. Su sesión dura 30 minutos y no permite administrar cuentas, invitar personas ni crear proyectos o archivos. El documento es compartido y se restaura cada medianoche de Guayaquil. Para restaurarlo manualmente, sin modificar las cuentas normales:
+
+```bash
+docker compose --profile demo exec -T demo-reset node dist/scripts/seed-demo.js --reset
+```
+
+Los límites y el reinicio están documentados en [ADR-0011](docs/docs/adr/ADR-0011-demo-publica-limitada.md). Compose mantiene el registro local activo para desarrollo; fuera de Compose, `REGISTRATION_ENABLED` es `false` por defecto y bloquea también la creación de cuentas nuevas mediante Google o Microsoft. Mailpit es exclusivamente local.
 
 ---
 

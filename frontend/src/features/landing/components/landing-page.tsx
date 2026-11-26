@@ -1,11 +1,12 @@
-import { ArrowUpRight, FileCheck2, Fingerprint, GraduationCap, KeyRound, Link2, Lock, PenLine, ScanSearch, ScrollText, ShieldCheck, ShieldX, UserRoundCheck, UsersRound } from 'lucide-react';
+import { ArrowUpRight, FileCheck2, GraduationCap, Lock, PenLine, ScanSearch, ScrollText, ShieldCheck, UserRoundCheck, UsersRound } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { ReactNode } from 'react';
 import { getT } from '@/shared/i18n';
 import { cn } from '@/shared/lib/cn';
 import { ThemeToggle } from '@/shared/theme/theme-toggle';
 import { Logo } from '@/shared/ui/logo';
-import { HeroVisual } from './hero-visual';
+import { DemoButton } from './demo-button';
 import { Reveal } from './reveal';
 
 function PillCta({ href, children, variant = 'primary' }: { readonly href: string; readonly children: ReactNode; readonly variant?: 'primary' | 'ghost' }) {
@@ -34,12 +35,11 @@ function Nav() {
         <ul className="ml-6 hidden items-center gap-1 text-[13px] text-fg-2 md:flex">
           <li><a href="#producto" className="rounded-full px-3 py-1.5 hover:bg-surface-3 hover:text-fg">{t('nav.product')}</a></li>
           <li><a href="#seguridad" className="rounded-full px-3 py-1.5 hover:bg-surface-3 hover:text-fg">{t('nav.security')}</a></li>
-          <li><Link href="/plantillas" className="rounded-full px-3 py-1.5 hover:bg-surface-3 hover:text-fg">{t('nav.templates')}</Link></li>
         </ul>
         <div className="ml-auto flex items-center gap-1">
           <ThemeToggle />
           <Link href="/entrar" className="hidden rounded-full px-3.5 py-2 text-[13px] font-medium text-fg hover:bg-surface-3 sm:block">{t('nav.login')}</Link>
-          <Link href="/registro" className="rounded-full bg-brand px-4 py-2 text-[13px] font-medium text-brand-fg transition-transform active:scale-[0.97]">{t('nav.signup')}</Link>
+          <DemoButton compact className="bg-brand text-brand-fg" />
         </div>
       </nav>
     </header>
@@ -49,24 +49,23 @@ function Nav() {
 function Hero() {
   const t = getT('landing');
   return (
-    <section className="relative overflow-hidden px-4 pb-24 pt-36 sm:px-6 md:pt-44">
+    <section className="relative overflow-hidden px-4 pb-16 pt-28 sm:px-6 md:pt-28">
       <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-0 h-[620px] w-[1100px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,var(--brand-soft),transparent)] opacity-90" />
       <div className="relative mx-auto max-w-[1180px]">
         <div className="mx-auto max-w-[880px] text-center">
           <p className="eyebrow animate-rise"><ShieldCheck className="size-3.5 text-sec" strokeWidth={2} aria-hidden="true" />{t('hero.eyebrow')}</p>
-          <h1 className="mt-7 animate-rise font-serif text-[clamp(2.6rem,6.4vw,5.4rem)] font-medium leading-[0.98] tracking-[-0.035em] text-fg [animation-delay:60ms]">
+          <h1 className="mt-5 animate-rise font-serif text-[clamp(2.5rem,5.8vw,4.5rem)] font-medium leading-[1.08] tracking-[-0.035em] text-fg [animation-delay:60ms]">
             {t('hero.title1')}<br />
             <em className="text-brand">{t('hero.title2')}</em> {t('hero.title3')}
           </h1>
-          <p className="mx-auto mt-7 max-w-[60ch] animate-rise text-[17px] leading-relaxed text-fg-2 [animation-delay:120ms]">{t('hero.body')}</p>
-          <div className="mt-9 flex animate-rise flex-wrap items-center justify-center gap-3 [animation-delay:180ms]">
-            <PillCta href="/registro">{t('hero.cta')}</PillCta>
-            <PillCta href="/plantillas" variant="ghost">{t('hero.secondary')}</PillCta>
+          <p className="mx-auto mt-5 max-w-[54ch] animate-rise text-[17px] leading-relaxed text-fg-2 [animation-delay:120ms]">{t('hero.body')}</p>
+          <div className="mt-7 flex animate-rise flex-wrap items-center justify-center gap-3 [animation-delay:180ms]">
+            <DemoButton />
+            <PillCta href="https://github.com/SecurTex-Devs/securetex" variant="ghost">{t('hero.secondary')}</PillCta>
           </div>
-          <p className="mt-8 animate-rise font-mono text-[11.5px] uppercase tracking-[0.14em] text-fg-3 [animation-delay:240ms]">{t('hero.stack')}</p>
         </div>
-        <div id="producto" className="mx-auto mt-16 max-w-[1120px] scroll-mt-28">
-          <HeroVisual />
+        <div id="producto" className="mx-auto mt-10 max-w-[1120px] scroll-mt-28 overflow-hidden rounded-[16px] border border-line bg-surface shadow-[var(--shadow-pop)]">
+          <Image src="/editor-preview.png" alt={t('hero.previewAlt')} width={2160} height={1350} priority sizes="(max-width: 768px) 100vw, 1120px" className="h-auto w-full" />
         </div>
       </div>
     </section>
@@ -154,43 +153,9 @@ function Bento() {
               ))}
             </ul>
           </BentoCard>
-          <BentoCard className="md:col-span-2" delay={80} icon={<KeyRound strokeWidth={1.5} />} title={t('bento.crypto.title')} body={t('bento.crypto.body')}>
-            <ol className="grid gap-1.5 font-mono text-[11px]" aria-hidden="true">
-              {['KEK por proyecto · AES-256-KW', 'DEK por guardado · AES-256-GCM', 'AAD · proyecto ‖ archivo ‖ versión', 'HMAC-SHA-256 · antes de descifrar'].map((l, i) => (
-                <li key={l} className="flex items-center gap-2 rounded-[7px] bg-sec-soft px-2.5 py-1.5 text-sec" style={{ marginLeft: i * 6 }}>{l}</li>
-              ))}
-            </ol>
-          </BentoCard>
-          <BentoCard className="md:col-span-2" delay={40} icon={<ShieldX strokeWidth={1.5} />} title={t('bento.blocked.title')} body={t('bento.blocked.body')}>
-            <div className="rounded-[10px] bg-danger-soft p-3 text-[12px] shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--danger)_22%,transparent)]" aria-hidden="true">
-              <p className="font-medium text-danger">bloqueante · Ejecución de comandos</p>
-              <p className="mt-1 font-mono text-[11px] text-fg-2">informe.tex:12 · \immediate\write18{'{…}'}</p>
-              <p className="mt-1.5 text-fg-2">Precalcula el resultado y súbelo como archivo.</p>
-            </div>
-          </BentoCard>
-          <BentoCard className="md:col-span-2" delay={120} icon={<Link2 strokeWidth={1.5} />} title={t('bento.audit.title')} body={t('bento.audit.body')}>
-            <div className="flex items-center gap-1.5 overflow-hidden font-mono text-[10px]" aria-hidden="true">
-              {['9f2c…', 'a71e…', '3bd0…', 'e458…'].map((h, i) => (
-                <span key={h} className="flex items-center gap-1.5">
-                  <span className="rounded-[6px] bg-surface-2 px-2 py-1.5 text-fg-2 shadow-[inset_0_0_0_1px_var(--border)]">#{1041 + i}<br /><span className="text-fg-3">{h}</span></span>
-                  {i < 3 && <span className="text-fg-3">→</span>}
-                </span>
-              ))}
-            </div>
-          </BentoCard>
-          <BentoCard className="md:col-span-2" delay={160} icon={<Fingerprint strokeWidth={1.5} />} title={t('bento.mfa.title')} body={t('bento.mfa.body')}>
-            <div className="flex justify-between gap-1.5 font-mono text-lg text-fg" aria-hidden="true">
-              {['4', '8', '1', '2', '7', '9'].map((d, i) => <span key={i} className={cn('grid h-11 flex-1 place-items-center rounded-[8px] bg-surface-2 shadow-[inset_0_0_0_1px_var(--border-strong)]', i === 3 && 'ml-1.5')}>{d}</span>)}
-            </div>
-          </BentoCard>
-          <BentoCard className="md:col-span-6" delay={60} icon={<ShieldCheck strokeWidth={1.5} />} title={t('bento.rls.title')} body={t('bento.rls.body')}>
-            <pre className="overflow-x-auto rounded-[12px] bg-ink p-4 font-mono text-[12px] leading-relaxed text-ink-fg/80" aria-hidden="true">
-              <span className="text-[#b7c3ff]">CREATE POLICY</span> projects_select <span className="text-[#b7c3ff]">ON</span> projects <span className="text-[#b7c3ff]">FOR SELECT USING</span> ({'\n'}
-              {'  '}owner_id = app_current_user(){'\n'}
-              {'  '}<span className="text-[#b7c3ff]">OR</span> app_has_project_role(id, <span className="text-[#7ee2b0]">{"ARRAY['owner','editor','reviewer','viewer']"}</span>){'\n'}
-              );  <span className="text-ink-fg/40">-- sin contexto de usuario: cero filas (fail closed)</span>
-            </pre>
-          </BentoCard>
+          <BentoCard className="md:col-span-2" delay={80} icon={<PenLine strokeWidth={1.5} />} title={t('product.saved.title')} body={t('product.saved.body')} />
+          <BentoCard className="md:col-span-3" delay={40} icon={<FileCheck2 strokeWidth={1.5} />} title={t('product.pdf.title')} body={t('product.pdf.body')} />
+          <BentoCard className="md:col-span-3" delay={120} icon={<GraduationCap strokeWidth={1.5} />} title={t('product.templates.title')} body={t('product.templates.body')} />
         </div>
       </div>
     </section>
@@ -237,10 +202,7 @@ function FinalCta() {
         <h2 className="relative mx-auto max-w-[18ch] font-serif text-[clamp(2.2rem,4.6vw,3.8rem)] font-medium leading-[1.02] tracking-[-0.03em] text-white">{t('cta.title')}</h2>
         <p className="relative mt-5 text-[16px] text-white/70">{t('cta.body')}</p>
         <div className="relative mt-9 flex justify-center">
-          <Link href="/registro" className="group inline-flex h-12 items-center gap-3 rounded-full bg-white pl-6 pr-1.5 text-[15px] font-medium text-[#14141f] transition-transform active:scale-[0.98]">
-            {t('hero.cta')}
-            <span className="grid size-9 place-items-center rounded-full bg-[#14141f]/10 transition-transform group-hover:-translate-y-px group-hover:translate-x-0.5"><ArrowUpRight className="size-4" strokeWidth={1.75} aria-hidden="true" /></span>
-          </Link>
+          <DemoButton className="bg-surface text-fg" />
         </div>
       </Reveal>
     </section>
@@ -251,12 +213,12 @@ function Footer() {
   const t = getT('landing');
   return (
     <footer className="border-t border-line px-4 py-10 sm:px-6">
-      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-6 text-[13px] text-fg-3">
+      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-6 text-[13px] text-fg-2">
         <div className="flex items-center gap-4"><Logo /><span className="hidden sm:inline">{t('footer.academic')}</span></div>
         <ul className="flex gap-5">
-          <li><Link href="/plantillas" className="hover:text-fg">{t('nav.templates')}</Link></li>
+          <li><Link href="https://github.com/SecurTex-Devs/securetex" className="hover:text-fg">{t('hero.secondary')}</Link></li>
           <li><a href="#seguridad" className="hover:text-fg">{t('footer.security')}</a></li>
-          <li><Link href="/registro" className="hover:text-fg">{t('nav.signup')}</Link></li>
+          <li><Link href="/entrar" className="hover:text-fg">{t('nav.login')}</Link></li>
         </ul>
       </div>
     </footer>

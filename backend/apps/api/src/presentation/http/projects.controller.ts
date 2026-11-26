@@ -9,6 +9,7 @@ import {
 } from './projects.dto';
 import { InvitationDto, MembersDto, ProjectDto, ProjectListDto, ReceivedInvitationDto, StatusResponseDto, TagDto } from './responses.dto';
 import { CurrentActor, Meta, Policy } from './security';
+import { AllowDemo } from './demo-access';
 
 const MINUTE = 60_000;
 const uuid = new ParseUUIDPipe();
@@ -27,6 +28,7 @@ export class ProjectsController {
   ) {}
 
   @Get()
+  @AllowDemo()
   @Policy('authenticated')
   @ApiOperation({ summary: 'Listar proyectos con filtros, búsqueda y etiquetas' })
   async list(@Query() q: ListProjectsQueryDto, @CurrentActor() actor: Actor): Promise<ProjectListDto> {
@@ -47,6 +49,7 @@ export class ProjectsController {
   }
 
   @Get(':projectId')
+  @AllowDemo()
   @Policy('authenticated')
   @ApiOperation({ summary: 'Detalle del proyecto', description: '404 uniforme si no existe o no eres miembro (T-P07).' })
   async get(@Param('projectId', uuid) id: string, @CurrentActor() actor: Actor): Promise<ProjectDto> {
@@ -127,6 +130,7 @@ export class ProjectsController {
   }
 
   @Get(':projectId/members')
+  @AllowDemo()
   @Policy('authenticated')
   @ApiOperation({ summary: 'Colaboradores e invitaciones pendientes' })
   async members(@Param('projectId', uuid) id: string, @CurrentActor() actor: Actor): Promise<MembersDto> {

@@ -51,6 +51,8 @@ export class RecoveryCodesDto {
 }
 
 export class ProfileDto {
+  /** Presente al consultar la sesión; las acciones de cuenta se deniegan en la demo. */
+  readonly isDemo?: boolean;
   readonly id!: string;
   readonly primaryEmail!: string;
   readonly emailVerified!: boolean;

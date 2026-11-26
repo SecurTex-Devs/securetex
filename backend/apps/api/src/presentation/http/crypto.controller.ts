@@ -5,9 +5,11 @@ import { ArtifactSigner } from '../../infrastructure/security/artifact-signer';
 import { TransportCrypto } from '../../infrastructure/security/transport';
 import { ArtifactKeyDto, TransportKeyDto } from './files.dto';
 import { Policy } from './security';
+import { AllowDemo } from './demo-access';
 
 @ApiTags('Criptografía')
 @Controller({ path: 'crypto', version: '1' })
+@AllowDemo()
 export class CryptoController {
   constructor(
     private readonly transport: TransportCrypto,

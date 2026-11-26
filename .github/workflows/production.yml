@@ -1,0 +1,225 @@
+name: Validación y producción
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Validación
+    runs-on: ubuntu-24.04-arm
+    concurrency:
+      group: securetex-checks-${{ github.event.pull_request.number || github.sha }}
+      cancel-in-progress: true
+    timeout-minutes: 40
+    env:
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Solo develop puede proponer una versión estable
+        if: github.event_name == 'pull_request' && github.base_ref == 'main'
+        run: test "$GITHUB_HEAD_REF" = develop
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Dependencias fijadas
+        run: |
+          npm install --global pnpm@12.8.1
+          pnpm --dir backend install --frozen-lockfile
+          pnpm --dir frontend install --frozen-lockfile
+          npm ci --ignore-scripts --prefix tools/ci
+          python -m pip install -r docs/requirements.txt
+      - name: Lint y sintaxis de despliegue
+        run: |
+          npm --prefix tools/ci run lint
+          bash -n infra/deploy.sh infra/ssh-deploy.sh infra/install-gvisor.sh
+          python -m py_compile infra/provision-env.py infra/check-neighbors.py
+          node infra/check-migrations.mjs backend/apps/api/prisma/migrations infra/migrations-approved.json
+      - name: Análisis de dependencias y secretos
+        run: |
+          pnpm --dir backend audit --audit-level low
+          pnpm --dir frontend audit --audit-level low
+          npm --prefix tools/ci audit --audit-level low
+          curl --fail --silent --show-error --location https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_arm64.tar.gz --output /tmp/gitleaks.tar.gz
+          echo 'e4a487ee7ccd7d3a7f7ec08657610aa3606637dab924210b3aee62570fb4b080  /tmp/gitleaks.tar.gz' | sha256sum --check
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          /tmp/gitleaks git --redact --no-banner --log-opts=--all
+      - name: Tipos y pruebas unitarias con cobertura
+        run: |
+          pnpm --dir backend/apps/api exec prisma generate
+          pnpm --dir backend typecheck
+          pnpm --dir frontend typecheck
+          pnpm --dir backend test:coverage
+          mkdocs build --strict --config-file docs/mkdocs.yml --site-dir /tmp/securetex-docs
+      - name: Pila efímera de integración
+        run: |
+          node tools/ci/env.mjs
+          docker compose build migrate compiler
+          docker compose up --detach --wait --wait-timeout 180 api
+          docker compose exec -T api node dist/scripts/seed-demo.js
+      - name: Contrato generado sin diferencias
+        run: |
+          docker compose -f docker-compose.yml -f tools/ci/contracts.compose.yml run --rm --no-deps api sh -c 'node dist/scripts/generate-openapi.js >/dev/null && cat /repo/contracts/openapi.json' >/tmp/openapi.generated.json
+          cmp /tmp/openapi.generated.json backend/contracts/openapi.json
+          pnpm --dir frontend api:check
+          git diff --exit-code -- backend/contracts/openapi.json frontend/contracts/openapi.json frontend/src/shared/api/generated.ts
+      - name: Todos los casos de abuso contra servicios reales
+        run: |
+          for suite in backend/apps/api/test/security/*.test.mjs; do
+            echo "::group::Caso de abuso: $(basename "$suite")"
+            docker compose restart api
+            docker compose up --detach --wait --wait-timeout 120 api
+            node --test "$suite"
+            echo '::endgroup::'
+          done
+      - name: Reinicio nocturno sin afectar cuentas normales
+        run: |
+          docker compose restart api
+          docker compose up --detach --wait --wait-timeout 120 api
+          docker compose --profile demo up --detach demo-reset
+          node backend/apps/api/test/manual/demo-reset.mjs
+      - name: Navegadores, accesibilidad, colaboración y PDF
+        env:
+          API_INTERNAL_URL: http://localhost:4000
+          COLLAB_PUBLIC_PORT: '4000'
+        run: |
+          docker compose restart api
+          docker compose up --detach --wait --wait-timeout 120 api
+          docker compose exec -T api node dist/scripts/seed-demo.js --reset
+          pnpm --dir frontend build
+          pnpm --dir frontend start >/tmp/securetex-web.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:3000/ >/dev/null; then break; fi
+            sleep 1
+          done
+          tools/ci/node_modules/.bin/playwright install --with-deps chromium firefox
+          npm --prefix tools/ci run test:e2e
+      - name: Resultados medidos
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: validacion-${{ github.sha }}
+          path: |
+            backend/apps/api/coverage/
+            tools/ci/artifacts/
+          retention-days: 7
+      - name: Retirar solo la pila efímera del runner
+        if: always()
+        run: docker compose down --volumes --remove-orphans
+
+  images:
+    name: Imagen ARM64 (${{ matrix.component }})
+    needs: checks
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - component: api
+            context: backend
+            file: backend/apps/api/Dockerfile
+          - component: compiler
+            context: backend
+            file: backend/apps/compiler/Dockerfile
+          - component: web
+            context: frontend
+            file: frontend/Dockerfile
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+      - name: Autenticación efímera en GHCR
+        env:
+          REGISTRY_TOKEN: ${{ github.token }}
+        run: printf '%s' "$REGISTRY_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+      - name: Construir y publicar el SHA exacto
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/securtex-devs/securetex-${{ matrix.component }}:${{ github.sha }}
+          labels: |
+            dev.securetex.app=securetex
+            org.opencontainers.image.source=https://github.com/SecurTex-Devs/securetex
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.component }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.component }}
+          provenance: mode=max
+
+  deploy:
+    name: Desplegar y comprobar
+    needs: [checks, images]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 15
+    environment: production
+    concurrency:
+      group: securetex-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: No desplegar una ejecución anterior a main
+        id: revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest=$(gh api repos/SecurTex-Devs/securetex/git/ref/heads/main --jq .object.sha)
+          if [ "$latest" = "$GITHUB_SHA" ]; then
+            echo 'current=true' >>"$GITHUB_OUTPUT"
+          else
+            echo 'Hay otra versión en main; esta ejecución no cambia producción.'
+          fi
+      - name: Desplegar con la clave restringida
+        if: steps.revision.outputs.current == 'true'
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          REGISTRY_TOKEN: ${{ github.token }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+        run: |
+          set -euo pipefail
+          umask 077
+          key=$(mktemp)
+          hosts=$(mktemp)
+          trap 'rm -f "$key" "$hosts"' EXIT
+          printf '%s\n' "$DEPLOY_KEY" >"$key"
+          printf '%s\n' "$KNOWN_HOSTS" >"$hosts"
+          printf '%s\n%s\n' "$GITHUB_ACTOR" "$REGISTRY_TOKEN" |
+            ssh -i "$key" -o BatchMode=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile="$hosts" -o ConnectTimeout=15 "ubuntu@$DEPLOY_HOST" "deploy $GITHUB_SHA"
+      - name: HTTPS público y revisión desplegada
+        if: steps.revision.outputs.current == 'true'
+        run: |
+          for attempt in $(seq 1 15); do
+            curl --retry 2 --fail --silent --show-error https://securetex.dayle.dev/health --output /tmp/health.json
+            curl --retry 2 --fail --silent --show-error --dump-header /tmp/headers https://securetex.dayle.dev/ --output /tmp/landing.html
+            if python3 -c 'import json; h=json.load(open("/tmp/health.json")); assert h["status"]=="ok" and h["database"] is True' &&
+              grep -qi "x-securetex-revision: $GITHUB_SHA" /tmp/headers && grep -q 'Probar la demo' /tmp/landing.html; then
+              echo "Producción comprobada por HTTPS: $GITHUB_SHA"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo '::error::La verificación pública de salud o revisión ha fallado.'
+          exit 1

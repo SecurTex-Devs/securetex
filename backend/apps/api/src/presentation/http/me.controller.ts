@@ -10,6 +10,7 @@ import { DeleteAccountDto, SavePreferencesDto, UpdateProfileDto } from './auth.d
 import { clearSessionCookies } from './cookies';
 import { ActivityDto, DeletionImpactDto, IdentityDto, PreferencesDto, ProfileDto, SessionDto, StatusResponseDto } from './responses.dto';
 import { CurrentActor, Meta, Policy } from './security';
+import { AllowDemo } from './demo-access';
 
 const HOUR = 3_600_000;
 // Incluye los comandos LaTeX personalizados de la paleta del editor.
@@ -21,10 +22,11 @@ export class MeController {
   constructor(private readonly account: AccountService) {}
 
   @Get()
+  @AllowDemo()
   @Policy('authenticated')
   @ApiOperation({ summary: 'Perfil del usuario actual' })
   async me(@CurrentActor() actor: Actor): Promise<ProfileDto> {
-    return this.account.profile(actor);
+    return { ...await this.account.profile(actor), isDemo: actor.isDemo === true };
   }
 
   @Patch()
@@ -77,6 +79,7 @@ export class MeController {
   }
 
   @Get('preferences')
+  @AllowDemo()
   @Policy('authenticated')
   @ApiOperation({ summary: 'Preferencias del editor' })
   async preferences(@CurrentActor() actor: Actor): Promise<PreferencesDto> {

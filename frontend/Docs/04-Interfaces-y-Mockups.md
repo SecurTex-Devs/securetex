@@ -198,7 +198,15 @@ El objetivo en móvil no es escribir una tesis: es **revisar, comentar y compila
 
 ---
 
-## 7. Documentos relacionados
+## 7. Demostración pública
+
+| Pantalla | Mockup | Comportamiento |
+|---|---|---|
+| P-51 · Demo | [09-demo.html](mockups/09-demo.html) | Portada con el estilo existente, captura real y entrada directa al documento de ejemplo. Sesión limitada; editor normal preservado para las demás cuentas. |
+
+Los estados de carga, error, límite de uso y registro cerrado están anotados en el mockup. Los detalles del aislamiento pertenecen a la documentación técnica, no al recorrido de producto de la portada.
+
+## 8. Documentos relacionados
 
 - [03-Sistema-de-Diseno.md](03-Sistema-de-Diseno.md) — tokens, componentes y estados
 - [08-Criptografia-en-el-Cliente.md](08-Criptografia-en-el-Cliente.md) — lo que implementan las pantallas P-48 a P-50

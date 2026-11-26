@@ -471,7 +471,7 @@ sequenceDiagram
     A->>A: ② valida state contra la cookie (anti-CSRF)
     A->>K: intercambia code + code_verifier (PKCE)
     K-->>A: id_token
-    A->>A: ③ valida id_token; ④ vincula o crea la cuenta
+    A->>A: ③ valida id_token y ④ vincula o crea la cuenta
     A->>A: ⑤ evalúa riesgo → ¿exigir MFA?
     A-->>N: Set-Cookie: sid (HttpOnly, Secure, SameSite=Lax, __Host-)
     N->>G: acceso a la aplicación

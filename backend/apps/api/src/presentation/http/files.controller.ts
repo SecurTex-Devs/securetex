@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Headers, HttpCode, Param, ParseUUIDPipe, Patch, Post, Put } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { AllowDemo } from './demo-access';
 import { Throttle } from '@nestjs/throttler';
 import { CollabService } from '../../application/collab/collab.service';
 import { CompileService, type CompileOutput } from '../../application/compile/compile.service';
@@ -36,6 +37,7 @@ export class FilesController {
   ) {}
 
   @Get()
+  @AllowDemo()
   @Policy('authenticated')
   @ApiOperation({ summary: 'Árbol de archivos (solo metadatos)' })
   async list(@Param('projectId', uuid) projectId: string, @CurrentActor() actor: Actor): Promise<FileMetaDto[]> {
@@ -43,6 +45,7 @@ export class FilesController {
   }
 
   @Get('contents')
+  @AllowDemo()
   @Policy('authenticated')
   @Throttle({ default: { limit: 120, ttl: MINUTE } })
   @replyKeyHeader
@@ -55,6 +58,7 @@ export class FilesController {
   }
 
   @Get(':fileId')
+  @AllowDemo()
   @Policy('authenticated')
   @replyKeyHeader
   @ApiOperation({ summary: 'Un archivo, sellado para el cliente' })
@@ -88,6 +92,7 @@ export class FilesController {
   }
 
   @Put(':fileId/content')
+  @AllowDemo()
   @Policy('authenticated')
   @Throttle({ default: { limit: 600, ttl: MINUTE } })
   @ApiOperation({ summary: 'Guardar el contenido', description: 'Sobre C1 + C2. Concurrencia optimista: 409 si `baseVersion` no es la actual. El editor usa la colaboración en tiempo real; esta ruta es para clientes de la API.' })
@@ -100,6 +105,7 @@ export class FilesController {
   }
 
   @Get(':fileId/versions')
+  @AllowDemo()
   @Policy('authenticated')
   @ApiOperation({ summary: 'Historial de versiones de un archivo', description: 'Instantáneas cifradas con autor y fecha (F-150).' })
   async versions(@Param('projectId', uuid) projectId: string, @Param('fileId', uuid) fileId: string, @CurrentActor() actor: Actor): Promise<FileVersionDto[]> {
@@ -107,6 +113,7 @@ export class FilesController {
   }
 
   @Get(':fileId/versions/:versionId')
+  @AllowDemo()
   @Policy('authenticated')
   @replyKeyHeader
   @ApiOperation({ summary: 'Contenido de una versión, sellado para el cliente' })
@@ -211,6 +218,7 @@ export class DuplicateController {
 
 @ApiTags('Compilación')
 @Controller({ path: 'projects/:projectId/compile', version: '1' })
+@AllowDemo()
 export class CompileController {
   constructor(
     private readonly files: FilesService,

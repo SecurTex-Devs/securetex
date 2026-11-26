@@ -5,6 +5,9 @@ copyright: Universidad Técnica de Ambato · Seguridad de Software
 
 docs_dir: docs
 
+extra_css:
+  - stylesheets/diagrams.css
+
 theme:
   name: material
   language: es
@@ -86,6 +89,11 @@ nav:
       - Plan de proyecto: 11-Plan-de-Proyecto.md
       - DevSecOps y testing: 12-DevSecOps-y-Testing.md
       - Infraestructura y despliegue: 13-Infraestructura-y-Despliegue.md
+      - Configuración de GitHub: 17-Configuracion-de-GitHub.md
+      - Revisión local: 18-Revision-Local.md
+      - Validación de la demo: 19-Validacion-Demo.md
+      - Hosting y preflight: 20-Hosting-y-Preflight.md
+      - Validación de producción: 21-Validacion-Produccion.md
   - Referencia:
       - Glosario: 15-Glosario.md
       - Decisiones (ADR):
@@ -99,5 +107,6 @@ nav:
           - ADR-0008 · Documentación de API code-first: adr/ADR-0008-documentacion-de-api-code-first.md
           - ADR-0009 · Tres repositorios: adr/ADR-0009-tres-repositorios-y-documentacion-central.md
           - ADR-0010 · Criptografía multicapa y E2EE: adr/ADR-0010-criptografia-multicapa-y-modo-e2ee.md
+          - ADR-0011 · Demostración pública limitada: adr/ADR-0011-demo-publica-limitada.md
 
 strict: true

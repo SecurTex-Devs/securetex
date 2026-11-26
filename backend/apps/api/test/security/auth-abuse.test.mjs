@@ -125,10 +125,14 @@ describe('Autenticación y sesión', () => {
     assert.ok(new Date(ok.body.elevatedUntil) > new Date());
   });
 
-  it('la cadena de auditoría es íntegra', async () => {
+  it('la cadena de auditoría es íntegra', async (t) => {
+    if (!process.env.SEED_DEMO_PASSWORD) {
+      t.skip('Requiere SEED_DEMO_PASSWORD de las cuentas sintéticas locales.');
+      return;
+    }
     const admin = new Client();
     const login = await admin.post('/auth/login', { email: 'ana.torres@securtex.test', password: process.env.SEED_DEMO_PASSWORD });
-    if (login.status !== 200) return; // sin credenciales de demo en el entorno: se omite
+    assert.equal(login.status, 200, 'la administradora sintética debe iniciar sesión');
     const res = await admin.get('/admin/audit/verify');
     assert.equal(res.status, 200);
     assert.equal(res.body.ok, true);

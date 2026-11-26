@@ -214,4 +214,4 @@ flowchart LR
 
 - [`index.md`](index.md) — portada e índice general
 - [11-Plan-de-Proyecto.md](11-Plan-de-Proyecto.md) — sprints, roles y ceremonias que alimentan el tablero
-- [`../README.md`](../README.md) — instrucciones de este repositorio
+- [README de la documentación](https://github.com/SecurTex-Devs/securetex/blob/main/docs/README.md) — instrucciones de esta carpeta

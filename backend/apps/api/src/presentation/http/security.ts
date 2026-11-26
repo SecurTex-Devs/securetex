@@ -11,6 +11,9 @@ import type { FastifyRequest } from 'fastify';
 import { randomUUID } from 'node:crypto';
 import { loadEnv } from '../../config/env';
 import { SessionService } from '../../application/auth/sessions';
+import { AuditLog } from '../../application/audit/audit-log';
+import { DemoLimits } from '../../application/demo/demo-limits';
+import { DEMO_ACCESS_KEY } from './demo-access';
 import type { Actor, RequestMeta } from '../../application/request-meta';
 import { ForbiddenError, ReauthRequiredError, UnauthorizedError } from '../../domain/errors';
 import { COOKIES } from './cookies';
@@ -75,6 +78,8 @@ export class SecurityGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly sessions: SessionService,
+    private readonly audit: AuditLog,
+    private readonly demoLimits: DemoLimits,
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
@@ -87,6 +92,12 @@ export class SecurityGuard implements CanActivate {
 
     const actor = await this.sessions.authenticate(req.cookies[COOKIES.access]);
     if (actor) req.actor = actor;
+    if (actor?.isDemo) this.demoLimits.request(req.ip);
+
+    if (actor?.isDemo && !this.reflector.getAllAndOverride<boolean | undefined>(DEMO_ACCESS_KEY, [ctx.getHandler(), ctx.getClass()])) {
+      await this.audit.record({ type: 'demo.access.denied', actorUserId: actor.userId, outcome: 'denied', reason: 'demo_restricted' }, { traceId: req.traceId ?? randomUUID(), ip: req.ip, userAgent: req.headers['user-agent'] });
+      throw new ForbiddenError('demo_restricted', 'Esta acción no está disponible en la demo.');
+    }
 
     this.enforcePolicy(policy, actor);
     if (UNSAFE_METHODS.has(req.method)) await this.enforceCsrf(ctx, req, actor);

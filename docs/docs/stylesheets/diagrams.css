@@ -1,0 +1,11 @@
+/* Mermaid 10 aplica cssClass en los diagramas de clases; no admite style. */
+.mermaid .security > rect,
+.mermaid .security .label-container {
+  fill: #8b1a1a !important;
+}
+
+.mermaid .security text,
+.mermaid .security .nodeLabel {
+  fill: #fff !important;
+  color: #fff !important;
+}
