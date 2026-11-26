@@ -69,6 +69,7 @@ El punto de partida técnico es incómodo y por eso interesante: **LaTeX es un l
 | 18 | [Revisión local para la publicación](18-Revision-Local.md) | Pruebas ejecutadas, cobertura medida y límites del estado implementado |
 | 19 | [Validación de la demo](19-Validacion-Demo.md) | Regresión de cuentas normales, demo, reinicio y medidas locales de interfaz |
 | 20 | [Hosting y preflight](20-Hosting-y-Preflight.md) | Evaluación gratuita, destino Oracle y propuesta de runtime pendiente de autorización |
+| 21 | [Validación de producción](21-Validacion-Produccion.md) | HTTPS, demo, colaboración, compilación firmada y aislamiento comprobados en Oracle |
 | 15 | [Glosario](15-Glosario.md) | Términos y acrónimos |
 
 ### Decisiones

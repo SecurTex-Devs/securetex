@@ -93,6 +93,7 @@ nav:
       - Revisión local: 18-Revision-Local.md
       - Validación de la demo: 19-Validacion-Demo.md
       - Hosting y preflight: 20-Hosting-y-Preflight.md
+      - Validación de producción: 21-Validacion-Produccion.md
   - Referencia:
       - Glosario: 15-Glosario.md
       - Decisiones (ADR):
