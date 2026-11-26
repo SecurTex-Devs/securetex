@@ -173,7 +173,14 @@ docker run --rm --name "securetex-migrate-$sha" "${common[@]}" "${harden[@]}" --
   -e DATABASE_URL "$api" pnpm exec prisma migrate deploy
 
 say 'candidata aislada'
-if [[ $sha == "$previous" ]]; then echo 'La versión ya está activa.'; exit 0; fi
+if [[ $sha == "$previous" ]]; then
+  say 'salud de la versión ya activa'
+  check_api "$api_name"
+  python3 infra/check-public.py "$sha"
+  python3 infra/check-neighbors.py --check ops/neighbors-before-deploy.json
+  echo 'La versión ya está activa y sigue sana.'
+  exit 0
+fi
 for name in "$api_name" "$web_name" "$compiler_name"; do remove "$name"; done
 if ! docker volume inspect "$job_volume" >/dev/null 2>&1; then
   docker volume create --label "$label=securetex" --driver local --opt type=tmpfs --opt device=tmpfs \
