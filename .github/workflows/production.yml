@@ -124,7 +124,12 @@ jobs:
           retention-days: 7
       - name: Retirar solo la pila efímera del runner
         if: always()
-        run: docker compose down --volumes --remove-orphans
+        run: |
+          if [[ -f .env ]]; then
+            docker compose down --volumes --remove-orphans
+          else
+            echo 'La pila no llegó a crearse; no hay recursos de integración que retirar.'
+          fi
 
   images:
     name: Imagen ARM64 (${{ matrix.component }})
