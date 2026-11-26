@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "cd ../.. && node tools/ci/node_modules/eslint/bin/eslint.js --config tools/ci/eslint.config.mjs backend/apps/api/src backend/apps/compiler backend/apps/compiler-controller frontend/app frontend/src frontend/scripts infra/smoke.mjs tools/ci",
+    "lint": "cd ../.. && node tools/ci/node_modules/eslint/bin/eslint.js --config tools/ci/eslint.config.mjs backend/apps/api/src backend/apps/compiler backend/apps/compiler-controller frontend/app frontend/src frontend/scripts infra tools/ci",
     "test:e2e": "node e2e.mjs"
   },
   "devDependencies": {
