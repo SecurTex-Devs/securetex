@@ -77,11 +77,18 @@ jobs:
           git diff --exit-code -- backend/contracts/openapi.json frontend/contracts/openapi.json frontend/src/shared/api/generated.ts
       - name: Todos los casos de abuso contra servicios reales
         run: |
+          SEED_DEMO_PASSWORD=$(sed -n 's/^SEED_DEMO_PASSWORD=//p' .env)
+          test -n "$SEED_DEMO_PASSWORD"
+          export SEED_DEMO_PASSWORD
           for suite in backend/apps/api/test/security/*.test.mjs; do
             echo "::group::Caso de abuso: $(basename "$suite")"
             docker compose restart api
             docker compose up --detach --wait --wait-timeout 120 api
-            node --test "$suite"
+            node --test "$suite" | tee /tmp/securetex-security.tap
+            if grep -Eq '^# skipped [1-9]' /tmp/securetex-security.tap; then
+              echo '::error::No se permite omitir casos de abuso en CI.'
+              exit 1
+            fi
             echo '::endgroup::'
           done
       - name: Reinicio nocturno sin afectar cuentas normales
