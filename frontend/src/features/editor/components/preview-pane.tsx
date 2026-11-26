@@ -93,7 +93,7 @@ export function PreviewPane() {
 
   return (
     <section aria-label={t('pdf.label')} className="relative flex h-full min-w-0 flex-col bg-sunken">
-      <div className="flex h-10 shrink-0 items-center gap-1 border-b border-line bg-surface px-2">
+      <div className="flex min-h-10 shrink-0 flex-wrap items-center gap-1 border-b border-line bg-surface px-2 py-1 sm:h-10 sm:flex-nowrap sm:py-0">
         <IconButton size="sm" label={t('pdf.zoomOut')} disabled={currentIdx <= 0} onClick={() => setZoomIdx(Math.max(0, (currentIdx === -1 ? ZOOMS.length : currentIdx) - 1))} icon={<Minus className="size-3.5" strokeWidth={1.75} />} />
         <span className="w-12 text-center text-xs text-fg-2 tabular" aria-live="polite">{Math.round(zoom * 100)} %</span>
         <IconButton size="sm" label={t('pdf.zoomIn')} disabled={currentIdx === ZOOMS.length - 1} onClick={() => setZoomIdx(Math.min(ZOOMS.length - 1, currentIdx + 1))} icon={<Plus className="size-3.5" strokeWidth={1.75} />} />

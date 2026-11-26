@@ -97,6 +97,9 @@ try {
   const overflow = await pageA.evaluate(() => document.documentElement.scrollWidth > innerWidth);
   assert.equal(overflow, false, 'el editor no debe desbordar la pantalla móvil');
   await expect(pageA.getByRole('button', { name: 'Recompilar', exact: true })).toBeVisible();
+  await pageA.locator('button[aria-label="Vista previa"]').click();
+  const downloadBox = await pageA.getByRole('button', { name: 'Descargar PDF', exact: true }).boundingBox();
+  assert.ok(downloadBox && downloadBox.x >= 0 && downloadBox.x + downloadBox.width <= 390, 'la descarga debe caber en el viewport móvil antes de desplazar o pulsar');
   await screenshot(pageA, 'editor-movil.png');
   await pageA.getByRole('link', { name: 'Volver a mis proyectos', exact: true }).click();
   await pageA.waitForURL(base + '/');
