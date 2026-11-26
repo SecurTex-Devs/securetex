@@ -66,12 +66,12 @@ export class ProjectsService {
     const me = asUserId(actor.userId);
     return this.db.asUser(me, async (tx) => {
       const rows = await tx.project.findMany({
-        where: this.filterWhere(actor.userId, query),
+        where: { ...this.filterWhere(actor.userId, query), ...(actor.isDemo ? { id: actor.demoProjectId ?? '' } : {}) },
         select: PROJECT_SELECT,
         orderBy: { lastActivityAt: query.sort === 'lastActivity' ? 'asc' : 'desc' },
         take: 500,
       });
-      const counts = await this.counts(tx, actor.userId);
+      const counts = await this.counts(tx, actor.userId, actor.isDemo ? actor.demoProjectId : undefined);
       // El nombre está cifrado en la base (C3c): la búsqueda y el orden por nombre se hacen ya descifrados.
       const needle = query.q ? fold(query.q.slice(0, 80)) : null;
       const items = rows
@@ -369,6 +369,7 @@ export class ProjectsService {
   }
 
   private async load(actor: Actor, rawId: string, action: ProjectAction, meta?: RequestMeta): Promise<{ id: ProjectId; row: ProjectRow; role: ProjectRole }> {
+    if (actor.isDemo && actor.demoProjectId !== rawId) throw new NotFoundError();
     let id: ProjectId;
     try {
       id = asProjectId(rawId);
@@ -448,8 +449,8 @@ export class ProjectsService {
     }
   }
 
-  private async counts(tx: AppTx, userId: string) {
-    const mine = { members: { some: { userId, revokedAt: null } } };
+  private async counts(tx: AppTx, userId: string, scope?: string) {
+    const mine = { members: { some: { userId, revokedAt: null } }, ...(scope ? { id: scope } : {}) };
     const [all, owned, shared, archived, trash] = await Promise.all([
       tx.project.count({ where: { ...mine, archivedAt: null, trashedAt: null } }),
       tx.project.count({ where: { ...mine, ownerId: userId, archivedAt: null, trashedAt: null } }),

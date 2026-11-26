@@ -15,6 +15,7 @@ import { AuditLog, type AuditEntry } from '../audit/audit-log';
 import { FilesService, isBinaryKind } from '../files/files.service';
 import { ProjectsService } from '../projects/projects.service';
 import type { Actor, RequestMeta } from '../request-meta';
+import { DemoLimits } from '../demo/demo-limits';
 
 export interface CompileSignature {
   readonly alg: 'Ed25519';
@@ -70,10 +71,12 @@ export class CompileService {
     private readonly sandbox: SandboxClient,
     private readonly signer: ArtifactSigner,
     private readonly audit: AuditLog,
+    private readonly demoLimits: DemoLimits,
   ) {}
 
   async compile(actor: Actor, projectId: string, m: RequestMeta): Promise<CompileOutput> {
     const { id, row } = await this.projects.authorize(actor, projectId, 'compile', m);
+    if (actor.isDemo) this.demoLimits.compile(m.ip);
     const { files, analysis } = await this.files.snapshot(actor, id, m);
     if (analysis.verdict === 'blocked') throw new CompileBlockedError(analysis.findings);
     const engine = (COMPILE_ENGINES as readonly string[]).includes(row.compiler) ? (row.compiler as CompileEngine) : 'pdflatex';

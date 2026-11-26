@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { DemoController } from './presentation/http/demo.controller';
+import { DemoService } from './application/demo/demo.service';
+import { DemoLimits } from './application/demo/demo-limits';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AccountService } from './application/account/account.service';
@@ -43,8 +46,9 @@ import { AdminController, HealthController } from './presentation/http/system.co
     // Límite global por IP; los endpoints sensibles declaran el suyo con @Throttle.
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
   ],
-  controllers: [AuthController, MeController, ProjectsController, InvitationsController, TagsController, FilesController, CompileController, DuplicateController, CryptoController, AdminController, HealthController],
+  controllers: [DemoController, AuthController, MeController, ProjectsController, InvitationsController, TagsController, FilesController, CompileController, DuplicateController, CryptoController, AdminController, HealthController],
   providers: [
+    DemoService, DemoLimits,
     Databases, Mailer, PasswordHasher, SecretBox, AccessTokenService, BreachedPasswordChecker,
     AuditLog, SessionService, LoginThrottle, MfaService, EmailTokenService, NewPasswordService,
     AuthService, OidcService, AccountService, ProjectsService,

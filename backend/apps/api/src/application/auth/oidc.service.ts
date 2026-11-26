@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import type { IdpProvider } from '@prisma/client';
 import { loadEnv } from '../../config/env';
 import { AUTH } from '../../domain/constants';
+import { requirePublicRegistration } from '../../domain/registration';
 import { ConflictError, NotFoundError, UnauthorizedError } from '../../domain/errors';
 import { Email } from '../../domain/values';
 import { Databases } from '../../infrastructure/db/databases';
@@ -164,6 +165,7 @@ export class OidcService {
       await this.audit.record({ type: 'auth.oidc.link_required', severity: 'notice', actorUserId: existing.id, outcome: 'denied', metadata: { provider } }, meta);
       throw new UnauthorizedError('oidc_link_required', 'Ya existe una cuenta con ese correo. Inicia sesión y vincula el proveedor desde Ajustes.');
     }
+    requirePublicRegistration(this.env.REGISTRATION_ENABLED);
     const user = await this.db.identity.user.create({
       data: {
         primaryEmail: this.cipher.encrypt(email.toString(), FIELD.userEmail),

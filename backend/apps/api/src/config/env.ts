@@ -59,6 +59,9 @@ const EnvSchema = z.object({
   MICROSOFT_TENANT: z.string().default('consumers'),
 
   API_DOCS_ENABLED: boolFromString,
+  /** Cerrados por defecto; Compose habilita el registro únicamente para desarrollo. */
+  REGISTRATION_ENABLED: boolFromString,
+  DEMO_ENABLED: boolFromString,
 });
 
 export type Env = z.infer<typeof EnvSchema> & { readonly APP_ORIGINS: readonly string[] };
