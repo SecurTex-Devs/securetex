@@ -1,0 +1,17 @@
+{
+  "name": "securetex-ci",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "cd ../.. && node tools/ci/node_modules/eslint/bin/eslint.js --config tools/ci/eslint.config.mjs backend/apps/api/src backend/apps/compiler frontend/app frontend/src frontend/scripts infra/smoke.mjs tools/ci",
+    "test:e2e": "node e2e.mjs"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.1",
+    "@next/eslint-plugin-next": "15.5.29",
+    "@playwright/test": "1.65.1",
+    "eslint": "10.15.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "typescript-eslint": "8.74.0"
+  }
+}
