@@ -23,6 +23,8 @@ export function LandingFooter() {
         <ul className="flex flex-wrap items-center gap-x-5 gap-y-3 text-xs text-fg-2">
           <li><Link href="https://github.com/SecurTex-Devs/securetex" className="landing-nav-link rounded-sm py-1">{t('footer.project')}</Link></li>
           <li><Link href="/entrar" className="landing-nav-link rounded-sm py-1">{t('nav.login')}</Link></li>
+          <li><Link href="/privacidad" className="landing-nav-link rounded-sm py-1">{t('footer.privacy')}</Link></li>
+          <li><Link href="/terminos" className="landing-nav-link rounded-sm py-1">{getT('legal')('footer.terms')}</Link></li>
         </ul>
       </div>
     </div>

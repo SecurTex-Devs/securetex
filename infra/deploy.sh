@@ -241,7 +241,7 @@ docker run --rm --name "securetex-seed-$sha" "${common[@]}" "${harden[@]}" --net
   --tmpfs /tmp:rw,noexec,nosuid,nodev,size=16m "${api_env[@]}" --memory 192m --memory-swap 192m --cpus 0.25 --pids-limit 32 \
   "$api" node dist/scripts/seed-demo.js
 docker run -d --name "$web_name" "${common[@]}" "${harden[@]}" --network securetex-app \
-  -e "API_INTERNAL_URL=http://$api_name:4000" -e COLLAB_PUBLIC_PORT=443 \
+  -e "API_INTERNAL_URL=http://$api_name:4000" -e COLLAB_PUBLIC_PORT=443 -e PUBLIC_SUPPORT_EMAIL \
   --tmpfs /tmp:rw,nosuid,nodev,noexec,size=32m --tmpfs /app/.next/cache:rw,nosuid,nodev,size=32m,uid=1000,gid=1000 \
   --memory 384m --memory-swap 384m --cpus 0.5 --pids-limit 128 --restart unless-stopped "$web" >/dev/null
 wait_health "$web_name"
