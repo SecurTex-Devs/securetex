@@ -36,6 +36,7 @@ function contentSecurityPolicy(nonce: string, dev: boolean, collab: string): str
     "style-src-attr 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self' data:",
+    "media-src 'self'",
     `connect-src 'self'${collab}${dev ? ' ws: wss:' : ''}`,
     "worker-src 'self' blob:",
     "manifest-src 'self'",
@@ -55,7 +56,9 @@ export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = '/entrar';
     url.search = `?next=${encodeURIComponent(pathname + search)}`;
-    return NextResponse.redirect(url);
+    const redirect = NextResponse.redirect(url);
+    redirect.headers.set('Content-Type', 'text/plain; charset=utf-8');
+    return redirect;
   }
 
   const nonce = btoa(crypto.randomUUID());
@@ -67,15 +70,8 @@ export function middleware(request: NextRequest) {
 
   const response = NextResponse.next({ request: { headers: requestHeaders } });
   response.headers.set('Content-Security-Policy', csp);
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('X-Frame-Options', 'DENY');
-  response.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
-  response.headers.set('Cross-Origin-Resource-Policy', 'same-origin');
-  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()');
+  // Cabeceras comunes en next.config.ts: también cubren estáticos y redirecciones.
   response.headers.set('Referrer-Policy', NO_REFERRER_PATHS.includes(pathname) ? 'no-referrer' : 'strict-origin-when-cross-origin');
-  if (request.nextUrl.protocol === 'https:') {
-    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-  }
   return response;
 }
 

@@ -38,8 +38,53 @@ async function enter(page) {
   await expect(page.getByText('Demo compartida.', { exact: false })).toBeVisible();
 }
 
+async function reviewLanding(page) {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.reload();
+  await expect(page.getByRole('link', { name: 'Ver el código', exact: true })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Proyecto académico · SecurTex-Devs', exact: true })).toHaveAttribute('href', 'https://github.com/SecurTex-Devs/securetex');
+  assert.equal(await page.locator('video').evaluate(video => video.paused), true);
+  await page.getByRole('button', { name: 'Reproducir recorrido', exact: true }).click();
+  await page.getByRole('button', { name: 'Pausar recorrido', exact: true }).click();
+  const tabs = page.getByRole('tab');
+  await tabs.first().focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(tabs.nth(1)).toBeFocused();
+  await expect(tabs.nth(1)).toHaveAttribute('aria-selected', 'true');
+  await expect(page.getByRole('tabpanel').filter({ visible: true })).toHaveCount(1);
+  await page.getByRole('link', { name: /Art[ií]culo de conferencia/ }).click();
+  await page.waitForURL('**/plantillas/articulo');
+  await expect(page.getByRole('button', { name: 'Usar plantilla', exact: true })).toBeVisible();
+  await page.goto(base);
+  report('Recorrido público con vídeo controlable, pestañas por teclado y acceso a plantillas reales');
+}
+
+async function reviewHeaders() {
+  const response = await fetch(base);
+  const html = await response.text();
+  const asset = html.match(/src="(\/_next\/static\/[^"?]+\.js)/)?.[1];
+  assert.ok(asset, 'recurso real del build');
+  const staticResponse = await fetch(base + asset);
+  const redirect = await fetch(base + '/proyectos', { redirect: 'manual' });
+  for (const item of [response, staticResponse, redirect]) {
+    assert.equal(item.headers.get('x-content-type-options'), 'nosniff');
+    assert.equal(item.headers.get('cross-origin-resource-policy'), 'same-origin');
+    assert.equal(item.headers.get('cross-origin-embedder-policy'), 'credentialless');
+    assert.ok(item.headers.get('strict-transport-security')?.includes('max-age=63072000'));
+    assert.ok(item.headers.get('permissions-policy')?.includes('camera=()'));
+  }
+  assert.equal(redirect.status, 307);
+  assert.ok(redirect.headers.get('content-type')?.includes('text/plain'));
+  assert.ok(staticResponse.headers.get('cache-control')?.includes('immutable'));
+  const verification = await fetch(base + '/verificar');
+  assert.equal(verification.headers.get('referrer-policy'), 'no-referrer');
+  report('Cabeceras de seguridad en HTML, estáticos y redirecciones; caché pública y retorno privado conservados');
+}
+
 try {
+  await reviewHeaders();
   await pageA.goto(base);
+  await reviewLanding(pageA);
   for (const colorScheme of ['light', 'dark']) {
     for (const width of [1440, 390]) {
       await pageA.emulateMedia({ colorScheme });
