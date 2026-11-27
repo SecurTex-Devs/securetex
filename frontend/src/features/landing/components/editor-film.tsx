@@ -33,7 +33,7 @@ export function EditorFilm() {
   return <figure className="relative">
     <div className="overflow-hidden rounded-[14px] border border-line-strong bg-surface p-1.5 shadow-[var(--shadow-pop)] sm:p-2">
       <video ref={video} className="aspect-[8/5] w-full rounded-[8px] bg-surface object-cover" muted loop playsInline preload="none"
-        poster="/landing/editor-escritorio.png" aria-label={t('film.label')} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => setAvailable(false)}>
+        poster="/landing/editor-escritorio.png" aria-label={t('film.label')} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} onError={() => { setAvailable(false); setPlaying(false); }}>
         <source src="/landing/editor-tour.mp4" type="video/mp4" />
       </video>
     </div>
