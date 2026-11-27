@@ -76,6 +76,11 @@ async function reviewHeaders() {
   assert.equal(redirect.status, 307);
   assert.ok(redirect.headers.get('content-type')?.includes('text/plain'));
   assert.ok(staticResponse.headers.get('cache-control')?.includes('immutable'));
+  for (const path of ['/api/v1', '/_next/static']) {
+    const missing = await fetch(base + path);
+    assert.equal(missing.status, 404);
+    assert.ok(missing.headers.get('content-security-policy')?.includes("default-src 'none'"));
+  }
   const verification = await fetch(base + '/verificar');
   assert.equal(verification.headers.get('referrer-policy'), 'no-referrer');
   report('Cabeceras de seguridad en HTML, estáticos y redirecciones; caché pública y retorno privado conservados');

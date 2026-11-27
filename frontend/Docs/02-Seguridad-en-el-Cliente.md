@@ -95,6 +95,8 @@ report-uri /api/csp-report
 
 **Implementación actual:** el ejemplo anterior describe el objetivo. `middleware.ts` genera la política del mismo origen con nonce en scripts y estilos; `media-src 'self'` permite el vídeo propio de la portada. `style-src-attr 'unsafe-inline'` se reserva al posicionamiento de Radix y KaTeX. Las cabeceras comunes se definen en `next.config.ts` para cubrir también `/_next/static`, imágenes y redirecciones: HSTS, `nosniff`, DENY, COOP y CORP `same-origin`, COEP `credentialless` y permisos de cámara, micrófono, ubicación, pagos y USB denegados. Las rutas de verificación y recuperación mantienen `Referrer-Policy: no-referrer`. Se conserva la caché inmutable de recursos públicos y nunca se aplica a los datos privados. La comprobación ejecutable de esta entrega está en `tools/ci/e2e.mjs`; no se presupone que exista el archivo de prueba objetivo indicado arriba.
 
+Las respuestas excluidas del middleware, incluidos los 404 de recursos, reciben una CSP de reserva. Permite importar scripts del mismo origen porque el worker de PDF.js carga otros chunks del build; mantiene bloqueados scripts en línea y `eval`. Las páginas conservan su política con nonce. El gateway añade HSTS también a la respuesta de actualización del WebSocket.
+
 ---
 
 ## 4. Sesión y tokens

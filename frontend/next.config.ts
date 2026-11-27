@@ -9,6 +9,9 @@ const config: NextConfig = {
   async headers() {
     return [
       { source: '/:path*', headers: [
+        // Los workers de PDF.js importan otros chunks propios; no necesitan eval ni scripts en línea.
+        // La política con nonce del middleware sustituye esta reserva en las páginas.
+        { key: 'Content-Security-Policy', value: "default-src 'none'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; object-src 'none'" },
         { key: 'X-Content-Type-Options', value: 'nosniff' },
         { key: 'X-Frame-Options', value: 'DENY' },
         { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
