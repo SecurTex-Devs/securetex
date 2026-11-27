@@ -1,6 +1,6 @@
 # Cuentas reales
 
-La demo permanece disponible. Las altas de producción siguen cerradas hasta completar las consolas de identidad, verificar SMTP y probar el acceso real. No basta con mostrar los botones.
+La demo permanece disponible. La entrega `1ba0fb6` habilita el registro con SMTP externo tras confirmar la recepción real de un mensaje de prueba, comprobar las redirecciones de ambos proveedores y activar el sandbox efímero. El responsable confirmó Google Auth Platform en producción y acceso completo con Google. Microsoft alcanza la sesión pendiente de SecureTex; la entrega de su correo de verificación sigue en revisión. Los botones y las redirecciones por sí solos no acreditan el recorrido completo.
 
 | Proveedor | Configuración en su consola | URI Web de producción |
 |---|---|---|
@@ -8,6 +8,8 @@ La demo permanece disponible. Las altas de producción siguen cerradas hasta com
 | Microsoft | Entra ID → App registrations → aplicación → Authentication → plataforma Web. Audiencia **Any Entra ID Tenant + Personal Microsoft accounts**. | `https://securetex.dayle.dev/api/v1/auth/oidc/microsoft/callback` |
 
 No habilitar flujo implícito. La aplicación usa código, PKCE S256, state y nonce de un solo uso. `openid-client` verifica firma, audiencia, emisor y nonce; su soporte de Entra resuelve el emisor de cada tenant al usar `common`. Una política de la organización del visitante puede requerir consentimiento de su administrador.
+
+En Entra → App registrations → aplicación → Branding & properties, añadir la página principal, `https://securetex.dayle.dev/privacidad` y `https://securetex.dayle.dev/terminos`. Esto corrige el aviso de enlaces ausentes del consentimiento. La etiqueta «unverified» identifica al editor sin verificación de publicación; es independiente del inicio de sesión y requiere cumplir los requisitos de Publisher Verification de Microsoft.
 
 En Google Auth Platform → Público (Audience), usar audiencia externa y **Publicar aplicación / Publish app** para pasar a **En producción**. Se conserva el mismo cliente y sus URI. Google aplica una excepción al límite de usuarios de prueba cuando solo se solicitan `openid email profile`, como hace SecureTex: Testing por sí solo no demuestra que el acceso de otra cuenta esté bloqueado. La publicación, la verificación de marca y la aprobación de permisos sensibles son estados distintos; comprobar el consentimiento real después de configurar la consola.
 
