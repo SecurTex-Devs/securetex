@@ -27,11 +27,11 @@ export function DemoButton({ compact = false, className }: { readonly compact?: 
   return (
     <div className="relative">
       <button type="button" disabled={busy} aria-busy={busy} onClick={() => void start()} className={cn(
-        'group inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-full bg-fg font-medium text-bg transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-70',
-        compact ? 'h-9 px-4 text-[13px]' : 'h-12 pl-6 pr-1.5 text-[15px]', className,
+        'landing-primary-action group inline-flex items-center justify-center gap-3 whitespace-nowrap rounded-[10px] bg-brand font-medium text-brand-fg disabled:cursor-wait disabled:opacity-70',
+        compact ? 'h-9 px-4 text-[13px]' : 'h-12 px-5 text-[15px]', className,
       )}>
         {busy ? <Spinner className="size-4" /> : null}{busy ? t('demo.opening') : t('hero.cta')}
-        {!compact && <span className="grid size-9 place-items-center rounded-full bg-bg/15"><ArrowUpRight className="size-4" strokeWidth={1.75} aria-hidden="true" /></span>}
+        {!compact && <ArrowUpRight className="landing-action-arrow size-4" strokeWidth={1.75} aria-hidden="true" />}
       </button>
       {error && <p role="alert" className="mt-2 max-w-[32ch] text-left text-[13px] leading-snug text-danger">{error}</p>}
     </div>

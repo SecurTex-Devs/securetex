@@ -1,5 +1,75 @@
 @import "tailwindcss";
 
+/* Portada: respuesta breve al puntero; el editor conserva su comportamiento. */
+[data-landing] :where(a, button, [role="tab"], [tabindex]):focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 4px;
+}
+.landing-primary-action,
+.landing-icon-action,
+.landing-template,
+.landing-action-arrow,
+.landing-template-paper {
+  transition: transform 160ms var(--ease-out);
+}
+.landing-primary-action {
+  position: relative;
+  isolation: isolate;
+  box-shadow: inset 0 1px 0 var(--hairline-light);
+}
+.landing-primary-action::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  box-shadow: 0 7px 20px -8px color-mix(in oklab, var(--brand) 55%, transparent);
+  transition: opacity 160ms var(--ease-out);
+}
+.landing-nav-link { position: relative; }
+.landing-nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0.6);
+  transform-origin: left;
+  transition: opacity 160ms var(--ease-out), transform 160ms var(--ease-out);
+}
+.landing-primary-action:active:not(:focus-visible),
+.landing-icon-action:active:not(:focus-visible) { transform: translateY(1px) scale(0.98); }
+.landing-tour-panel { visibility: hidden; opacity: 0; transition: opacity 200ms var(--ease-out); }
+.landing-tour-panel[data-state="active"] { visibility: visible; opacity: 1; }
+.landing-no-transition { transition: none; }
+.landing-enter { animation: landing-enter 200ms var(--ease-out) both; }
+.landing-enter-later { animation-delay: 60ms; }
+@keyframes landing-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes landing-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (hover: hover) and (pointer: fine) {
+  .landing-primary-action:hover:not(:disabled) { background: var(--brand-hover); transform: translateY(-2px); }
+  .landing-primary-action:hover:not(:disabled)::before { opacity: 1; }
+  .landing-primary-action:hover:not(:disabled) .landing-action-arrow { transform: translate(1px, -1px); }
+  .landing-icon-action:hover:not(:disabled) { background: var(--surface-3); transform: translateY(-1px); }
+  .landing-text-action:hover, .landing-nav-link:hover { color: var(--brand); }
+  .landing-text-action:hover .landing-action-arrow, .landing-template:hover .landing-action-arrow { transform: translateX(3px); }
+  .landing-nav-link:hover::after { opacity: 1; transform: scaleX(1); }
+  .landing-tour-tab:hover { background: var(--surface-2); }
+  .landing-template:hover { transform: translateY(-3px); border-color: var(--brand-line); }
+  .landing-template:hover .landing-template-paper { transform: translateY(-5px); }
+  .landing-primary-action:active:not(:focus-visible), .landing-icon-action:active:not(:focus-visible) { transform: translateY(1px) scale(0.98); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-enter { animation-name: landing-fade; animation-duration: 200ms !important; }
+  .landing-primary-action, .landing-icon-action, .landing-template,
+  .landing-action-arrow, .landing-template-paper { transform: none !important; }
+  .landing-tour-panel { transition: opacity 120ms var(--ease-out); }
+}
+
 /*
  * SecurTex · Sistema de diseño «Papel y tinta»
  * ------------------------------------------------------------------

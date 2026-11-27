@@ -206,6 +206,10 @@ El objetivo en móvil no es escribir una tesis: es **revisar, comentar y compila
 
 Los estados de carga, error, límite de uso y registro cerrado están anotados en el mockup. Los detalles del aislamiento pertenecen a la documentación técnica, no al recorrido de producto de la portada.
 
+El recorrido usa capturas reales de producción y un vídeo del documento de demostración grabado el 27 de noviembre de 2026 (UTC), con la revisión `2d89522`. No contiene cuentas personales. Se sirve desde el mismo origen, sin reproductores externos. La reproducción se pausa fuera de pantalla, respeta una pausa manual y no empieza automáticamente con movimiento reducido. Si no carga, queda la captura y el acceso a la demo. Las pestañas cambian con flechas (verticales en escritorio, horizontales en móvil); el foco tiene indicador visible.
+
+Las respuestas al puntero usan transformaciones de 160 ms y opacidad de 200 ms con los tokens existentes. Las apariciones ocurren una sola vez, sin ocultar el HTML inicial ni desplazar contenido cuando se solicita movimiento reducido. El editor conserva su comportamiento y sus controles.
+
 ## 8. Documentos relacionados
 
 - [03-Sistema-de-Diseno.md](03-Sistema-de-Diseno.md) — tokens, componentes y estados
