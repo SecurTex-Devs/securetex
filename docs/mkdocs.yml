@@ -96,7 +96,6 @@ nav:
       - Validación de producción: 21-Validacion-Produccion.md
       - Revisión con OWASP ZAP: 22-Revision-ZAP.md
   - Referencia:
-      - Portafolio y capturas reales: https://github.com/SecurTex-Devs/securetex/tree/main/docs/portfolio
       - Glosario: 15-Glosario.md
       - Decisiones (ADR):
           - ADR-0001 · Microservicios por frontera de confianza: adr/ADR-0001-microservicios-por-frontera-de-confianza.md

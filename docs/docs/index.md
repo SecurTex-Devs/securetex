@@ -5,7 +5,7 @@
 > Proyecto final de la asignatura **Seguridad de Software** · Universidad Técnica de Ambato · 8.º semestre
 > Estado: **propuesta en revisión** · Versión 1.0
 
-La implementación publicada, sus capturas reales y las cifras medidas están en el [material de portafolio](https://github.com/SecurTex-Devs/securetex/tree/main/docs/portfolio). Esta documentación conserva también la planificación original; no todas sus funciones están implementadas.
+Esta documentación conserva también la planificación original; no todas sus funciones están implementadas.
 
 ---
 
