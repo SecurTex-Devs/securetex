@@ -4,7 +4,7 @@ import { loadEnv } from '../../config/env';
 import { AUTH } from '../../domain/constants';
 import { requirePublicRegistration } from '../../domain/registration';
 import { ConflictError, NotFoundError, UnauthorizedError } from '../../domain/errors';
-import { Email } from '../../domain/values';
+import { oidcRegistrationEmail } from '../../domain/oidc-registration';
 import { Databases } from '../../infrastructure/db/databases';
 import { FIELD, FieldCipher } from '../../infrastructure/security/field-cipher';
 import { formatCompositeToken, parseCompositeToken, randomSecret, secretMatches, sha256 } from '../../infrastructure/security/tokens';
@@ -32,7 +32,7 @@ interface ChallengeData {
   readonly linkUserId?: string;
 }
 
-export type OidcOutcome = LoginResult | { readonly kind: 'linked'; readonly provider: ExternalProvider };
+export type OidcOutcome = (LoginResult & { readonly verificationRequired?: boolean }) | { readonly kind: 'linked'; readonly provider: ExternalProvider };
 
 /**
  * Inicio de sesión con Google y Microsoft (RF-002, RF-003) mediante OpenID
@@ -109,8 +109,9 @@ export class OidcService {
       await this.link(p, claims.sub, claims['email'], data.linkUserId, meta);
       return { kind: 'linked', provider: p };
     }
-    const userId = await this.resolveUser(p, claims.sub, claims['email'], claims['email_verified'], claims, meta);
-    return this.auth.finishPrimaryAuth({ id: userId }, p, true, meta);
+    const account = await this.resolveUser(p, claims.sub, claims['email'], claims['email_verified'], claims, meta);
+    const result = await this.auth.finishPrimaryAuth({ id: account.id }, p, true, meta);
+    return { ...result, verificationRequired: account.verificationRequired };
   }
 
   /**
@@ -144,23 +145,20 @@ export class OidcService {
     emailVerified: unknown,
     claims: Record<string, unknown>,
     meta: RequestMeta,
-  ): Promise<string> {
+  ): Promise<{ readonly id: string; readonly verificationRequired: boolean }> {
     const subjectIndex = this.cipher.index(`subject:${provider}`, subject);
     const identity = await this.db.identity.userIdentity.findUnique({
       where: { provider_subjectIndex: { provider, subjectIndex } },
-      include: { user: { select: { status: true } } },
+      include: { user: { select: { status: true, emailVerifiedAt: true } } },
     });
     if (identity) {
       if (identity.user.status === 'suspended' || identity.user.status === 'deleted') throw new UnauthorizedError('account_unavailable');
       await this.db.identity.userIdentity.update({ where: { id: identity.id }, data: { lastUsedAt: new Date() } });
-      return identity.userId;
+      return { id: identity.userId, verificationRequired: !identity.user.emailVerifiedAt };
     }
-    // Microsoft personal no siempre envía email_verified; solo se acepta si lo afirma.
-    if (typeof rawEmail !== 'string' || emailVerified !== true) {
-      throw new UnauthorizedError('oidc_email_unverified', 'Tu proveedor no ha confirmado tu correo. Regístrate con correo y contraseña.');
-    }
-    const email = Email.of(rawEmail);
-    const existing = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email.toString()) } });
+    // Microsoft confirma la identidad; SecureTex comprueba el correo por separado.
+    const { email, verified } = oidcRegistrationEmail(provider, rawEmail, emailVerified);
+    const existing = await this.db.identity.user.findUnique({ where: { emailIndex: this.cipher.emailIndex(email) } });
     if (existing) {
       await this.audit.record({ type: 'auth.oidc.link_required', severity: 'notice', actorUserId: existing.id, outcome: 'denied', metadata: { provider } }, meta);
       throw new UnauthorizedError('oidc_link_required', 'Ya existe una cuenta con ese correo. Inicia sesión y vincula el proveedor desde Ajustes.');
@@ -168,23 +166,24 @@ export class OidcService {
     requirePublicRegistration(this.env.REGISTRATION_ENABLED);
     const user = await this.db.identity.user.create({
       data: {
-        primaryEmail: this.cipher.encrypt(email.toString(), FIELD.userEmail),
-        emailIndex: this.cipher.emailIndex(email.toString()),
-        emailVerifiedAt: new Date(),
-        status: 'active',
+        primaryEmail: this.cipher.encrypt(email, FIELD.userEmail),
+        emailIndex: this.cipher.emailIndex(email),
+        emailVerifiedAt: verified ? new Date() : null,
+        status: verified ? 'active' : 'pending',
         firstName: this.cipher.encrypt(typeof claims['given_name'] === 'string' ? claims['given_name'].slice(0, 80) : '', FIELD.userFirstName),
         lastName: this.cipher.encrypt(typeof claims['family_name'] === 'string' ? claims['family_name'].slice(0, 80) : '', FIELD.userLastName),
         identities: {
           create: {
             provider, subjectIndex, lastUsedAt: new Date(),
             providerSubject: this.cipher.encrypt(subject, FIELD.identitySubject),
-            providerEmail: this.cipher.encrypt(email.toString(), FIELD.identityEmail),
+            providerEmail: this.cipher.encrypt(email, FIELD.identityEmail),
           },
         },
       },
     });
+    if (!verified) await this.auth.sendVerification(user.id, email, typeof claims['given_name'] === 'string' ? claims['given_name'].slice(0, 80) : '');
     await this.audit.record({ type: 'auth.register.success', actorUserId: user.id, outcome: 'success', metadata: { provider } }, meta);
-    return user.id;
+    return { id: user.id, verificationRequired: !verified };
   }
 
   private async consumeChallenge(raw: string | undefined, provider: ExternalProvider): Promise<ChallengeData> {
@@ -209,8 +208,8 @@ export class OidcService {
       return { issuer: 'https://accounts.google.com', clientId: e.GOOGLE_CLIENT_ID, clientSecret: e.GOOGLE_CLIENT_SECRET };
     }
     if (p === 'microsoft' && e.MICROSOFT_CLIENT_ID && e.MICROSOFT_CLIENT_SECRET) {
-      // Un tenant concreto (o «consumers») tiene un issuer fijo y validable.
-      // «common» no: su issuer depende de cada inquilino (T-A07).
+      // openid-client 6.8.8 reconoce Entra y valida el issuer con el tid del
+      // token firmado, también con common. No se deshabilita esa validación.
       return { issuer: `https://login.microsoftonline.com/${e.MICROSOFT_TENANT}/v2.0`, clientId: e.MICROSOFT_CLIENT_ID, clientSecret: e.MICROSOFT_CLIENT_SECRET };
     }
     return null;

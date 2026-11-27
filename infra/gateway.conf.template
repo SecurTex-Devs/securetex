@@ -21,6 +21,8 @@ http {
     if ($http_x_forwarded_proto = http) { return 308 https://securetex.dayle.dev$request_uri; }
     client_max_body_size 8m;
     add_header X-SecureTex-Revision __SHA__ always;
+    add_header Strict-Transport-Security 'max-age=63072000; includeSubDomains; preload' always;
+    proxy_hide_header Strict-Transport-Security;
     location = /health {
       proxy_pass http://__API__:4000/api/v1/health;
     }

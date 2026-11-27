@@ -44,8 +44,10 @@ jobs:
       - name: Lint y sintaxis de despliegue
         run: |
           npm --prefix tools/ci run lint
-          bash -n infra/deploy.sh infra/ssh-deploy.sh infra/install-gvisor.sh
-          python -m py_compile infra/provision-env.py infra/check-neighbors.py infra/check-public.py
+          for script in infra/*.sh; do bash -n "$script"; done
+          node --test backend/apps/compiler-controller/mailbox.test.mjs
+          python -m unittest discover -s infra -p 'test_*.py'
+          python -m py_compile infra/*.py
           node infra/check-migrations.mjs backend/apps/api/prisma/migrations infra/migrations-approved.json
       - name: Análisis de dependencias y secretos
         run: |
@@ -150,6 +152,9 @@ jobs:
           - component: compiler
             context: backend
             file: backend/apps/compiler/Dockerfile
+          - component: compiler-controller
+            context: backend
+            file: backend/apps/compiler-controller/Dockerfile
           - component: web
             context: frontend
             file: frontend/Dockerfile

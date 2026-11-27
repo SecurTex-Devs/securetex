@@ -95,6 +95,7 @@ export function TemplateDetail({ id }: { readonly id: string }) {
   if (!tpl) return <EmptyState title={getT('states')('notFound.title')} action={<Button asChild><Link href="/plantillas">{t('back')}</Link></Button>} />;
   const use = () => {
     if (!me.data) { router.push(`/entrar?next=${encodeURIComponent(`/plantillas/${id}`)}`); return; }
+    if (me.data.isDemo) { router.push('/registro'); return; }
     create.mutate({ name: tpl.name, template: tpl.id, compiler: tpl.compiler }, {
       onSuccess: (p) => { toast.success(t('created')); router.push(`/proyecto/${p.id}`); },
       onError: (e) => toast.error(isApiError(e) ? e.message : getT('states')('error.title')),

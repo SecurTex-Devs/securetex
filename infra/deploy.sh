@@ -22,6 +22,8 @@ cloudflared='cloudflare/cloudflared@sha256:55c7e3e8d89d5e8d20b75a82f3602cbf98e06
 api="$repository-api:$sha"
 web="$repository-web:$sha"
 compiler="$repository-compiler:$sha"
+controller_sha=$sha
+controller="$repository-compiler-controller:$sha"
 api_name="securetex-api-$sha"
 web_name="securetex-web-$sha"
 compiler_name="securetex-compiler-$sha"
@@ -32,7 +34,7 @@ api_env=()
 for name in NODE_ENV PORT APP_ORIGIN TRUST_PROXY COOKIE_SECURE REGISTRATION_ENABLED DEMO_ENABLED API_DOCS_ENABLED \
   DATABASE_URL_IDENTITY DATABASE_URL_APP DATABASE_URL_AUDIT JWT_PRIVATE_KEY MFA_ENCRYPTION_KEY FILES_MASTER_KEY \
   TRANSPORT_PRIVATE_KEY DATA_MASTER_KEY COMPILER_SIGNING_KEY COMPILE_JOBS_DIR COMPILE_TIMEOUT_MS \
-  SMTP_HOST SMTP_PORT MAIL_FROM HIBP_ENABLED GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET MICROSOFT_CLIENT_ID MICROSOFT_CLIENT_SECRET MICROSOFT_TENANT; do
+  SMTP_HOST SMTP_PORT SMTP_USER SMTP_PASSWORD SMTP_SECURE MAIL_FROM HIBP_ENABLED GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET MICROSOFT_CLIENT_ID MICROSOFT_CLIENT_SECRET MICROSOFT_TENANT; do
   api_env+=(-e "$name")
 done
 previous=$(cat current 2>/dev/null || true)
@@ -49,7 +51,7 @@ owned() { [[ $(docker inspect -f "{{index .Config.Labels \"$label\"}}" "$1" 2>/d
 remove() {
   if docker container inspect "$1" >/dev/null 2>&1; then
     owned "$1" || { echo "Nombre ocupado por un contenedor ajeno: $1" >&2; return 1; }
-    if [[ $1 == securetex-api-* ]]; then docker stop --time 45 "$1" >/dev/null; fi
+    if [[ $1 == securetex-api-* || $1 == securetex-compiler-* ]]; then docker stop --time 45 "$1" >/dev/null; fi
     docker rm -f "$1" >/dev/null
   fi
 }
@@ -83,6 +85,20 @@ reset_worker() {
   docker run -d --name securetex-demo-reset "${common[@]}" "${harden[@]}" --network securetex-app \
     --tmpfs /tmp:rw,noexec,nosuid,nodev,size=16m --memory 192m --memory-swap 192m --cpus 0.1 --pids-limit 32 \
     --restart unless-stopped --no-healthcheck "${api_env[@]}" "$repository-api:$1" node dist/scripts/seed-demo.js --watch >/dev/null
+}
+start_controller() {
+  local revision=$1
+  local name="securetex-compiler-$revision" volume="securetex-jobs-$revision"
+  [[ $(docker volume inspect -f "{{index .Labels \"$label\"}}" "$volume") == securetex ]]
+  remove "$name"
+  docker run -d --name "$name" "${common[@]}" "${harden[@]}" --network securetex-edge --user 1000:1000 \
+    --label dev.securetex.controller=true --add-host securetex-host:host-gateway \
+    --mount "type=volume,source=$volume,target=/jobs" \
+    --tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m,mode=0700,uid=1000,gid=1000 \
+    -e "COMPILER_REVISION=$revision" -e SANDBOX_SSH_KEY_B64 -e SANDBOX_KNOWN_HOSTS \
+    --memory 320m --memory-swap 320m --cpus 0.1 --pids-limit 32 --stop-timeout 45 --ulimit core=0 \
+    --restart unless-stopped "$controller" >/dev/null
+  wait_health "$name"
 }
 rollback() {
   local status=$?
@@ -125,8 +141,22 @@ for image in "$api" "$web" "$compiler"; do
     [[ $(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$image") == "$sha" ]]
   fi
 done
+# El buzón mantiene el protocolo anterior. Al revertir una versión previa a
+# este controlador se conserva su última imagen validada, también aislada.
+controller_available() {
+  if $local_images; then docker image inspect "$controller" >/dev/null 2>&1
+  else docker pull --platform linux/arm64 "$controller" >/dev/null 2>&1; fi
+}
+if ! controller_available; then
+  controller_sha=$(cat controller-current)
+  [[ $controller_sha =~ ^[0-9a-f]{40}$ ]]
+  controller="$repository-compiler-controller:$controller_sha"
+fi
+[[ $(docker image inspect -f '{{.Architecture}}' "$controller") == arm64 ]]
+[[ $(docker image inspect -f '{{index .Config.Labels "org.opencontainers.image.revision"}}' "$controller") == "$controller_sha" ]]
+[[ -n ${SANDBOX_SSH_KEY_B64:-} && -n ${SANDBOX_KNOWN_HOSTS:-} ]]
 for image in "$postgres" "$nginx" "$cloudflared"; do docker pull --platform linux/arm64 "$image" >/dev/null; done
-for network in securetex-app securetex-edge; do
+for network in securetex-app securetex-edge securetex-auth; do
   if docker network inspect "$network" >/dev/null 2>&1; then
     [[ $(docker network inspect -f "{{index .Labels \"$label\"}}" "$network") == securetex ]]
   elif [[ $network == securetex-app ]]; then
@@ -187,23 +217,31 @@ if ! docker volume inspect "$job_volume" >/dev/null 2>&1; then
     --opt o=size=128m,uid=1000,gid=1000,mode=0700,noexec,nosuid,nodev "$job_volume" >/dev/null
 fi
 [[ $(docker volume inspect -f "{{index .Labels \"$label\"}}" "$job_volume") == securetex ]]
-docker run -d --name "$compiler_name" "${common[@]}" "${harden[@]}" --runtime securetex-runsc --network none --user 1000:1000 \
-  --mount "type=volume,source=$job_volume,target=/jobs" --tmpfs /work:rw,noexec,nosuid,nodev,size=256m,mode=0700,uid=1000,gid=1000 \
-  --tmpfs /tmp:rw,noexec,nosuid,nodev,size=8m,mode=1777 -e JOBS_DIR=/jobs -e WORK_DIR=/work \
-  -e COMPILE_TIMEOUT_MS=30000 -e COMPILE_MAX_PDF_BYTES=16777216 -e COMPILE_CONCURRENCY=1 \
-  --memory 1536m --memory-swap 1536m --cpus 1.5 --pids-limit 64 --ulimit core=0 --ulimit nofile=1024:1024 \
-  --restart unless-stopped "$compiler" >/dev/null
-wait_health "$compiler_name"
+start_controller "$sha"
+say 'compilación real en contenedor efímero'
+docker exec -i "$compiler_name" node --input-type=module - <infra/check-sandbox.mjs
+# La primera entrega privada también protege la versión a la que revertiría.
+# Una cookie emitida por la candidata puede seguir siendo válida tras volver.
+if [[ -n "$previous" ]]; then
+  previous_compiler="securetex-compiler-$previous"
+  if [[ $(docker inspect -f '{{index .Config.Labels "dev.securetex.controller"}}' "$previous_compiler" 2>/dev/null || true) != true ]]; then
+    say 'aislamiento de la versión anterior antes de abrir cuentas'
+    start_controller "$previous"
+    docker exec -i "$previous_compiler" node --input-type=module - <infra/check-sandbox.mjs
+    printf '%s\n' "$controller_sha" >controller-current
+  fi
+fi
 docker run -d --name "$api_name" "${common[@]}" "${harden[@]}" --network securetex-app \
   --mount "type=volume,source=$job_volume,target=/jobs" --tmpfs /tmp:rw,noexec,nosuid,nodev,size=32m \
   "${api_env[@]}" --memory 512m --memory-swap 512m --cpus 0.75 --pids-limit 128 --stop-timeout 45 --restart unless-stopped "$api" >/dev/null
+docker network connect securetex-auth "$api_name"
 wait_health "$api_name"
 check_api "$api_name"
 docker run --rm --name "securetex-seed-$sha" "${common[@]}" "${harden[@]}" --network securetex-app \
   --tmpfs /tmp:rw,noexec,nosuid,nodev,size=16m "${api_env[@]}" --memory 192m --memory-swap 192m --cpus 0.25 --pids-limit 32 \
   "$api" node dist/scripts/seed-demo.js
 docker run -d --name "$web_name" "${common[@]}" "${harden[@]}" --network securetex-app \
-  -e "API_INTERNAL_URL=http://$api_name:4000" -e COLLAB_PUBLIC_PORT=443 \
+  -e "API_INTERNAL_URL=http://$api_name:4000" -e COLLAB_PUBLIC_PORT=443 -e PUBLIC_SUPPORT_EMAIL \
   --tmpfs /tmp:rw,nosuid,nodev,noexec,size=32m --tmpfs /app/.next/cache:rw,nosuid,nodev,size=32m,uid=1000,gid=1000 \
   --memory 384m --memory-swap 384m --cpus 0.5 --pids-limit 128 --restart unless-stopped "$web" >/dev/null
 wait_health "$web_name"
@@ -251,15 +289,17 @@ python3 infra/check-public.py "$sha"
 printf '%s\n' "$sha" >current.next
 python3 infra/check-neighbors.py --check ops/neighbors-before-deploy.json
 mv current.next current
+printf '%s\n' "$controller_sha" >controller-current
 printf '%s\n' "$sha" >"releases/$sha"
 # Tras confirmar salud, la limpieza es secundaria: un fallo no debe cortar la web.
 trap - ERR
 say 'conservación de tres versiones'
 mapfile -t retained < <(find releases -maxdepth 1 -type f -printf '%T@ %f\n' | sort -rn | head -3 | cut -d' ' -f2)
-for component in api web compiler; do
+for component in api web compiler compiler-controller; do
   while read -r tag; do
     [[ $tag =~ ^[0-9a-f]{40}$ ]] || continue
     [[ " ${retained[*]} " == *" $tag "* ]] && continue
+    [[ $component == compiler-controller && $tag == "$controller_sha" ]] && continue
     name="securetex-$component-$tag"
     if docker container inspect "$name" >/dev/null 2>&1; then
       remove "$name" || { echo "[SecureTex] No se pudo retirar $name." >&2; continue; }

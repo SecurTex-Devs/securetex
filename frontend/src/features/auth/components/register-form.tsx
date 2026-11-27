@@ -77,6 +77,10 @@ export function RegisterForm() {
             {t('register.terms')}
           </label>
           {errors['acceptTerms'] && <p role="alert" className="mt-1.5 text-[13px] text-danger">{errors['acceptTerms']}</p>}
+          <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 pl-7 text-xs text-fg-2">
+            <Link href="/terminos" target="_blank" rel="noopener" className="rounded-sm underline underline-offset-4 hover:text-brand">{getT('legal')('footer.terms')}</Link>
+            <Link href="/privacidad" target="_blank" rel="noopener" className="rounded-sm underline underline-offset-4 hover:text-brand">{getT('legal')('footer.privacy')}</Link>
+          </p>
         </div>
         <Button type="submit" variant="primary" size="lg" className="mt-1 w-full" loading={register.isPending}>{t('register.submit')}</Button>
       </form>

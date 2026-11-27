@@ -5,8 +5,8 @@ import { cn } from '@/shared/lib/cn';
 
 /**
  * Aparición al entrar en pantalla: IntersectionObserver (nunca un listener de
- * scroll), solo transform/opacity/blur, una sola vez. Con movimiento reducido,
- * el contenido aparece sin desplazamiento.
+ * scroll), solo transform/opacity, una sola vez. El HTML sin JavaScript queda
+ * visible y el movimiento reducido conserva el contenido sin desplazamiento.
  */
 export function Reveal({ children, delay = 0, className, as: Tag = 'div' }: {
   readonly children: ReactNode;
@@ -15,13 +15,14 @@ export function Reveal({ children, delay = 0, className, as: Tag = 'div' }: {
   readonly as?: 'div' | 'li' | 'section';
 }) {
   const ref = useRef<HTMLElement>(null);
-  const [shown, setShown] = useState(false);
+  const [shown, setShown] = useState(true);
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || typeof IntersectionObserver === 'undefined' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const io = new IntersectionObserver(([entry]) => {
       if (entry?.isIntersecting) { setShown(true); io.disconnect(); }
-    }, { rootMargin: '0px 0px -80px 0px', threshold: 0.12 });
+      else setShown(false);
+    }, { rootMargin: '0px 0px -24px 0px', threshold: 0.06 });
     io.observe(el);
     return () => io.disconnect();
   }, []);
@@ -30,8 +31,8 @@ export function Reveal({ children, delay = 0, className, as: Tag = 'div' }: {
       ref={ref as never}
       style={{ transitionDelay: `${delay}ms` }}
       className={cn(
-        'transition-[opacity,transform,filter] duration-[900ms] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none',
-        shown ? 'translate-y-0 opacity-100 blur-0' : 'translate-y-8 opacity-0 blur-[6px] motion-reduce:translate-y-0 motion-reduce:blur-0',
+        'transition-[opacity,transform] duration-200 ease-[var(--ease-out)] motion-reduce:transition-none',
+        shown ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0 motion-reduce:translate-y-0 motion-reduce:opacity-100',
         className,
       )}
     >

@@ -116,6 +116,8 @@ El punto de partida técnico es incómodo y por eso interesante: **LaTeX es un l
 
 ## Los cinco riesgos que definen el diseño
 
+La publicación incorpora [un sandbox efímero por compilación](adr/ADR-0012-sandbox-efimero-por-compilacion.md) antes de habilitar documentos privados.
+
 | # | Amenaza | Control principal | Riesgo residual |
 |---|---|---|---|
 | 1 | Escape del sandbox → ejecución de código en el servidor | gVisor + sin red + sin privilegios + efímero | Bajo |

@@ -48,6 +48,9 @@ const EnvSchema = z.object({
 
   SMTP_HOST: z.string().default('mailpit'),
   SMTP_PORT: z.coerce.number().int().default(1025),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  SMTP_SECURE: boolFromString,
   MAIL_FROM: z.string().default('SecurTex <no-reply@securtex.test>'),
 
   HIBP_ENABLED: boolFromString,
@@ -56,7 +59,7 @@ const EnvSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   MICROSOFT_CLIENT_ID: z.string().optional(),
   MICROSOFT_CLIENT_SECRET: z.string().optional(),
-  MICROSOFT_TENANT: z.string().default('consumers'),
+  MICROSOFT_TENANT: z.string().regex(/^(common|organizations|consumers|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i).default('consumers'),
 
   API_DOCS_ENABLED: boolFromString,
   /** Cerrados por defecto; Compose habilita el registro únicamente para desarrollo. */
@@ -78,6 +81,13 @@ export function loadEnv(): Env {
   }
   if (parsed.data.NODE_ENV === 'production' && parsed.data.API_DOCS_ENABLED) {
     throw new Error('La documentación de la API no puede servirse en producción (01-API §2.2).');
+  }
+  if (Boolean(parsed.data.SMTP_USER) !== Boolean(parsed.data.SMTP_PASSWORD)) {
+    throw new Error('SMTP_USER y SMTP_PASSWORD deben configurarse juntos.');
+  }
+  if (parsed.data.NODE_ENV === 'production' && parsed.data.REGISTRATION_ENABLED &&
+      (!parsed.data.SMTP_USER || !parsed.data.SMTP_PASSWORD || ['mailpit', 'localhost', '127.0.0.1'].includes(parsed.data.SMTP_HOST))) {
+    throw new Error('El registro público de producción requiere SMTP autenticado externo.');
   }
   const origins = parsed.data.APP_ORIGIN.split(',').map((o) => new URL(o.trim()).origin);
   cached = { ...parsed.data, APP_ORIGIN: origins[0] ?? '', APP_ORIGINS: origins };

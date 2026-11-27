@@ -13,7 +13,8 @@ describe('Tokens opacos', () => {
   it('comparación por hash, en tiempo constante', () => {
     const s = randomSecret();
     expect(secretMatches(s, sha256(s))).toBe(true);
-    expect(secretMatches(`${s.slice(0, -1)}A`, sha256(s))).toBe(false);
+    const changed = `${s.slice(0, -1)}${s.endsWith('A') ? 'B' : 'A'}`;
+    expect(secretMatches(changed, sha256(s))).toBe(false);
   });
 
   it('el formato compuesto rechaza cualquier desviación', () => {

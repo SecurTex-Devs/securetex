@@ -17,7 +17,8 @@ describe('Verificación en dos pasos', () => {
     const secret = setup.body.secret;
 
     assert.equal((await client.post('/auth/mfa/totp/confirm', { code: '000000' })).status, 400);
-    const confirm = await client.post('/auth/mfa/totp/confirm', { code: authenticator.generate(secret) });
+    const usedCode = authenticator.generate(secret);
+    const confirm = await client.post('/auth/mfa/totp/confirm', { code: usedCode });
     assert.equal(confirm.status, 200);
     assert.equal(confirm.body.recoveryCodes.length, 10);
 
@@ -27,8 +28,8 @@ describe('Verificación en dos pasos', () => {
     assert.equal(first.body.status, 'mfa_required');
     assert.equal((await c.get('/me')).status, 401, 'sin sesión hasta completar el segundo factor');
 
-    // El código que ya se usó en la confirmación no vale de nuevo en esta ventana de 30 s.
-    const reused = await c.post('/auth/mfa/verify', { kind: 'totp', code: authenticator.generate(secret) });
+    // Repetimos el valor confirmado aunque el login cruce una ventana de 30 s.
+    const reused = await c.post('/auth/mfa/verify', { kind: 'totp', code: usedCode });
     assert.equal(reused.status, 400, 'un código TOTP no se puede reutilizar');
 
     const recovery = confirm.body.recoveryCodes[0];

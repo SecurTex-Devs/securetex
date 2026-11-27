@@ -156,6 +156,7 @@ services:
     environment:
       API_INTERNAL_URL: http://api:4000
       COLLAB_PUBLIC_PORT: "4000"
+      PUBLIC_SUPPORT_EMAIL: ${PUBLIC_SUPPORT_EMAIL:-}
     ports:
       - "${PUBLISH_HOST:-127.0.0.1}:3000:3000"
     depends_on:

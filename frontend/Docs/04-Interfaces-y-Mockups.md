@@ -202,11 +202,17 @@ El objetivo en móvil no es escribir una tesis: es **revisar, comentar y compila
 
 | Pantalla | Mockup | Comportamiento |
 |---|---|---|
-| P-51 · Demo | [09-demo.html](mockups/09-demo.html) | Portada con el estilo existente, captura real y entrada directa al documento de ejemplo. Sesión limitada; editor normal preservado para las demás cuentas. |
+| P-51 · Demo | [09-demo.html](mockups/09-demo.html) | Portada de producto con recorrido real, vistas seleccionables, plantillas del catálogo y preguntas breves. Demo directa, cuenta opcional, microinteracciones y nota académica al pie. Sesión limitada; editor normal preservado. |
 
 Los estados de carga, error, límite de uso y registro cerrado están anotados en el mockup. Los detalles del aislamiento pertenecen a la documentación técnica, no al recorrido de producto de la portada.
 
+El recorrido usa capturas reales de producción y un vídeo del documento de demostración grabado el 27 de noviembre de 2026 (UTC), con la revisión `2d89522`. No contiene cuentas personales. Se sirve desde el mismo origen, sin reproductores externos. La reproducción se pausa fuera de pantalla, respeta una pausa manual y no empieza automáticamente con movimiento reducido. Si no carga, queda la captura y el acceso a la demo. Las pestañas cambian con flechas (verticales en escritorio, horizontales en móvil); el foco tiene indicador visible.
+
+Las respuestas al puntero usan transformaciones de 160 ms y opacidad de 200 ms con los tokens existentes. Las apariciones ocurren una sola vez, sin ocultar el HTML inicial ni desplazar contenido cuando se solicita movimiento reducido. El editor conserva su comportamiento y sus controles.
+
 ## 8. Documentos relacionados
+
+P-52 (privacidad) y P-53 (condiciones) se especifican en [10-informacion-publica.html](mockups/10-informacion-publica.html). Son páginas públicas de lectura, enlazadas desde el pie y el registro, necesarias para identificar el uso de datos en Google Auth Platform. El contacto se toma del entorno público del servidor y no se versiona una dirección personal.
 
 - [03-Sistema-de-Diseno.md](03-Sistema-de-Diseno.md) — tokens, componentes y estados
 - [08-Criptografia-en-el-Cliente.md](08-Criptografia-en-el-Cliente.md) — lo que implementan las pantallas P-48 a P-50

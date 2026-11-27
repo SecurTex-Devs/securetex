@@ -10,16 +10,31 @@ try {
   const status = await health.json();
   assert.equal(status.status, 'ok');
   assert.equal(status.database, true);
-  step = 'registro cerrado';
+  step = 'configuración del registro';
   const visitor = new Client();
   const config = await visitor.get('/auth/demo');
   assert.equal(config.body.enabled, true);
-  assert.equal(config.body.registrationEnabled, false);
-  const denied = await visitor.post('/auth/register', {
-    email: `smoke.${randomBytes(6).toString('hex')}@example.com`, password: randomBytes(24).toString('base64url'),
-    firstName: 'Prueba', lastName: 'Demo', acceptTerms: true,
-  });
-  assert.equal(denied.status, 403);
+  assert.equal(config.body.registrationEnabled, process.env.REGISTRATION_ENABLED === 'true');
+  if (!config.body.registrationEnabled) {
+    const denied = await visitor.post('/auth/register', {
+      email: `smoke.${randomBytes(6).toString('hex')}@example.com`, password: randomBytes(24).toString('base64url'),
+      firstName: 'Prueba', lastName: 'Demo', acceptTerms: true,
+    });
+    assert.equal(denied.status, 403);
+  }
+  step = 'redirecciones OIDC y conectividad con proveedores';
+  const available = await visitor.get('/auth/providers');
+  assert.equal(available.status, 200);
+  for (const [provider, issuer] of [['google', 'https://accounts.google.com'], ['microsoft', 'https://login.microsoftonline.com']]) {
+    if (!process.env[`${provider.toUpperCase()}_CLIENT_ID`] || !process.env[`${provider.toUpperCase()}_CLIENT_SECRET`]) continue;
+    assert.ok(available.body.providers.includes(provider));
+    const start = await fetch(`${API}/api/v1/auth/oidc/${provider}`, { redirect: 'manual', signal: AbortSignal.timeout(12_000) });
+    assert.equal(start.status, 302);
+    const url = new URL(start.headers.get('location'));
+    assert.equal(url.origin, issuer);
+    assert.equal(url.searchParams.get('redirect_uri'), `${process.env.APP_ORIGIN}/api/v1/auth/oidc/${provider}/callback`);
+    assert.equal(url.searchParams.get('code_challenge_method'), 'S256');
+  }
   step = 'sesión y alcance de demo';
   const started = await visitor.post('/auth/demo');
   assert.equal(started.status, 201);
@@ -50,7 +65,7 @@ try {
     console.log(`[SecureTex] PDF real y firma Ed25519 comprobados (${pdf.length} bytes).`);
   }
   assert.equal((await visitor.post('/auth/logout')).status, 200);
-  console.log('[SecureTex] API, base, demo limitada y registro cerrado comprobados.');
+  console.log('[SecureTex] API, base, demo limitada y configuración del registro comprobados.');
 } catch {
   console.error(`[SecureTex] Falló la comprobación: ${step}.`);
   process.exitCode = 1;
