@@ -2,6 +2,8 @@
 
 Editor LaTeX colaborativo: escribe en equipo, compila y revisa el PDF sin salir del editor. El contenido se cifra desde el navegador y en reposo; la compilación se realiza en un sandbox sin red y la aplicación verifica la firma del PDF antes de mostrarlo o descargarlo.
 
+**[Probar la aplicación sin registro](https://securetex.dayle.dev)** · [Capturas y material de portafolio](docs/portfolio/README.md) · [Despliegue automático](docs/DEPLOY.md)
+
 La API puede descifrar el documento para compilarlo. La firma verificada por la aplicación es Ed25519; el archivo descargado no contiene una firma PAdES. El alcance y los riesgos residuales están en la [revisión local](docs/docs/18-Revision-Local.md).
 
 > Proyecto final de la asignatura *Seguridad de Software* · Universidad Técnica de Ambato

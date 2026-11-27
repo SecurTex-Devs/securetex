@@ -69,7 +69,7 @@ export const auth = {
   'verify.resend': 'Reenviar enlace',
   'verify.resendIn': 'Podrás reenviarlo en {time}',
   'verify.resent': 'Te hemos enviado un enlace nuevo.',
-  'verify.devMail': 'En el entorno local, los correos llegan a Mailpit:',
+  'verify.deliveryHint': 'Si no ves el mensaje, revisa Spam o Correo no deseado.',
   'verify.checking': 'Verificando tu correo…',
   'verify.success': 'Correo verificado',
   'verify.successBody': 'Tu cuenta está activa. Ya puedes crear proyectos.',

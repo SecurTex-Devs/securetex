@@ -5,6 +5,8 @@
 > Proyecto final de la asignatura **Seguridad de Software** · Universidad Técnica de Ambato · 8.º semestre
 > Estado: **propuesta en revisión** · Versión 1.0
 
+La implementación publicada, sus capturas reales y las cifras medidas están en el [material de portafolio](https://github.com/SecurTex-Devs/securetex/tree/main/docs/portfolio). Esta documentación conserva también la planificación original; no todas sus funciones están implementadas.
+
 ---
 
 ## Qué es SecurTex
@@ -70,6 +72,7 @@ El punto de partida técnico es incómodo y por eso interesante: **LaTeX es un l
 | 19 | [Validación de la demo](19-Validacion-Demo.md) | Regresión de cuentas normales, demo, reinicio y medidas locales de interfaz |
 | 20 | [Hosting y preflight](20-Hosting-y-Preflight.md) | Evaluación gratuita, destino Oracle y runtime ARM64 instalado con autorización |
 | 21 | [Validación de producción](21-Validacion-Produccion.md) | HTTPS, demo, colaboración, compilación firmada y aislamiento comprobados en Oracle |
+| 22 | [Revisión con OWASP ZAP](22-Revision-ZAP.md) | Alcance, correcciones y conteo íntegro de observaciones revisadas |
 | 15 | [Glosario](15-Glosario.md) | Términos y acrónimos |
 
 ### Decisiones

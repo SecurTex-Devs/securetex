@@ -1,0 +1,380 @@
+{
+  "date": "2026-11-27",
+  "timezone": "America/Guayaquil",
+  "productionUrl": "https://securetex.dayle.dev",
+  "captures": [
+    {
+      "base": "https://securetex.dayle.dev",
+      "revision": "1ba0fb6ed1c2fdae73bc953d8ff6088bd191c908",
+      "capturedAt": "2026-11-27T14:23:18.087Z",
+      "mode": "escritorio",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "deviceScaleFactor": 1.5,
+      "browsers": {
+        "chromium": "159.0.8154.6",
+        "firefox": "159.0"
+      },
+      "checks": {
+        "landing200": true,
+        "noLogin": true,
+        "distinctSyntheticUsers": true,
+        "bidirectionalCollaboration": true,
+        "pdfRendered": true,
+        "downloadPdf": true,
+        "horizontalOverflow": false
+      },
+      "openedMs": 6545,
+      "compiledMs": 3147,
+      "pdfBytes": 110345,
+      "pdfSha256": "f7230dba9acb2f1bbd6a8251868fe3b821091e07ae0bacf41abfd401b457505d",
+      "files": [
+        {
+          "file": "landing-escritorio.png",
+          "width": 2160,
+          "height": 1350,
+          "deviceScaleFactor": 1.5,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "220ee3f9919881e570414865b1697e961df84afa8ec408d2db034eef7dea76d4"
+        },
+        {
+          "file": "editor-escritorio.png",
+          "width": 2160,
+          "height": 1350,
+          "deviceScaleFactor": 1.5,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "95212bd123948f2198d3817c4dbf6738abdf98286057b2f27e81f0312ccf23bf"
+        },
+        {
+          "file": "colaboracion-escritorio.png",
+          "width": 2160,
+          "height": 1350,
+          "deviceScaleFactor": 1.5,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "a72ce6d869018d9ee4dde8435190169620c06e1be85656738511703960a19e9c"
+        },
+        {
+          "file": "editor-oscuro-escritorio.png",
+          "width": 2160,
+          "height": 1350,
+          "deviceScaleFactor": 1.5,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "e85a26f19589426304f7d6c56bcd9171b002bd49b8cb8f5f861b1400b51ea8a4"
+        },
+        {
+          "file": "compilacion-escritorio.png",
+          "width": 2160,
+          "height": 1350,
+          "deviceScaleFactor": 1.5,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "c50e96ffa313707758252699b8acb484124248f6abe0cd7e5b25fb0017341845"
+        },
+        {
+          "file": "pdf-firmado-escritorio.png",
+          "width": 2160,
+          "height": 1350,
+          "deviceScaleFactor": 1.5,
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "sha256": "e8d4fed75e28242f975e688d0b88732154d8fb6b91d77173994d0c6e2b25d1ae"
+        }
+      ],
+      "signatureBadgeVisible": true,
+      "signatureScope": "La aplicación verifica Ed25519 antes de pintar o descargar el PDF; el sello textual se oculta en móvil. No es PAdES."
+    },
+    {
+      "base": "https://securetex.dayle.dev",
+      "revision": "1ba0fb6ed1c2fdae73bc953d8ff6088bd191c908",
+      "capturedAt": "2026-11-27T14:26:36.622Z",
+      "mode": "movil",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "deviceScaleFactor": 2,
+      "browsers": {
+        "chromium": "159.0.8154.6",
+        "firefox": "159.0"
+      },
+      "checks": {
+        "landing200": true,
+        "noLogin": true,
+        "distinctSyntheticUsers": true,
+        "bidirectionalCollaboration": true,
+        "pdfRendered": true,
+        "downloadPdf": true,
+        "horizontalOverflow": false
+      },
+      "openedMs": 5504,
+      "compiledMs": 2979,
+      "compileStatuses": [
+        200,
+        200,
+        200
+      ],
+      "pdfBytes": 110345,
+      "pdfSha256": "1eda39023f3d38dda967718a29f6abc2e671fca859779b35c019da94141181f8",
+      "files": [
+        {
+          "file": "landing-movil.png",
+          "width": 780,
+          "height": 1688,
+          "deviceScaleFactor": 2,
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "sha256": "eb6417142b75f014f5ccd3aa59daefecb71d9e8c0c9f7745ed7f410d419f56c1"
+        },
+        {
+          "file": "editor-movil.png",
+          "width": 780,
+          "height": 1688,
+          "deviceScaleFactor": 2,
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "sha256": "8216a32bb44f1416b69713a7578608de83f42293a2889cc9de6e55800336bf07"
+        },
+        {
+          "file": "colaboracion-movil.png",
+          "width": 780,
+          "height": 1688,
+          "deviceScaleFactor": 2,
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "sha256": "8d52e9fdca0e7a9117aa54a9e07a5fb2dfa3632d8d5463fbaa09c664907b4587"
+        },
+        {
+          "file": "compilacion-movil.png",
+          "width": 780,
+          "height": 1688,
+          "deviceScaleFactor": 2,
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "sha256": "c9cf6f826b79956759aeeb07a82591211c77537df570a048bc36a2ea7e3be013"
+        },
+        {
+          "file": "pdf-firmado-movil.png",
+          "width": 780,
+          "height": 1688,
+          "deviceScaleFactor": 2,
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "sha256": "e46191fbbc1dacdcf015847a7dcd86e8640869f8ac580f11c01e473bee1e4a59"
+        }
+      ],
+      "signatureBadgeVisible": false,
+      "signatureScope": "La aplicación verifica Ed25519 antes de pintar o descargar el PDF; el sello textual se oculta en móvil. No es PAdES."
+    }
+  ],
+  "ci": {
+    "revision": "1ba0fb6ed1c2fdae73bc953d8ff6088bd191c908",
+    "run": "https://github.com/SecurTex-Devs/securetex/actions/runs/46012784630",
+    "apiUnitTests": 142,
+    "apiUnitFiles": 8,
+    "apiCoverage": {
+      "lines": {
+        "total": 2609,
+        "covered": 451,
+        "skipped": 0,
+        "pct": 17.28
+      },
+      "statements": {
+        "total": 3077,
+        "covered": 537,
+        "skipped": 0,
+        "pct": 17.45
+      },
+      "functions": {
+        "total": 680,
+        "covered": 104,
+        "skipped": 0,
+        "pct": 15.29
+      },
+      "branches": {
+        "total": 1539,
+        "covered": 303,
+        "skipped": 0,
+        "pct": 19.68
+      },
+      "branchesTrue": {
+        "total": 0,
+        "covered": 0,
+        "skipped": 0,
+        "pct": 100
+      }
+    },
+    "securityTests": 82,
+    "securityFiles": 10,
+    "skippedSecurityTests": 0,
+    "compilerMailboxTestsLinux": 3,
+    "credentialConfigurationTestsLinux": 9,
+    "uiChecks": [
+      "Cabeceras de seguridad en HTML, estáticos y redirecciones; caché pública y retorno privado conservados",
+      "Privacidad y condiciones públicas, con contenido y accesibles en cuatro variantes cada una",
+      "Recorrido público con vídeo controlable, pestañas por teclado y acceso a plantillas reales",
+      "Portada accesible con axe en móvil y escritorio, claro y oscuro",
+      "Demo abierta desde la portada sin formulario de acceso",
+      "Documento de ejemplo compilado y visible en 1870 ms",
+      "Chromium y Firefox acceden al mismo documento con sesiones independientes",
+      "Los cambios de la demo se sincronizan en ambas direcciones",
+      "PDF verificado y descargado (110345 bytes)",
+      "Portada y editor a 390 px sin desbordamiento",
+      "La cuenta normal recupera creación de proyectos, compartir y autocompilación al salir de la demo"
+    ],
+    "axePages": [
+      "/",
+      "/privacidad",
+      "/terminos"
+    ],
+    "axeVariantsPerPage": 4,
+    "axeViolations": 0,
+    "dependencyAdvisories": 0,
+    "historySecretFindings": 0
+  },
+  "publicPolicy": {
+    "measuredAt": "2026-11-27T14:19:01.170Z",
+    "production": true,
+    "revision": "1ba0fb6ed1c2fdae73bc953d8ff6088bd191c908",
+    "pages": [
+      {
+        "path": "/privacidad",
+        "status": 200,
+        "serverRendered": true,
+        "supportContactPresent": true,
+        "characters": 3605,
+        "horizontalOverflow": false
+      },
+      {
+        "path": "/terminos",
+        "status": 200,
+        "serverRendered": true,
+        "supportContactPresent": true,
+        "characters": 2063,
+        "horizontalOverflow": false
+      }
+    ],
+    "footerLinks": true,
+    "healthStatus": 200
+  },
+  "isolationOracle": {
+    "date": "2026-11-26",
+    "actualHostJobs": 3,
+    "checks": [
+      "Buzón ajeno inaccesible desde LuaLaTeX",
+      "Sin restos del trabajo anterior",
+      "Bucle infinito termina por plazo",
+      "Tres contenedores destruidos",
+      "Buzón vacío",
+      "21 contenedores ajenos sin cambios"
+    ],
+    "deployed": true,
+    "deploymentRevision": "1ba0fb6ed1c2fdae73bc953d8ff6088bd191c908",
+    "publicCompilationConfirmed": true
+  },
+  "zap": {
+    "sourceRevision": "a6b81c9ab961b5f2c9eb063ec1a1af08128d6f65",
+    "activeRequests": 20115,
+    "activeAlertEvents": 398,
+    "riskTypes": {
+      "high": 1,
+      "medium": 2,
+      "low": 1,
+      "informational": 9
+    },
+    "rules": {
+      "Complete": 68,
+      "Skipped, exceeded max rule time.": 3,
+      "Skipped, no Active Scan OAST service is selected.": 2,
+      "Skipped, no scripts enabled.": 1,
+      "Skipped": 1
+    },
+    "followupRevision": "d2ab64f628caeee74b0cb781830b640a5a1d4e83",
+    "fullFollowupRescan": false,
+    "report": "../docs/security/zap/revision-local.json",
+    "productionPassive": {
+      "revision": "1ba0fb6ed1c2fdae73bc953d8ff6088bd191c908",
+      "riskTypes": {
+        "high": 0,
+        "medium": 1,
+        "low": 5,
+        "informational": 6
+      },
+      "instances": 230,
+      "nonInformationalOriginInstances": 0,
+      "report": "../docs/security/zap/revision-produccion-pasiva.json"
+    }
+  },
+  "authorship": {
+    "cutoffRevision": "1ba0fb6ed1c2fdae73bc953d8ff6088bd191c908",
+    "commitsOnMainAtCutoff": 164,
+    "githubAuthor": "DaGeus15",
+    "initialBaselineCommits": 107,
+    "initialCommitsWithClaudeCoauthorTrailer": 89,
+    "caseInsensitiveTrailerCount": true,
+    "organizationMembers": [
+      "DaGeus15",
+      "Jhanina03",
+      "PabloAML1",
+      "seby10",
+      "T1Angel4220"
+    ],
+    "otherMembersWorkOutsideGit": "Pregunta pendiente al autor.",
+    "codexAssistance": true
+  },
+  "deliveryTests": {
+    "positivePR": "https://github.com/SecurTex-Devs/securetex/pull/6",
+    "positiveRun": "https://github.com/SecurTex-Devs/securetex/actions/runs/45860202752",
+    "negativePR": "https://github.com/SecurTex-Devs/securetex/pull/7",
+    "negativeRun": "https://github.com/SecurTex-Devs/securetex/actions/runs/45862774509",
+    "controlledHealthRollbacks": 2,
+    "foreignContainersUnchanged": 21
+  },
+  "accountConfiguration": {
+    "publicRegistrationEnabled": true,
+    "externalSmtpDeliveryConfirmedByUser": true,
+    "googleRedirectChecked": true,
+    "microsoftRedirectChecked": true,
+    "completeGoogleConsentConfirmedByUser": true,
+    "completeMicrosoftVerificationConfirmedByUser": false,
+    "microsoftVerificationDeliveryUnderReview": true,
+    "googlePublicationConfirmedByUser": true,
+    "googleBrandReviewApprovalObserved": false
+  },
+  "limitations": [
+    "Tiempos individuales, sin promedios ni garantías de latencia",
+    "Cobertura API solo de pruebas unitarias; objetivos de 80 % y 100 % críticos no alcanzados",
+    "axe limitado a tres páginas públicas y sus doce variantes",
+    "Firma Ed25519 de artefacto verificada por el cliente; no PAdES incrustada",
+    "Microsoft: verificación por correo pendiente; aprobación de marca no observada",
+    "ZAP conserva alertas; siete reglas omitidas y sin pasada completa posterior a las correcciones",
+    "Capturas ancladas a la entrega de producto; las correcciones posteriores del acceso no alteran esas vistas del editor y la portada"
+  ]
+}
