@@ -89,6 +89,9 @@ async function reviewHeaders() {
   }
   const verification = await fetch(base + '/verificar');
   assert.equal(verification.headers.get('referrer-policy'), 'no-referrer');
+  const verificationHtml = await verification.text();
+  assert.equal(/Mailpit|localhost:8025/.test(verificationHtml), false, 'sin instrucciones locales en el producto');
+  assert.ok(verificationHtml.includes('Spam o Correo no deseado'));
   const options = await fetch(base + '/api/v1/crypto/transport-key', { method: 'OPTIONS' });
   assert.ok([404, 405].includes(options.status));
   assert.equal(options.headers.get('allow')?.includes('DELETE') ?? false, false);

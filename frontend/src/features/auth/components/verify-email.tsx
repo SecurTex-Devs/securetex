@@ -82,10 +82,7 @@ function WaitingForEmail() {
           {cooldown > 0 && <p className="mt-2 text-center text-xs text-fg-3 tabular" aria-live="polite">{t('verify.resendIn', { time: formatClock(cooldown) })}</p>}
         </>
       )}
-      <div className="mt-6 rounded-[10px] bg-surface-2 p-3.5 text-[13px] text-fg-2 shadow-[inset_0_0_0_1px_var(--border)]">
-        {t('verify.devMail')}{' '}
-        <span className="font-mono text-fg">localhost:8025</span>
-      </div>
+      <p className="mt-6 text-[13px] leading-relaxed text-fg-2">{t('verify.deliveryHint')}</p>
       <p className="mt-8 text-center text-[13px]">
         <Link href={signedIn ? '/proyectos' : '/entrar'} className="font-medium text-brand underline-offset-4 hover:underline">
           {signedIn ? t('verify.goProjects') : t('verify.goLogin')}

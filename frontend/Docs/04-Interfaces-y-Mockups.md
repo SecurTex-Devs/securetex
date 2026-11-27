@@ -212,6 +212,8 @@ Las respuestas al puntero usan transformaciones de 160 ms y opacidad de 200 ms c
 
 ## 8. Documentos relacionados
 
+P-03 conserva la verificación y el reenvío con espera. La ayuda visible se refiere a Spam o Correo no deseado; la aplicación no muestra direcciones locales ni herramientas de correo de desarrollo.
+
 P-52 (privacidad) y P-53 (condiciones) se especifican en [10-informacion-publica.html](mockups/10-informacion-publica.html). Son páginas públicas de lectura, enlazadas desde el pie y el registro, necesarias para identificar el uso de datos en Google Auth Platform. El contacto se toma del entorno público del servidor y no se versiona una dirección personal.
 
 - [03-Sistema-de-Diseno.md](03-Sistema-de-Diseno.md) — tokens, componentes y estados
