@@ -56,4 +56,6 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
   return new Response(upstream.body, { status: upstream.status, headers: out });
 }
 
-export { proxy as GET, proxy as POST, proxy as PUT, proxy as PATCH, proxy as DELETE };
+// Se consulta al servidor real; el OPTIONS automático de Next anuncia todos
+// los métodos de este catch-all incluso en rutas que no los implementan.
+export { proxy as GET, proxy as POST, proxy as PUT, proxy as PATCH, proxy as DELETE, proxy as OPTIONS };

@@ -19,6 +19,12 @@ const contextB = await b.newContext({ viewport: { width: 1440, height: 900 }, co
 const pageA = await contextA.newPage();
 const pageB = await contextB.newPage();
 const screenshot = (page, name) => page.screenshot({ path: fileURLToPath(new URL(name, output)) });
+async function appearanceReady(page) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    await Promise.all(document.getAnimations().filter(animation => animation.effect?.getComputedTiming().iterations !== Infinity).map(animation => animation.finished.catch(() => {})));
+  });
+}
 async function pdfReady(page) {
   await expect(page.getByText('PDF firmado · Ed25519', { exact: true })).toBeVisible({ timeout: 60_000 });
   await expect(page.getByRole('button', { name: 'Recompilar', exact: true })).toBeEnabled({ timeout: 60_000 });
@@ -83,19 +89,53 @@ async function reviewHeaders() {
   }
   const verification = await fetch(base + '/verificar');
   assert.equal(verification.headers.get('referrer-policy'), 'no-referrer');
+  const options = await fetch(base + '/api/v1/crypto/transport-key', { method: 'OPTIONS' });
+  assert.ok([404, 405].includes(options.status));
+  assert.equal(options.headers.get('allow')?.includes('DELETE') ?? false, false);
+  const excludedImage = await fetch(base + '/_next/image?url=%2Fapi%2Fv1%2Fhealth&w=828&q=75');
+  assert.equal(excludedImage.status, 400);
+  assert.ok((await excludedImage.text()).includes('not allowed'));
   report('Cabeceras de seguridad en HTML, estáticos y redirecciones; caché pública y retorno privado conservados');
+}
+
+async function reviewLegalPages(page) {
+  for (const [path, title] of [['/privacidad', 'Política de privacidad'], ['/terminos', 'Condiciones de uso']]) {
+    const response = await page.goto(base + path);
+    assert.equal(response.status(), 200, 'información pública sin iniciar sesión');
+    await expect(page.getByRole('heading', { level: 1, name: title, exact: true })).toBeVisible();
+    assert.ok(await page.locator('article').innerText().then(text => text.length > 1500), 'contenido completo, no una página vacía');
+    for (const colorScheme of ['light', 'dark']) {
+      for (const width of [1440, 390]) {
+        await page.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
+        await page.setViewportSize({ width, height: 900 });
+        await page.reload();
+        await expect(page.locator('html')).toHaveAttribute('data-theme', colorScheme);
+        await appearanceReady(page);
+        assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+        const scan = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
+        assert.deepEqual(scan.violations.map(item => item.id), []);
+      }
+    }
+  }
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  report('Privacidad y condiciones públicas, con contenido y accesibles en cuatro variantes cada una');
 }
 
 try {
   await reviewHeaders();
+  await reviewLegalPages(pageA);
   await pageA.goto(base);
   await reviewLanding(pageA);
   for (const colorScheme of ['light', 'dark']) {
     for (const width of [1440, 390]) {
-      await pageA.emulateMedia({ colorScheme });
+      await pageA.emulateMedia({ colorScheme, reducedMotion: 'reduce' });
       await pageA.setViewportSize({ width, height: 900 });
+      await pageA.reload();
+      await expect(pageA.locator('html')).toHaveAttribute('data-theme', colorScheme);
+      await appearanceReady(pageA);
       const scan = await new AxeBuilder({ page: pageA }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
-      assert.deepEqual(scan.violations.map(v => v.id), [], 'accesibilidad de la portada');
+      assert.deepEqual(scan.violations.map(v => ({ id: v.id, nodes: v.nodes.map(node => ({ target: node.target, reason: node.failureSummary })) })), [], `accesibilidad de la portada ${width}px ${colorScheme}`);
     }
   }
   await pageA.emulateMedia({ colorScheme: 'light' });

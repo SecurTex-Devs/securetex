@@ -5,7 +5,7 @@ const config: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   // Las imágenes del proyecto se sirven desde el propio origen; ningún dominio externo.
-  images: { remotePatterns: [] },
+  images: { remotePatterns: [], localPatterns: [{ pathname: '/landing/**', search: '' }] },
   async headers() {
     return [
       { source: '/:path*', headers: [
