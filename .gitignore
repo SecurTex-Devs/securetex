@@ -20,3 +20,6 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+
+# Material personal conservado únicamente en el equipo.
+/docs/portfolio/

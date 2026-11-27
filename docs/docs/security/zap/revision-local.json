@@ -1,0 +1,832 @@
+{
+  "generatedByZap": "Fri, 27 Nov 2026 00:58:04",
+  "sourceRevision": "a6b81c9ab961b5f2c9eb063ec1a1af08128d6f65",
+  "target": "https://securetex-zap:3443",
+  "productionTarget": false,
+  "zap": "2.17.0",
+  "imageDigest": "sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af",
+  "scope": "HTTPS local con base separada, usuarios sintéticos, recorrido público, acceso verificado, editor, compilación y PDF renderizado. Autenticación excluida del fuzzing y comprobada por 82 pruebas de abuso separadas.",
+  "redaction": "Resumen de los 13 tipos del informe JSON original. Sus instancias son las representativas que exportó ZAP, con un máximo configurado de 5 por tipo salvo lo que conserva el complemento. No es una exportación de todas las alertas de la API. Se omiten evidencias, cuerpos, cookies, parámetros y queries. Los identificadores se sustituyen. Originales privados conservados.",
+  "rawJsonSha256": "339f882aa389774a250d31d8e5bef7e2581ff96ec4c853b32f7a9f1f2bfadd28",
+  "active": {
+    "state": "FINISHED",
+    "progress": 100,
+    "requests": 20115,
+    "alertEvents": 398,
+    "ruleStates": {
+      "Complete": 68,
+      "Skipped, exceeded max rule time.": 3,
+      "Skipped, no Active Scan OAST service is selected.": 2,
+      "Skipped, no scripts enabled.": 1,
+      "Skipped": 1
+    },
+    "rules": [
+      {
+        "id": "6",
+        "name": "Path Traversal",
+        "status": "Complete",
+        "requests": 828
+      },
+      {
+        "id": "7",
+        "name": "Remote File Inclusion",
+        "status": "Complete",
+        "requests": 470
+      },
+      {
+        "id": "10045",
+        "name": "Source Code Disclosure - /WEB-INF Folder",
+        "status": "Complete",
+        "requests": 45
+      },
+      {
+        "id": "10048",
+        "name": "Remote Code Execution - Shell Shock",
+        "status": "Complete",
+        "requests": 94
+      },
+      {
+        "id": "20015",
+        "name": "Heartbleed OpenSSL Vulnerability",
+        "status": "Complete",
+        "requests": 3
+      },
+      {
+        "id": "20017",
+        "name": "Source Code Disclosure - CVE-2012-1823",
+        "status": "Complete",
+        "requests": 42
+      },
+      {
+        "id": "20018",
+        "name": "Remote Code Execution - CVE-2012-1823",
+        "status": "Complete",
+        "requests": 274
+      },
+      {
+        "id": "20019",
+        "name": "External Redirect",
+        "status": "Complete",
+        "requests": 423
+      },
+      {
+        "id": "40009",
+        "name": "Server Side Include",
+        "status": "Complete",
+        "requests": 188
+      },
+      {
+        "id": "40012",
+        "name": "Cross Site Scripting (Reflected)",
+        "status": "Complete",
+        "requests": 235
+      },
+      {
+        "id": "40016",
+        "name": "Cross Site Scripting (Persistent) - Prime",
+        "status": "Complete",
+        "requests": 47
+      },
+      {
+        "id": "40017",
+        "name": "Cross Site Scripting (Persistent) - Spider",
+        "status": "Complete",
+        "requests": 137
+      },
+      {
+        "id": "40014",
+        "name": "Cross Site Scripting (Persistent)",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "40018",
+        "name": "SQL Injection",
+        "status": "Complete",
+        "requests": 1038
+      },
+      {
+        "id": "40019",
+        "name": "SQL Injection - MySQL (Time Based)",
+        "status": "Complete",
+        "requests": 470
+      },
+      {
+        "id": "40020",
+        "name": "SQL Injection - Hypersonic SQL (Time Based)",
+        "status": "Complete",
+        "requests": 470
+      },
+      {
+        "id": "40021",
+        "name": "SQL Injection - Oracle (Time Based)",
+        "status": "Complete",
+        "requests": 235
+      },
+      {
+        "id": "40022",
+        "name": "SQL Injection - PostgreSQL (Time Based)",
+        "status": "Complete",
+        "requests": 235
+      },
+      {
+        "id": "40026",
+        "name": "Cross Site Scripting (DOM Based)",
+        "status": "Skipped, exceeded max rule time.",
+        "requests": 35
+      },
+      {
+        "id": "40027",
+        "name": "SQL Injection - MsSQL (Time Based)",
+        "status": "Complete",
+        "requests": 470
+      },
+      {
+        "id": "40043",
+        "name": "Log4Shell",
+        "status": "Skipped, no Active Scan OAST service is selected.",
+        "requests": 0
+      },
+      {
+        "id": "40045",
+        "name": "Spring4Shell",
+        "status": "Complete",
+        "requests": 281
+      },
+      {
+        "id": "40048",
+        "name": "Remote Code Execution (React2Shell)",
+        "status": "Complete",
+        "requests": 1
+      },
+      {
+        "id": "90019",
+        "name": "Server Side Code Injection",
+        "status": "Complete",
+        "requests": 376
+      },
+      {
+        "id": "90020",
+        "name": "Remote OS Command Injection",
+        "status": "Complete",
+        "requests": 893
+      },
+      {
+        "id": "90021",
+        "name": "XPath Injection",
+        "status": "Complete",
+        "requests": 141
+      },
+      {
+        "id": "90023",
+        "name": "XML External Entity Attack",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "90024",
+        "name": "Generic Padding Oracle",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "90034",
+        "name": "Cloud Metadata Potentially Exposed",
+        "status": "Complete",
+        "requests": 13
+      },
+      {
+        "id": "90035",
+        "name": "Server Side Template Injection",
+        "status": "Complete",
+        "requests": 658
+      },
+      {
+        "id": "90036",
+        "name": "Server Side Template Injection (Blind)",
+        "status": "Complete",
+        "requests": 564
+      },
+      {
+        "id": "90037",
+        "name": "Remote OS Command Injection (Time Based)",
+        "status": "Complete",
+        "requests": 752
+      },
+      {
+        "id": "0",
+        "name": "Directory Browsing",
+        "status": "Complete",
+        "requests": 137
+      },
+      {
+        "id": "10106",
+        "name": "HTTP Only Site",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "30001",
+        "name": "Buffer Overflow",
+        "status": "Complete",
+        "requests": 47
+      },
+      {
+        "id": "30002",
+        "name": "Format String Error",
+        "status": "Complete",
+        "requests": 141
+      },
+      {
+        "id": "40003",
+        "name": "CRLF Injection",
+        "status": "Complete",
+        "requests": 329
+      },
+      {
+        "id": "40008",
+        "name": "Parameter Tampering",
+        "status": "Complete",
+        "requests": 239
+      },
+      {
+        "id": "40028",
+        "name": "ELMAH Information Leak",
+        "status": "Complete",
+        "requests": 1
+      },
+      {
+        "id": "40029",
+        "name": "Trace.axd Information Leak",
+        "status": "Complete",
+        "requests": 37
+      },
+      {
+        "id": "40032",
+        "name": ".htaccess Information Leak",
+        "status": "Complete",
+        "requests": 36
+      },
+      {
+        "id": "40034",
+        "name": ".env Information Leak",
+        "status": "Complete",
+        "requests": 36
+      },
+      {
+        "id": "40042",
+        "name": "Spring Actuator Information Leak",
+        "status": "Complete",
+        "requests": 2
+      },
+      {
+        "id": "40035",
+        "name": "Hidden File Finder",
+        "status": "Complete",
+        "requests": 52
+      },
+      {
+        "id": "40044",
+        "name": "Exponential Entity Expansion (Billion Laughs Attack)",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "90017",
+        "name": "XSLT Injection",
+        "status": "Complete",
+        "requests": 360
+      },
+      {
+        "id": "10047",
+        "name": "HTTPS Content Available via HTTP",
+        "status": "Complete",
+        "requests": 104
+      },
+      {
+        "id": "10058",
+        "name": "GET for POST",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "10104",
+        "name": "User Agent Fuzzer",
+        "status": "Skipped, exceeded max rule time.",
+        "requests": 1368
+      },
+      {
+        "id": "50000",
+        "name": "Script Active Scan Rules",
+        "status": "Skipped, no scripts enabled.",
+        "requests": 0
+      },
+      {
+        "id": "41",
+        "name": "Source Code Disclosure - Git",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "43",
+        "name": "Source Code Disclosure - File Inclusion",
+        "status": "Complete",
+        "requests": 292
+      },
+      {
+        "id": "10107",
+        "name": "Httpoxy - Proxy Header Misuse",
+        "status": "Complete",
+        "requests": 411
+      },
+      {
+        "id": "20016",
+        "name": "Cross-Domain Misconfiguration",
+        "status": "Complete",
+        "requests": 2
+      },
+      {
+        "id": "40013",
+        "name": "Session Fixation",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "40031",
+        "name": "Out of Band XSS",
+        "status": "Complete",
+        "requests": 188
+      },
+      {
+        "id": "40033",
+        "name": "NoSQL Injection - MongoDB",
+        "status": "Complete",
+        "requests": 471
+      },
+      {
+        "id": "40046",
+        "name": "Server Side Request Forgery",
+        "status": "Complete",
+        "requests": 47
+      },
+      {
+        "id": "40047",
+        "name": "Text4shell (CVE-2022-42889)",
+        "status": "Skipped, no Active Scan OAST service is selected.",
+        "requests": 0
+      },
+      {
+        "id": "90025",
+        "name": "Expression Language Injection",
+        "status": "Complete",
+        "requests": 47
+      },
+      {
+        "id": "90026",
+        "name": "SOAP Action Spoofing",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "90029",
+        "name": "SOAP XML Injection",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "90039",
+        "name": "NoSQL Injection - MongoDB (Time Based)",
+        "status": "Complete",
+        "requests": 470
+      },
+      {
+        "id": "42",
+        "name": "Source Code Disclosure - SVN",
+        "status": "Complete",
+        "requests": 102
+      },
+      {
+        "id": "10051",
+        "name": "Relative Path Confusion",
+        "status": "Complete",
+        "requests": 63
+      },
+      {
+        "id": "10095",
+        "name": "Backup File Disclosure",
+        "status": "Skipped, exceeded max rule time.",
+        "requests": 1587
+      },
+      {
+        "id": "20012",
+        "name": "Anti-CSRF Tokens Check",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "30003",
+        "name": "Integer Overflow Error",
+        "status": "Complete",
+        "requests": 188
+      },
+      {
+        "id": "40025",
+        "name": "Proxy Disclosure",
+        "status": "Complete",
+        "requests": 1370
+      },
+      {
+        "id": "40038",
+        "name": "Bypassing 403",
+        "status": "Complete",
+        "requests": 137
+      },
+      {
+        "id": "40040",
+        "name": "CORS Header",
+        "status": "Complete",
+        "requests": 959
+      },
+      {
+        "id": "90028",
+        "name": "Insecure HTTP Method",
+        "status": "Complete",
+        "requests": 169
+      },
+      {
+        "id": "20014",
+        "name": "HTTP Parameter Pollution",
+        "status": "Complete",
+        "requests": 0
+      },
+      {
+        "id": "40023",
+        "name": "Possible Username Enumeration",
+        "status": "Skipped",
+        "requests": 0
+      },
+      {
+        "id": "90027",
+        "name": "Cookie Slack Detector",
+        "status": "Complete",
+        "requests": 420
+      }
+    ]
+  },
+  "riskTypes": {
+    "high": 1,
+    "medium": 2,
+    "low": 1,
+    "informational": 9
+  },
+  "addons": [
+    {
+      "id": "reports",
+      "version": "0.46.0",
+      "status": "release"
+    },
+    {
+      "id": "network",
+      "version": "0.33.0",
+      "status": "beta"
+    },
+    {
+      "id": "ascanrules",
+      "version": "84.0.0",
+      "status": "release"
+    },
+    {
+      "id": "pscanrules",
+      "version": "79.0.0",
+      "status": "release"
+    },
+    {
+      "id": "pscanrulesBeta",
+      "version": "50.0.0",
+      "status": "beta"
+    },
+    {
+      "id": "ascanrulesBeta",
+      "version": "67.0.0",
+      "status": "beta"
+    }
+  ],
+  "alertTypes": [
+    {
+      "id": "43",
+      "risk": "High (Medium)",
+      "name": "Source Code Disclosure - File Inclusion",
+      "exportedCount": 1,
+      "representativeInstances": [
+        {
+          "method": "GET",
+          "path": "/_next/image"
+        }
+      ]
+    },
+    {
+      "id": "90028-1",
+      "risk": "Medium (Medium)",
+      "name": "Insecure HTTP Method - DELETE",
+      "exportedCount": 14,
+      "representativeInstances": [
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/auth"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/crypto"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/crypto/artifact-key"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/crypto/transport-key"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/invitations"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/me"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/me/preferences"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/projects"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/projects"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/projects/[identificador]"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/projects/[identificador]/compile"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/projects/[identificador]/compile/analyze"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/projects/[identificador]/files"
+        },
+        {
+          "method": "OPTIONS",
+          "path": "/api/v1/tags"
+        }
+      ]
+    },
+    {
+      "id": "40025-2",
+      "risk": "Medium (Medium)",
+      "name": "Proxy Disclosure",
+      "exportedCount": 3,
+      "representativeInstances": [
+        {
+          "method": "GET",
+          "path": "/api/v1/collab/"
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/projects/[identificador]/compile"
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/projects/[identificador]/compile/analyze"
+        }
+      ]
+    },
+    {
+      "id": "10010",
+      "risk": "Low (Medium)",
+      "name": "Cookie No HttpOnly Flag",
+      "exportedCount": 1,
+      "representativeInstances": [
+        {
+          "method": "POST",
+          "path": "/api/v1/auth/login"
+        }
+      ]
+    },
+    {
+      "id": "10111",
+      "risk": "Informational (High)",
+      "name": "Authentication Request Identified",
+      "exportedCount": 1,
+      "representativeInstances": [
+        {
+          "method": "POST",
+          "path": "/api/v1/auth/login"
+        }
+      ]
+    },
+    {
+      "id": "90027",
+      "risk": "Informational (Low)",
+      "name": "Cookie Slack Detector",
+      "exportedCount": 3,
+      "representativeInstances": [
+        {
+          "method": "GET",
+          "path": "/"
+        },
+        {
+          "method": "GET",
+          "path": "/_next"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/collab/"
+        }
+      ]
+    },
+    {
+      "id": "10109",
+      "risk": "Informational (Medium)",
+      "name": "Modern Web Application",
+      "exportedCount": 2,
+      "representativeInstances": [
+        {
+          "method": "GET",
+          "path": "/proyecto/[identificador]"
+        },
+        {
+          "method": "GET",
+          "path": "/proyecto/[identificador]"
+        }
+      ]
+    },
+    {
+      "id": "10049-1",
+      "risk": "Informational (Medium)",
+      "name": "Non-Storable Content",
+      "exportedCount": 5,
+      "representativeInstances": [
+        {
+          "method": "GET",
+          "path": "/"
+        },
+        {
+          "method": "GET",
+          "path": "/"
+        },
+        {
+          "method": "GET",
+          "path": "/plantillas"
+        },
+        {
+          "method": "GET",
+          "path": "/plantillas/blank"
+        },
+        {
+          "method": "GET",
+          "path": "/plantillas/tesis-uta"
+        }
+      ]
+    },
+    {
+      "id": "10015",
+      "risk": "Informational (Low)",
+      "name": "Re-examine Cache-control Directives",
+      "exportedCount": 5,
+      "representativeInstances": [
+        {
+          "method": "GET",
+          "path": "/api/v1/auth/demo"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/auth/providers"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/me"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/projects"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/tags"
+        }
+      ]
+    },
+    {
+      "id": "10112",
+      "risk": "Informational (Medium)",
+      "name": "Session Management Response Identified",
+      "exportedCount": 2,
+      "representativeInstances": [
+        {
+          "method": "POST",
+          "path": "/api/v1/auth/login"
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/auth/refresh"
+        }
+      ]
+    },
+    {
+      "id": "10049-3",
+      "risk": "Informational (Medium)",
+      "name": "Storable and Cacheable Content",
+      "exportedCount": 5,
+      "representativeInstances": [
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/webpack-6e7cf4093e505abe.js"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/css/6192903fc79437f5.css"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/84adbee2f2a7cb50-s.p.woff2"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/8edf6d3506a17285-s.p.woff2"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/bb3ef058b751a6ad-s.p.woff2"
+        }
+      ]
+    },
+    {
+      "id": "10049-2",
+      "risk": "Informational (Medium)",
+      "name": "Storable but Non-Cacheable Content",
+      "exportedCount": 1,
+      "representativeInstances": [
+        {
+          "method": "GET",
+          "path": "/theme-init.js"
+        }
+      ]
+    },
+    {
+      "id": "10104",
+      "risk": "Informational (Medium)",
+      "name": "User Agent Fuzzer",
+      "exportedCount": 3,
+      "representativeInstances": [
+        {
+          "method": "GET",
+          "path": "/"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/collab/"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/collab/"
+        }
+      ]
+    }
+  ],
+  "followup": {
+    "revision": "d2ab64f628caeee74b0cb781830b640a5a1d4e83",
+    "checks": [
+      "Optimizador de imágenes limitado a /landing/**; ruta de API rechazada con 400",
+      "OPTIONS reenviado a la API; sin anuncio genérico de DELETE; operaciones normales conservadas"
+    ],
+    "cookieValidation": {
+      "measuredAt": "2026-11-27T14:09:08.946Z",
+      "sourceRevision": "d2ab64f628caeee74b0cb781830b640a5a1d4e83",
+      "environment": "API real local de desarrollo; usuarios sintéticos, acceso directo sin ZAP ni sustitución de Cookie.",
+      "statuses": {
+        "authenticated": 200,
+        "alteredAccessCookie": 401,
+        "wrongCsrf": 403,
+        "missingCsrf": 403
+      },
+      "tests": 4
+    },
+    "completeRescanOfFollowupRevision": false
+  },
+  "limitations": [
+    "68 reglas completas y 7 omitidas; FINISHED no significa que todas se ejecutaron",
+    "DOM XSS, User Agent Fuzzer y Backup File Disclosure agotaron el minuto por regla",
+    "Log4Shell y Text4Shell sin OAST: integración externa no autorizada por la revisión automática",
+    "Active Script sin scripts; enumeración de usuarios fuera del fuzzing de autenticación",
+    "El reemplazo de Cookie del arnés interfiere con Cookie Slack; validación directa adicional sin ese reemplazo",
+    "No acredita cero vulnerabilidades ni cero alertas; conservar el informe original y su contexto"
+  ]
+}

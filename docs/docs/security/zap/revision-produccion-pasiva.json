@@ -1,0 +1,1313 @@
+{
+  "measuredAt": "2026-11-27T14:31:59.177Z",
+  "revision": "1ba0fb6ed1c2fdae73bc953d8ff6088bd191c908",
+  "target": "https://securetex.dayle.dev",
+  "zap": "2.17.0",
+  "scope": "Análisis pasivo de ocho rutas públicas de producción y sus recursos, sin acceso de cuenta ni ataques activos. No sustituye el análisis activo local ni certifica toda la aplicación.",
+  "activeScan": false,
+  "passiveQueueRemaining": 0,
+  "paths": [
+    {
+      "path": "/",
+      "status": 200
+    },
+    {
+      "path": "/privacidad",
+      "status": 200
+    },
+    {
+      "path": "/terminos",
+      "status": 200
+    },
+    {
+      "path": "/entrar",
+      "status": 200
+    },
+    {
+      "path": "/registro",
+      "status": 200
+    },
+    {
+      "path": "/recuperar",
+      "status": 200
+    },
+    {
+      "path": "/plantillas",
+      "status": 200
+    },
+    {
+      "path": "/plantillas/articulo",
+      "status": 200
+    }
+  ],
+  "rawJsonSha256": "947dc1daaff92e8022f74f736f1ad0e704e37dc55adcec75d729f15565459977",
+  "redaction": "Todos los tipos del sitio y todas las instancias de la API paginada de alertas. Se omiten cookies, cuerpos, evidencias, parámetros, queries e identificadores de desafíos de Cloudflare.",
+  "alertTypes": [
+    {
+      "id": "10098",
+      "risk": "Medium (Medium)",
+      "name": "Cross-Domain Misconfiguration",
+      "exportedCount": 1,
+      "allInstanceCount": 1,
+      "instances": [
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        }
+      ]
+    },
+    {
+      "id": "10054-2",
+      "risk": "Low (Medium)",
+      "name": "Cookie with SameSite Attribute None",
+      "exportedCount": 3,
+      "allInstanceCount": 3,
+      "instances": [
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        }
+      ]
+    },
+    {
+      "id": "90004-1",
+      "risk": "Low (Medium)",
+      "name": "Cross-Origin-Resource-Policy Header Missing or Invalid",
+      "exportedCount": 4,
+      "allInstanceCount": 4,
+      "instances": [
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        }
+      ]
+    },
+    {
+      "id": "10063-1",
+      "risk": "Low (Medium)",
+      "name": "Permissions Policy Header Not Set",
+      "exportedCount": 1,
+      "allInstanceCount": 1,
+      "instances": [
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        }
+      ]
+    },
+    {
+      "id": "10035-1",
+      "risk": "Low (High)",
+      "name": "Strict-Transport-Security Header Not Set",
+      "exportedCount": 5,
+      "allInstanceCount": 8,
+      "instances": [
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/rum",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/rum",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/rum",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/rum",
+          "managedBy": "Cloudflare"
+        }
+      ]
+    },
+    {
+      "id": "10096",
+      "risk": "Low (Low)",
+      "name": "Timestamp Disclosure - Unix",
+      "exportedCount": 5,
+      "allInstanceCount": 96,
+      "instances": [
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        }
+      ]
+    },
+    {
+      "id": "90033",
+      "risk": "Informational (Low)",
+      "name": "Loosely Scoped Cookie",
+      "exportedCount": 3,
+      "allInstanceCount": 3,
+      "instances": [
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        }
+      ]
+    },
+    {
+      "id": "10049-1",
+      "risk": "Informational (Medium)",
+      "name": "Non-Storable Content",
+      "exportedCount": 5,
+      "allInstanceCount": 22,
+      "instances": [
+        {
+          "method": "GET",
+          "path": "/",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/entrar",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/privacidad",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/registro",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/terminos",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/entrar",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/auth/providers",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/recuperar",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/registro",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/recuperar",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/auth/demo",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/plantillas",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/me",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/plantillas/articulo",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/proyectos",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/plantillas/blank",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/plantillas/tesis-uta",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/entrar",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/plantillas",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "POST",
+          "path": "/api/v1/auth/refresh",
+          "managedBy": "SecureTex"
+        }
+      ]
+    },
+    {
+      "id": "10015",
+      "risk": "Informational (Low)",
+      "name": "Re-examine Cache-control Directives",
+      "exportedCount": 2,
+      "allInstanceCount": 2,
+      "instances": [
+        {
+          "method": "GET",
+          "path": "/api/v1/auth/providers",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/api/v1/auth/demo",
+          "managedBy": "SecureTex"
+        }
+      ]
+    },
+    {
+      "id": "10050-2",
+      "risk": "Informational (Medium)",
+      "name": "Retrieved from Cache",
+      "exportedCount": 5,
+      "allInstanceCount": 35,
+      "instances": [
+        {
+          "method": "GET",
+          "path": "/_next/static/css/a59620c363cf3451.css",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/bb3ef058b751a6ad-s.p.woff2",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/84adbee2f2a7cb50-s.p.woff2",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/8edf6d3506a17285-s.p.woff2",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/22a5144ee8d83bca-s.p.woff2",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/webpack-0b082a98a7a0fb50.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/main-app-6fd5ea83b1ec6377.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/6122-74fb004f184fdc0f.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/32911511-62f0a62b831e2548.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/2224-b337d8fbb181c976.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/1842-dbb58a0a1462529c.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/595-bddca7c506d73b73.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/3540-3a1c6e270f1d9726.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/3051-92427cdab54ab9f9.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/7059-9244c5fe9af78ab5.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(auth)/layout-bbfae96785f70904.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/4463-37d982649d8b900f.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/2000-c5944de4574f9c52.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/page-d25c2e6845196cd3.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/6452-cd1a1fea7738c5bb.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/layout-bc2b9fe60aa8bd72.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/3310-3730b17baf52232e.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/4178-d232da85dc269952.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/error-a2bb8cf97472895e.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/5137-99ce26e4630806b7.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/8287-ac87bef356471182.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(auth)/entrar/page-f51bf7b1a210e946.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/7758-154719aff2bd9eef.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/9718-aca05c62f52de08f.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/3593-fcd937867dbc6ad7.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/9433-eff33a699b6b5fc1.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/9850-e934388551733e6e.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(app)/layout-0f3db2a4fb6512b2.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/4965-9ca12a37852a9a32.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/2816.b7cb14c4a6dadea8.js",
+          "managedBy": "SecureTex"
+        }
+      ]
+    },
+    {
+      "id": "10112",
+      "risk": "Informational (Medium)",
+      "name": "Session Management Response Identified",
+      "exportedCount": 3,
+      "allInstanceCount": 3,
+      "instances": [
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        }
+      ]
+    },
+    {
+      "id": "10049-3",
+      "risk": "Informational (Medium)",
+      "name": "Storable and Cacheable Content",
+      "exportedCount": 5,
+      "allInstanceCount": 52,
+      "instances": [
+        {
+          "method": "GET",
+          "path": "/_next/static/css/a59620c363cf3451.css",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/bb3ef058b751a6ad-s.p.woff2",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/theme-init.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/84adbee2f2a7cb50-s.p.woff2",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/8edf6d3506a17285-s.p.woff2",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/fonts/22a5144ee8d83bca-s.p.woff2",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/webpack-0b082a98a7a0fb50.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/main-app-6fd5ea83b1ec6377.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/6122-74fb004f184fdc0f.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/32911511-62f0a62b831e2548.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/2224-b337d8fbb181c976.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/1842-dbb58a0a1462529c.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/595-bddca7c506d73b73.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/3540-3a1c6e270f1d9726.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/3051-92427cdab54ab9f9.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/7059-9244c5fe9af78ab5.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(auth)/layout-bbfae96785f70904.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/2000-c5944de4574f9c52.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/4463-37d982649d8b900f.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/page-d25c2e6845196cd3.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/6452-cd1a1fea7738c5bb.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/layout-bc2b9fe60aa8bd72.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/3310-3730b17baf52232e.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/4178-d232da85dc269952.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/error-a2bb8cf97472895e.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/5137-99ce26e4630806b7.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/rum",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/rum",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/privacidad/page-bbfae96785f70904.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/rum",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/terminos/page-bbfae96785f70904.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/8287-ac87bef356471182.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(auth)/entrar/page-f51bf7b1a210e946.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/7758-154719aff2bd9eef.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/9718-aca05c62f52de08f.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/3593-fcd937867dbc6ad7.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/challenge-platform/[identificador]",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(auth)/registro/page-91e5abc84e675527.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/7747-8247b6adf176ded1.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(auth)/recuperar/page-a2a762484d1bd8f0.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/9433-eff33a699b6b5fc1.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/9850-e934388551733e6e.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(app)/layout-0f3db2a4fb6512b2.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/1089-d5c657a794d9f2ad.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(app)/plantillas/page-13e12ea1c8cf240a.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/4965-9ca12a37852a9a32.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "POST",
+          "path": "/cdn-cgi/rum",
+          "managedBy": "Cloudflare"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/app/(app)/plantillas/%5Bid%5D/page-4a68e7a19d49e6c3.js",
+          "managedBy": "SecureTex"
+        },
+        {
+          "method": "GET",
+          "path": "/_next/static/chunks/2816.b7cb14c4a6dadea8.js",
+          "managedBy": "SecureTex"
+        }
+      ]
+    }
+  ],
+  "totalAlertInstances": 230,
+  "riskTypes": {
+    "high": 0,
+    "medium": 1,
+    "low": 5,
+    "informational": 6
+  },
+  "ownershipNote": "Las instancias de alertas altas/medias/bajas de esta pasada están en recursos /cdn-cgi/ gestionados por Cloudflare. Se conservan; no se han desactivado reglas ni cambiado controles del proveedor para ocultarlas."
+}
